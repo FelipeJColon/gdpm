@@ -1,11 +1,11 @@
-##System and Package needed
+# System and Package needed
 library(magrittr) # for the " %>% " pipe
 library(dplyr) # for "bind_rows", "rename", "mutate", "select"
 library(tidyr) # for "gather", "separate", "spread"
 
-########################## PREREQUISITE ##############
+# Prerequisites  ---------------------------------------------------------------
 
-## disease table for translation ####
+# Disease table for translation
 diseases <- matrix(c(
   "Ta"                            , "cholera",
   "Ta1"                           , "cholera",
@@ -83,7 +83,7 @@ diseases <- matrix(c(
   "HCLy"                          , "dysenteria",     # Dysenteria syndrome
   "Hoi chung ly"                  , "dysenteria",     # Dysenteria syndrome
   "HCLY"                          , "dysenteria",     # Dysenteria syndrome
-  "HCly"                          , "dysenteria",
+  "HCly"                          , "dysenteria",     # Dysenteria syndrome
   "Ta"                            , "cholera" ,
   "Thuong han"                    , "typhoid" ,   # typhoid fever
   "Ly truc trung"                 , "shigella" ,
@@ -122,9 +122,9 @@ diseases <- matrix(c(
   "Liet mem cap"                  , "polio",
   "Rubella"                       , "rubella"),
   ncol=2, byrow=T)
-diseases <- setNames(diseases[,2],diseases[,1])
+diseases <- setNames(diseases[, 2], diseases[, 1])
 
-## colnames table for translation ####
+# Colnames table for translation
 names_col <- matrix(c(
   "C"                 , "C",
   "M"                 , "M",
@@ -170,255 +170,298 @@ names_col <- matrix(c(
   "D©n sè 1996"       , "popsize",
   "D©n sè 1998"       , "popsize"),
   ncol=2, byrow=T)
-names_col <- setNames(names_col[,2],names_col[,1])
+names_col <- setNames(names_col[, 2], names_col[, 1])
 
-## provinces tables for translation ####
+# Provinces tables for translation
 province <- readRDS("data-raw/province.RDS")
 
-########################### FUNCTIONS ################
+# Functions --------------------------------------------------------------------
 
-## For each table, the columns' names are in two lines with a lot of missing data (in the original file).
-## They, first, need to be translated and then, they need to be copied and pasted to fill the empty "colnames".
-## The function returns the data frame with "clean" columns' names in one line, without NA, in English
-## and all the tables will also have exactly the same "colnames" to permit linking them afterwards.
-make_colnames <- function(df) {
-  colnames(df) <- names_col[colnames(df)]
-  sel <- which(df[1,]=="C")
-  names(df)[sel] <- names(df)[sel-1]
-  names(df) <- apply(cbind(names(df),unlist(df[1,])),1,paste,collapse=" ") %>%
-    gsub("NA NA","popsize",.) %>% gsub(".NA","",.)
-  df <- df[-1,] %>% filter(!is.na(`province`))
-}
+# Use for both type of excel files ---------------------------------------------
 
-## In each excel file, each sheet is named by a disease and contain one table containing all
-## the cases and deaths for one disease by month and by province. Extracts the table and names it
-## and gather all diseases in a list of multiple data frames.
-lapply2 <- function(X, ...) setNames(lapply(X, ...),X)
-
-read_excel_disease_sheets <- function(filename) {
-  require(readxl) # for "excel_sheets", "read_excel"
-  capture.output(tab <- excel_sheets(filename) %>%
-      lapply2(function(disease_sheets)
-        read_excel(filename,disease_sheets) %>% make_colnames))
-  return(tab)
-}
-
-## Translates all the province names from Vietnamese to English.
-translate_prov <- function(df,col_names="province",hash=province) {
-  df[,col_names] <- hash[unlist(df[,col_names])]
+# Translates all the province names from Vietnamese to English.
+translate <- function(df, col_names = "province", hash = province) {
+  df[, col_names] <- hash[unlist(df[, col_names])]
   df
 }
 
-## Extracts the year (contain in the name of a file) and transforms it in a new variable, to
-## identify all the data per year.
-read_year <- function(filename){
-  year <- filename %>% gsub("[^0-9]","",.) %>% as.integer
+# Use only for the excel file "Nien giam 201.r.xls" (NG)------------------------
+
+# For each table, the columns' names are in two lines with a lot of missing data
+# (in the original file) :
+# Provinces | Month 1 | NA | Month 2 | NA | ... | Month 12 | NA | NA
+#    NA     |   M     |  C |   M     |  C | ... |   M      |  C | NA
+# Legend: M: Incidence ; C: Mortality and the last column without names
+# correspond to the size of the population for each province.
+# This function translate and arrange the names of each column to obtain a
+# data frame with columns' names in one line, without NA, in English.
+make_colnames_NG <- function(df) {
+  colnames(df) <- names_col[colnames(df)]
+  sel <- which(df[1, ] == "C")
+  names(df)[sel] <- names(df)[sel-1]
+  names(df) <- apply(cbind(names(df), unlist(df[1, ])), 1, paste,
+    collapse = " ") %>%
+    gsub("NA NA", "popsize", .) %>%
+    gsub(".NA", "", .)
+  df <- df[-1, ] %>% filter(!is.na(`province`))
 }
 
-read_vect_year <- function(vector){
-  year <-unlist( lapply(vector, read_year))
+# In each excel file, each sheet is named by a disease and contain one table
+# containing all the cases and number of deaths for one disease by month and by
+# province. Extracts the table,names it and gather all diseases in one list of
+# multiple data frames.
+lapply2 <- function(X, ...) setNames(lapply(X, ...), X)
+
+read_excel_disease_sheets_NG <- function(filename) {
+  require(readxl) # for "excel_sheets", "read_excel"
+  capture.output(lst_df <- excel_sheets(filename) %>%
+      lapply2(function(disease_sheets)
+        read_excel(filename, disease_sheets) %>% make_colnames_NG))
+  return(lst_df)
 }
 
-### Read the table contain in one sheet of one excel file ("Nien..")
-## and transform it to the right format. Return a data frame with 6 variables:
-## province, year, month, incidence, mortality and popsize.
-read_one_table <- function(df,filename){
-  df %<>% translate_prov %>%
-    mutate(year=read_year(filename)) %>%
-    gather(key,value,contains("month")) %>%
-    separate(key,letters[1:3]," ") %>%
+# Extracts the year (contain in the name of a file) and transforms it in a new
+# variable, to identify all the data per year.
+read_year_NG <- function(filename) {
+  year <- filename %>% gsub("[^0-9]", "", .) %>% as.integer
+}
+
+read_vect_year_NG <- function(vector) {
+  year <- unlist(lapply(vector, read_year_NG))
+}
+
+# Read one table contains in one sheet of one excel file ("Nien giam 201.r")
+# and transform it to the right format. Return a data frame with 6 variables:
+# province, year, month, incidence, mortality and popsize.
+read_one_table_NG <- function(df, filename) {
+  df %<>% translate %>%
+    mutate(year = read_year_NG(filename)) %>%
+    gather(key, value, contains("month")) %>%
+    separate(key, letters[1:3], " ") %>%
     select(-a) %>%
-    spread(c,value) %>%
-    rename(month=b,incidence=M,mortality=C) %>%
-    mutate(month=factor(month.name[as.numeric(month)],month.name,ordered=TRUE),
-      incidence=as.integer(incidence),
-      mortality=as.integer(mortality),
-      popsize=as.numeric(popsize)) %>%
-    (function(x)lapply(
-     list(epidemiology=names(x)[-which(names(x)=="popsize")],
-      demography=c("province","year","popsize")),
-    function(y)unique(subset(x,select=y))
+    spread(c, value) %>%
+    rename(month = b, incidence=M, mortality=C) %>%
+    mutate(month = factor(month.name[as.numeric(month)],
+      month.name, ordered=TRUE),
+      incidence  = as.integer(incidence),
+      mortality  = as.integer(mortality),
+      popsize    = as.numeric(popsize)) %>%
+    (function(x) lapply(
+      list(epidemiology = names(x)[-which(names(x) == "popsize")],
+        demography = c("province", "year", "popsize")),
+      function(y) unique(subset(x, select = y))
     ))
 }
 
-## Read a list of tables (corresponding to all the sheets in one file) and
-## apply the function to transform them accordingly.
-read_list <- function(lst,filename){
-  tmp <- lapply(c(1:length(lst)), function(x) read_one_table(lst[[x]],filename))
+# Read a list of tables (corresponding to all the sheets in one file) and
+# apply the function to transform them accordingly.
+read_list_NG <- function(lst, filename) {
+  lst_total <- lapply(seq_along(lst), function(x) {
+    read_one_table_NG(lst[[x]], filename)
+  })
 }
 
-### Read the "Nien giam 201.r.xls" file : each file contains
-## the incidence and mortality data for different diseases, by province and by month for one year,
-## and return a list containing multiples lists (ordered by diseases) containing two data frame:
-## 1- "demography" : contains only the province, year and size of the population
-## 2- "epidemiology" : contains the incidence and the mortality data of one disease per month, year and province
-read_one_excel <- function(filename){
-  tmp <- filename %>%
-    read_excel_disease_sheets %>%
-    read_list (filename)%>%
+# Read the "Nien giam 201.r.xls" file : each file contains the incidence and
+# mortality data for different diseases, by province and by month for one year,
+# and return a list containing multiples lists (ordered by diseases) containing
+# two data frame:
+# 1- "demography" : contains only the province, year and size of the population
+# 2- "epidemiology" : contains the incidence and the mortality data of one
+# disease per month, year and province
+read_one_excel_NG <- function(filename) {
+  lst_total <- filename %>%
+    read_excel_disease_sheets_NG %>%
+    read_list_NG(filename) %>%
     setNames(diseases[excel_sheets(filename)])
 }
 
-## Read multiple "Nien giam 201.r.xls" files, gather each demographic and epidemiological data frames
-## together to create one list containing multiple lists ordered by year, containing
-## one list by disease, containing one data frame
-## with the demographic data and one data frame with the epidemiological data.
-read_multiple_files <- function(vector){
-  lst <- lapply (vector,read_one_excel)
-  names(lst) <- read_vect_year(vector)
+# Read multiple "Nien giam 201.r.xls" files, gather each demographic and
+# epidemiological data frames together to create one list :
+# list | 2011(list) | plague (list) | epidemiology data frame
+#                                   | demographic data frame
+#                   | encephalitis(list) | epidemiology data frame
+#                                        | demographic data frame
+#                   |... (other diseases)
+#
+#     | 2012(list) | plaque (list) | epidemiology data frame
+#                                  | demographic data frame
+#                  | encephalitis(list) | epidemiology data frame
+#                                       | demographic data frame
+#                  |... (other diseases)
+#     |... (other years)
+#
+read_multiple_files_NG <- function(vector) {
+  lst <- lapply (vector, read_one_excel_NG)
+  names(lst) <- read_vect_year_NG(vector)
   lst
 }
 
-
-## Gather together all the table for one disease
-## in one table containing all the epidemiological data.
-group_year <- function(lst,disease){
-  lapply(1:length(lst),function(x){
+# Gather together all the table for one disease in one table containing all the
+# epidemiological data.
+group_year <- function(lst, disease) {
+  lapply(seq_along(lst), function(x) {
     lst[[x]][disease][[1]]$epidemiology
   }) %>% bind_rows()
 }
 
-## Gather together all the table for each disease by year and return a list
-## containing mutliple epidemiological data frame (each one correspond to one disease).
-## Each table contains 5 variables : month, year, mortality (number of death), incidence (number of cases)
-## and province.
-make_epidemiology <- function(vector){
-  tmp <- read_multiple_files(vector)
-  epidemio <- lapply(names(tmp[[1]]),function(y){
-      lst <- group_year(tmp,y)
-    })
-  names(epidemio) <- names(tmp[[1]])
-  epidemio
+# Gather together all the table for each disease by year and return a list
+# containing mutliple epidemiological data frame (each one correspond to one
+# disease).
+# Each table contains 5 variables : month, year, mortality (number of death),
+# incidence (number of cases) and province.
+make_epidemiology_NG <- function(vector) {
+  total_lst <- read_multiple_files_NG(vector)
+  epidemiology <- lapply(names(total_lst[[1]]), function(y) {
+    lst <- group_year(total_lst, y)
+  })
+  names(epidemiology) <- names(total_lst[[1]])
+  epidemiology
 }
 
-## Read all the files and select only one disease (because all the diseases has the
-## same demographic data), and regroup all the year together in one file.
-## Return a demographic data frame with three variables: year, province and popsize.
-make_demography <- function(vector){
-  tmp <- read_multiple_files(vector)
-  lapply(1:length(tmp),function(x){
-    tmp[[x]]$cholera$demography
+# Read all the files and select only one disease (because all the diseases has
+# the same demographic data), and regroup all the year together in one file.
+# Return a demographic data frame with three variables: year, province and
+# popsize.
+make_demography_NG <- function(vector) {
+  total_lst <- read_multiple_files_NG(vector)
+  lapply(seq_along(total_lst), function(x) {
+    total_lst[[x]]$cholera$demography
   }) %>% bind_rows()
 }
 
-### Special function for the province Dack Lak, in the original file Dack Lak is written Dak Lak.
-## But, until 2004, the province should be written "Dack Lak".
-dack_lak_function <- function(df){
-  df[which(df$year<2004 & df$province=="Dak Lak"),] <-
-    filter(df,province=="Dak Lak",year<2004) %>%
-    mutate(province="Dack Lack")
+# Use only for the excel file "YB 1980-2010.xls" -------------------------------
+
+# Fonction specific to the Dack Lak province. On the original file, the name of
+# the province is always written "Dak Lak". But, from 1980 until 2004, the name
+# of this province should be written "Dack Lak".
+dack_lak_function <- function(df) {
+  df[which(df$year<2004 & df$province == "Dak Lak"), ] <-
+    filter(df, province == "Dak Lak", year<2004) %>%
+    mutate(province = "Dack Lack")
   df
 }
 
-
-### Read the "YB 1980-2010.xls" file : contains the incidence and mortality of different
-## disease by province and by month from 1980 until 2010.
-## Return a dataframe with all the mortality and incidence data for all the diseases by year, month and province.
+# Read the "YB 1980-2010.xls" file : contains the incidence and mortality of
+# different disease by province and by month from 1980 until 2010.
+# Return a dataframe with all the mortality and incidence data for all the
+# diseases by year, month and province.
 read_YB_file <- function (filename)  {
-  tmp <- read_excel(filename)%>%
+  read_excel(filename) %>%
     filter(!is.na(SLNO)) %>%
     select(-matches("SLNO|Checked"),
       -contains("SUM"),
       -contains("pht")) %>%
-    select(year=YR,disease=DISEASE,province=PROVINCE,
-      popsize=as.numeric(POP),
-      month_incidence_=starts_with("CASE"),
-      month_mortality_=starts_with("DEATH"))%>%
-    translate_prov %>%
-    translate_prov("disease",diseases) %>%
-    gather(key,value,contains("month")) %>%
-    separate(key,letters[1:3],"_") %>%
+    select(
+      year             = YR,
+      disease          = DISEASE,
+      province         = PROVINCE,
+      popsize          = as.numeric(POP),
+      month_incidence_ = starts_with("CASE"),
+      month_mortality_ = starts_with("DEATH")) %>%
+    translate %>%
+    translate("disease", diseases) %>%
+    gather(key, value, contains("month")) %>%
+    separate(key, letters[1:3], "_") %>%
     select(-a) %>%
-    spread(b,value)  %>%
-    rename(month=c) %>%
-    mutate(month=factor(month.name[as.numeric(month)],month.name,ordered=TRUE),
-      incidence=as.integer(incidence),
-      mortality=as.integer(mortality),
-      popsize=as.numeric(popsize)) %>%
+    spread(b, value) %>%
+    rename(month = c) %>%
+    mutate(month = factor(month.name[as.numeric(month)],
+      month.name, ordered=TRUE),
+      incidence  = as.integer(incidence),
+      mortality  = as.integer(mortality),
+      popsize    = as.numeric(popsize)) %>%
     dack_lak_function
-
 }
 
-### Read the "YB 1980-2010.xls" excel file, apply the function "read_YB_file" and transforms
-### the data frame in a list containing only one data frame for each disease.
-make_epidemiology_YB <- function(filename){
-  tmp <- read_YB_file(filename)
-  lst <- lapply(c(1:length(unique(tmp$disease))),function(x){
-    filter(tmp,disease==unique(tmp$disease)[x]) %>% select(-one_of(c("disease","popsize"))) %>%
-      mutate(incidence=as.integer(incidence),
-        mortality=as.integer(mortality))
+
+# Read the "YB 1980-2010.xls" excel file, apply the function "read_YB_file" and
+# transforms the data frame in a list containing only one data frame for each
+# disease.
+make_epidemiology_YB <- function(filename) {
+  df_yb <- read_YB_file(filename)
+  lst <- lapply(seq_along(unique(df_yb$disease)), function(x) {
+    filter(df_yb, disease == unique(df_yb$disease)[x]) %>%
+      select(-one_of(c("disease","popsize"))) %>%
+      mutate(incidence = as.integer(incidence),
+             mortality = as.integer(mortality))
   })
-  names(lst) <- unique(tmp$disease)
+  names(lst) <- unique(df_yb$disease)
   lst
 }
 
-## Read the YB excel file and selects only one disease (because all the diseases has the
-## same demographic data) to create a demographic data frame with three variables: year, province and popsize.
-make_demography_YB <- function(filename){
-  tmp <- read_YB_file(filename) %>%
-    filter(disease=="dengue") %>%
-    select(-one_of(c("month","mortality","incidence","disease")))
+# Read the YB excel file and selects only one disease (because all the diseases
+# has the same demographic data) to create a demographic data frame with three
+# variables: year, province and popsize.
+make_demography_YB <- function(filename) {
+  read_YB_file(filename) %>%
+    filter(disease == "dengue") %>%
+    select(-one_of(c("month", "mortality", "incidence", "disease")))
 }
 
-## Read all the excel file (because of the difference of format, the two kind as their proper functions)
-## and apply the functions to select only the demographic or epidemiologic data and join them by disease
-## (for the epidemiologic data).
-## Return a data frame containing three variables : year, province and popsize
-make_total_demography <- function(vector,filename){
-  demography <- make_demography(vector)
-  demo <- make_demography_YB(filename)
-  bind_rows(demo,demography)
+# Read all the excel file (because of the difference of format, the two kind as
+# their proper functions) and apply the functions to select only the demographic
+# or epidemiologic data and join them by disease (for the epidemiologic data).
+# Return a data frame containing three variables : year, province and popsize
+make_total_demography <- function(vector, filename) {
+  demography <- make_demography_NG(vector)
+  demography_2 <- make_demography_YB(filename)
+  bind_rows(demography_2, demography)
 }
 
-## Return a list containing one data frame by disease. Each data frame contains 5 variables :
-## year, month, province, incidence and mortality
-make_total_epidemiology <- function(vector,filename){
-  epidemio <- make_epidemiology_YB(filename)
-  epidemiology <- make_epidemiology(vector)
-  diseases <- unique(c(names(epidemio),names(epidemiology)))
-  lst <- lapply(diseases,function(x) bind_rows(epidemio[x],epidemiology[x]))
+# Return a list containing one data frame by disease.
+# Each data frame contains 5 variables: year, month, province, incidence and
+# mortality
+make_total_epidemiology <- function(vector, filename) {
+  epidemiology <- make_epidemiology_YB(filename)
+  epidemiology_2 <- make_epidemiology_NG(vector)
+  diseases <- unique(c(names(epidemiology), names(epidemiology_2)))
+  lst <- lapply(diseases, function(x){
+    bind_rows(epidemiology[x], epidemiology_2[x])
+    })
   names(lst) <- diseases
   lst
 }
 
 
-## Read all the file and returns a summary table, descripting all the data frame contain in the
-## package. Return a data frame with 5 variables:
-## The names of the data frame (file), the dimension of the data frame (nvar & nobs), the first year of the data
-## (year_start) and the last year of the data (year_end)
-## This table can be use as a resume of all the other data frame contain in this package and may
-## be useful for computing on the various files.
-made_summary_table <- function(vector,filename){
-  total_list <- make_total_epidemiology(vector,filename)
-  lapply(c(1:length(total_list)),function(x){
+# Read all the file and returns a summary table, descripting all the data frame
+# contain in the package. Return a data frame with 5 variables:
+# The names of the data frame (file), the dimension of the data frame
+# (nvar & nobs), the first year of the data (year_start) and the last year of
+# the data (year_end).
+# This table can be use as a resume of all the other data frame contain in this
+# package and may be useful for computing on the various files.
+made_summary_table <- function(vector, filename) {
+  total_list <- make_total_epidemiology(vector, filename)
+  lapply(seq_along(total_list),function(x){
     file <- names(total_list[x])
     nobs <- dim(total_list[[x]])[1]
     nvar <- dim(total_list[[x]])[2]
     year <- unique(total_list[[x]]$year)
     year_start <- min(year)
     year_end <- max(year)
-    data.frame(file,nobs,nvar,year_start,year_end)
+    data.frame(file, nobs, nvar, year_start, year_end)
   }) %>% bind_rows
 }
 
+# Read data-raw and made data --------------------------------------------------
 
-##### DATA
 filename <- "data-raw/YB 1980-2010.xls"
-vector <- c("data-raw/Nien giam 2011r.xls","data-raw/Nien giam 2012r.xls","data-raw/Nien giam 2013r.xls",
-  "data-raw/Nien giam 2014r.xls","data-raw/Nien giam 2015r.xls")
+vector <- c(
+  "data-raw/Nien giam 2011r.xls", "data-raw/Nien giam 2012r.xls",
+  "data-raw/Nien giam 2013r.xls", "data-raw/Nien giam 2014r.xls",
+  "data-raw/Nien giam 2015r.xls")
 
-demography <- make_total_demography(vector,filename) %>% filter(duplicated(.)==FALSE)
-epidemiology_summary <- made_summary_table(vector,filename)
-devtools::use_data(epidemiology_summary,overwrite=TRUE)
-epidemiology <- make_total_epidemiology(vector,filename)
-list2env(epidemiology,environment())
+demography <- make_total_demography(vector, filename) %>%
+  filter(duplicated(.) == FALSE)
+epidemiology_summary <- made_summary_table(vector, filename)
+devtools::use_data(epidemiology_summary, overwrite = TRUE)
+epidemiology <- make_total_epidemiology(vector, filename)
+list2env(epidemiology, environment())
 
-
-
-list_data <- grep(paste(names(epidemiology),collapse="|"),ls(),value=T)
+list_data <- grep(paste(names(epidemiology), collapse = "|"), ls(), value = T)
 for(I in 1:length(list_data)){
-  save(list=list_data[I],
-    file=paste("data/",list_data[I],".rda",sep=""),
+  save(list = list_data[I],
+    file = paste("data/", list_data[I], ".rda",sep = ""),
     envir = .GlobalEnv)
 }
 
