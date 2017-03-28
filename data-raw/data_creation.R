@@ -352,6 +352,7 @@ dack_lak_function <- function(df) {
 # Return a dataframe with all the mortality and incidence data for all the
 # diseases by year, month and province.
 read_YB_file <- function (filename)  {
+  require(readxl) # for "excel_sheets", "read_excel"
   read_excel(filename) %>%
     filter(!is.na(SLNO)) %>%
     select(
