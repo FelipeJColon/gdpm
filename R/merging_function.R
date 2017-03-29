@@ -1,4 +1,4 @@
-#' Filter dataframe by a time range
+#' Filters dataframe by a time range
 #'
 #' Filters an epidemiological data frame to keep only the data corresponding to
 #' a certain time range (between \code{to} and \code{from} (exclude)).
@@ -19,10 +19,10 @@ select_date <- function(df, from, to) {
 }
 
 ################################################################################
-#' Filter and order splits events by a time range
+#' Filters and order splits events by a time range
 #'
-#' Filter a list of splits event to keep only the event corresponding to a
-#' certain time range (between \code{to} and \code{from} (include)) and order
+#' Filters a list of splits event to keep only the event corresponding to a
+#' certain time range (between \code{to} and \code{from} (exclude)) and order
 #' them from the older to the more recent
 #'
 #' @param splits_lst A list containing a list of event, each code with a slot
@@ -41,19 +41,18 @@ select_events <- function(splits_lst, from, to) {
 }
 
 ################################################################################
-#' Vectorise provinces by event
+#' Vectorises provinces by event
 #'
-#' Select the name of the provinces concern by one or multiple splits events and
-#' return a list with a vector for each event and containing all the province
-#' concern by this event.
-#'
+#' Selects the name of the provinces concerned by one or multiple splits events
+#' and returns a list with a vector for each event and containing all the
+#' province names concerned by this event.
 #'
 #' @param splits_lst A list containing a list of event, each code with a slot
 #' \code{combined} and a slot \code{elements}. The first one contains the name
 #' of the merged provinces and the second one contains a vector of the names of
 #' the provinces to merge.
-#' @return A list of vector, each vector correspond to one event and contains
-#' the name of the provinces concern by this event.
+#' @return A list of vector, each vector corresponds to one event and contains
+#' the province names concerned by this event.
 #' @keywords internal
 #' @noRd
 province_splits <- function(lst_split) {
@@ -66,12 +65,13 @@ province_splits <- function(lst_split) {
 }
 
 ################################################################################
-#' Prepare dataframe
+#' Prepares dataframe
 #'
-#' Apply for one event to a data frame previously filter to keep only the data
-#' of the \code{province} linked to the event. Prepare a data frame who joins
-#' all the \code{incidence} and \code{mortality} data together by \code{year}
-#' and \code{month} without keeping the \code{province} information.
+#' Applies for one event on a data frame previously filter to keep only the data
+#' of the \code{province} linked to the event.
+#' Prepares a data frame who joins all the \code{incidence} and \code{mortality}
+#' data together by \code{year} and \code{month} without keeping the
+#' \code{province} information.
 #'
 #' @param df An epidemiological data frame (e.g. \code{ili} or \code{dengue}).
 #' Should contain at least the variables \code{province}, \code{year},
@@ -89,14 +89,14 @@ prepare_data <- function(df) {
 ################################################################################
 #' Does one merging event (only on incidence or mortality data)
 #'
-#' Apply for one event to a data frame previously filter to keep only the data
+#' Applies for one event to a data frame previously filter to keep only the data
 #' of the \code{province} linked to the event. Does one merging event only for
 #' the \code{incidence} or \code{mortality} data
 #'
 #' @param df An epidemiological data frame (e.g. \code{ili} or \code{dengue}).
 #' Should contain at least the variables \code{year}, \code{month} and the
 #' variables \code{incidence} or \code{mortality}.
-#' @param x A  character object indicating \code{"incidence"} or
+#' @param x A character object indicating \code{"incidence"} or
 #' \code{"mortality"}
 #' @return A data frame with the same variables as \code{df}
 #' @keywords internal
@@ -132,8 +132,8 @@ sum_incidence_mortality <- function(df) {
 ################################################################################
 #' Merging Ha Noi / Ha Son Binh event
 #'
-#' Applies only if the time range contain the split and the combine event of
-#' Ha Noi & Ha Son Binh, does a additional merging on Hanoi and Ha Son Dinh.
+#' Applies only if the time range contains the split and the combine event of
+#' Ha Noi & Ha Son Binh, does an additional merging on Hanoi and Ha Son Dinh.
 #'
 #' @param df An epidemiological data frame (e.g. \code{ili} or \code{dengue}).
 #' Should contain at least the variables \code{year}, \code{month},
@@ -155,13 +155,13 @@ hanoi_function <- function(df) {
 #' Merges provinces
 #'
 #' Merges epidemiological data accordingly to a time range and by the provinces
-#' concern by a split/combined event and return a data frame for the time series
-#' imputed.
+#' concerned by a split/combined event and return a data frame for the time
+#' range imputed.
 #'
 #' @details For two diseases: \code{"hepatitis"} and \code{"amoebiasis"}, the
-#' story of splits/combined province is different as the events in 1990 for all
-#' the others diseases, take place in 1991 for these two diseases. An other list
-#' (\code{ah_splits}) of event have been created for these two diseases.
+#' story of splits/combined province is different. The merges events in 1990
+#' take place in 1991. An other list (\code{ah_splits}) of event have been
+#' created for these two diseases.
 #'
 #' @param splits_lst A list containing a list of event, each code with a slot
 #' \code{combined} and a slot \code{elements}. The first one contains the name
@@ -173,7 +173,7 @@ hanoi_function <- function(df) {
 #' @param from Initial date of the time range, of the class \code{Date}.
 #' @param to Final date of the data, of the class \code{Date}.
 #' @return A object of the same class as \code{df} in which all the provinces
-#' that needed to be merged (according to the time serie) are merged.
+#' that needed to be merged (according to the time range) are merged.
 #' @keywords internal
 #' @noRd
 merge_time_serie <- function(splits_lst, df, from, to) {
@@ -199,9 +199,9 @@ merge_time_serie <- function(splits_lst, df, from, to) {
 ################################################################################
 #' Merges provinces
 #'
-#' Merges epidemiological data accordingly to a time range and merge the
-#' provinces concern by a split/combined event if necessary and return a data
-#' frame for the time series imputed.
+#' Merges epidemiological data accordingly to a time range and merges the
+#' provinces concern by a split/combined event if necessary and returns a data
+#' frame for the time range imputed.
 #'
 #' @param df An epidemiological data frame (e.g. \code{ili} or \code{dengue}).
 #' Should contain at least the variables \code{province}, \code{year},
@@ -209,10 +209,11 @@ merge_time_serie <- function(splits_lst, df, from, to) {
 #' @param from Initial date of the time range, of the class \code{Date}.
 #' @param to Final date of the data, of the class \code{Date}.
 #' @return A object of the same class as \code{df} in which all the provinces
-#' that needed to be merged (according to the time serie) are merged.
+#' that needed to be merged (according to the time range) are merged.
 #' @examples
-#' # For a time series strating on the first of January 1980, finishing on the
-#' first of January 2004 and merging the provinces accordingly:
+#' # For a time range starting on the first of January 1980, finishing on the
+#' first of January 2004, to obtain a data frame with all the provinces and in
+#' which all the provinces that needed to be merged, are merged:
 #' data(dengue)
 #' data(hepatitis)
 #' data(amoebiasis)
