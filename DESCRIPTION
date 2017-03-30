@@ -8,5 +8,6 @@ Description: Contains the data from the General Department of Preventive Medicin
 License: GPL-3
 LazyData: TRUE
 Suggests: knitr,
-    rmarkdown
+    rmarkdown,
+    testthat
 VignetteBuilder: knitr
