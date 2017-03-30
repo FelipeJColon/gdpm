@@ -1,4 +1,6 @@
-library(testthat)
+library(magrittr) # for the " %>% " pipe
+library(dplyr) # for "bind_rows", "rename", "mutate", "select"
+library(tidyr) # for "gather", "separate", "spread"
 library(gdpm)
 
-test_check("gdpm")
+testthat::test_check("gdpm")
