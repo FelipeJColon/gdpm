@@ -83,7 +83,7 @@ province_splits <- function(lst_split) {
 prepare_data <- function(df) {
   split(df, as.factor(unique(df$province))) %>%
     purrr::map(select, -contains("province")) %>%
-    purrr::reduce(dplyr::full_join,by = c("year", "month"))
+    purrr::reduce(full_join, by = c("year", "month"))
 }
 
 ################################################################################
@@ -180,7 +180,7 @@ merge_time_serie <- function(splits_lst, df, from, to) {
   df %<>% select_date(from, to)
   lst_events <- select_events(splits_lst, from, to)
   if (length(lst_events) > 0) {
-    for (i in seq_along(lst_events)) {
+    for (i in rev(seq_along(lst_events))) {
       province_lst <- province_splits(lst_events[i])
       tmp <- split(df, df$province %in% province_lst[[1]])
       tmp$`TRUE` %<>%
@@ -212,8 +212,8 @@ merge_time_serie <- function(splits_lst, df, from, to) {
 #' that needed to be merged (according to the time range) are merged.
 #' @examples
 #' # For a time range starting on the first of January 1980, finishing on the
-#' first of January 2004, to obtain a data frame with all the provinces and in
-#' which all the provinces that needed to be merged, are merged:
+#' # first of January 2004, to obtain a data frame with all the provinces and in
+#' # which all the provinces that needed to be merged, are merged:
 #' data(dengue)
 #' data(hepatitis)
 #' data(amoebiasis)
