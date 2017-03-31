@@ -1,6 +1,10 @@
-testthat::context("`merging` merges provinces accordingly to the time range")
+library(magrittr) # for the " %>% " pipe
+library(dplyr) # for "bind_rows", "rename", "mutate", "select"
+library(tidyr) # for "gather", "separate", "spread"
 
-testthat::test_that("`merging` returns the correct incidence data", {
+context("`merging` merges provinces accordingly to the time range")
+
+test_that("`merging` returns the correct incidence data", {
   merging_incidence <- function(df, ye1, ye2, prov, x = "incidence") {
     merging(df, ye1, ye2) %>%
       filter(province == prov) %>%
@@ -11,21 +15,21 @@ testthat::test_that("`merging` returns the correct incidence data", {
       as.vector
   }
 
-  testthat::expect_equal(
+  expect_equal(
     merging_incidence(chickenpox, "2000-01-01", "2000-12-01", "Cao Bang"),
     c(0, 21, 0, 0, 0 ,7 , 0, 0, 1, 0, 0, 0))
 
-  testthat::expect_equal(
+  expect_equal(
     merging_incidence(chickenpox, "1991-01-01", "1992-12-01", "Ha Nam Ninh"),
     c(75, 0, 36, 0, 57, 69, 122, 88, 98, 119, 65, 27, 21, 18, 62, 59, 74, 89,
       144, 67, 59, 37, 22, 24))
 
-  testthat::expect_equal(
+  expect_equal(
     merging_incidence(chickenpox, "1996-01-01", "1997-12-01", "Nam Ha"),
     c(17, 24, 57, 8, 0, 6, 7, 19, 17, 12, 39, 5, 67, 18, 35, 21, 12, 13, 31, 29,
       20, 6, 22, 10))
 
-  testthat::expect_equal(
+  expect_equal(
     merging_incidence(chickenpox, "1991-01-01", "1997-12-01", "Ha Nam Ninh"),
     c(75, 0, 36, 0, 57, 69, 122, 88, 98, 119, 65, 27, 21, 18, 62, 59, 74, 89,
       144, 67, 59, 37, 22, 24, 17, 11, 52, 9, 34, 78, 142, 141, 131, 39, 13, 23,
@@ -33,21 +37,21 @@ testthat::test_that("`merging` returns the correct incidence data", {
       38, 35, 27, 16, 21, 22, 38, 57, 12, 6, 6, 26, 27, 17, 12, 39, 6, 70, 18,
       39, 21, 18, 20, 33, 35, 25, 6, 23, 10))
 
-  testthat::expect_equal(
+  expect_equal(
     merging_incidence(chickenpox, "1989-01-01", "1990-12-01", "Binh Tri Thien"),
     c(8, 6, 4, 25, 0, 0, 0, 17, 30, 1, 3, 0, 10, 6, 3, 8, 4, 2, 0, 0, 0, 0, 0,
       13))
 
-  testthat::expect_equal(
+  expect_equal(
     merging_incidence(chickenpox, "1991-01-01", "1992-12-01", "Ha Son Binh"),
     c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
 
-  testthat::expect_equal(
+  expect_equal(
     merging_incidence(chickenpox, "2007-01-01", "2008-12-01", "Ha Noi"),
     c(273, 1315, 1569, 674, 461, 347, 244, 227, 51, 52, 143, 192, 680, 653,
       1260, 988, 459, 406, 289, 84, 714, 106, 89, 85))
 
-  testthat::expect_equal(
+  expect_equal(
     merging_incidence(chickenpox, "1991-01-01", "2008-12-01", "Ha Noi"),
     c(164, 52, 107, 132, 162, 106, 58, 111, 56, 120, 30, 22, 57, 119, 134, 117,
       70, 53, 32, 69, 66, 23, 21, 44, 42, 34, 39, 102, 134, 107, 38, 97, 91, 46,
@@ -63,14 +67,14 @@ testthat::test_that("`merging` returns the correct incidence data", {
       100, 81, 56, 109, 287, 1317, 1615, 758, 472, 393, 272, 242, 63, 63, 155,
       267, 773, 668, 1304, 1152, 545, 505, 307, 102, 725, 111, 99, 105))
 
-  testthat::expect_equal(
+  expect_equal(
     merging_incidence(hepatitis, "1990-01-01", "1991-12-01", "Binh Tri Thien"),
     c(74, 30, 14, 19, 21, 18, 9, 30, 91, 25, 81, 19 ,12, 6, 27, 77, 77, 7, 57,
       35, 38, 49, 99, 43))
 })
 
 
-testthat::test_that("`merging` returns the good number of provinces", {
+test_that("`merging` returns the good number of provinces", {
   merging_province <- function(df, ye1, ye2) {
     merging(df, ye1, ye2) %>%
       ungroup %>%
@@ -79,36 +83,36 @@ testthat::test_that("`merging` returns the good number of provinces", {
       unique
   }
 
-  testthat::expect_length(
+  expect_length(
     merging_province(chickenpox, "1980-01-01", "2015-12-31"), 40)
 
-  testthat::expect_length(
+  expect_length(
     merging_province(chickenpox, "1990-01-01", "2015-12-31"), 44)
 
-  testthat::expect_length(
+  expect_length(
     merging_province(chickenpox, "1991-01-01", "2015-12-31"), 45)
 
-  testthat::expect_length(
+  expect_length(
     merging_province(chickenpox, "1992-01-01", "2015-12-31"), 53)
 
-  testthat::expect_length(
+  expect_length(
     merging_province(chickenpox, "1997-01-01", "2015-12-31"), 61)
 
-  testthat::expect_length(
+  expect_length(
     merging_province(chickenpox, "2004-01-01", "2007-12-31"), 64)
 
-  testthat::expect_length(
+  expect_length(
     merging_province(chickenpox, "2008-01-01", "2015-12-31"), 63)
 
-  testthat::expect_length(
+  expect_length(
     merging_province(hepatitis, "1980-01-01", "2015-12-31"), 40)
 
-  testthat::expect_length(
+  expect_length(
     merging_province(hepatitis, "1990-01-01", "2015-12-31"), 40)
 
-  testthat::expect_length(
+  expect_length(
     merging_province(hepatitis, "1991-01-01", "2015-12-31"), 45)
 
-  testthat::expect_length(
+  expect_length(
     merging_province(hepatitis, "1992-01-01", "2015-12-31"), 53)
 })
