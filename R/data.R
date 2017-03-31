@@ -332,7 +332,7 @@
 #' "no case" or "no report". After 1991, \code{NA} corresponds to "no report"
 #' and \code{0} to "no case".
 #'
-#' @usage data(entevirus)
+#' @usage data(enterovirus)
 #'
 #' @format A data frame of 3780 rows and 5 variables:
 #' \itemize{

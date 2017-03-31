@@ -214,9 +214,10 @@ merge_time_serie <- function(splits_lst, df, from, to) {
 #' # For a time range starting on the first of January 1980, finishing on the
 #' # first of January 2004, to obtain a data frame with all the provinces and in
 #' # which all the provinces that needed to be merged, are merged:
-#' data(dengue)
-#' data(hepatitis)
-#' data(amoebiasis)
+#' library(gdpm)
+#' data("dengue")
+#' data("hepatitis")
+#' data("amoebiasis")
 #' range(dengue$year)
 #' merging(dengue,"1990-01-01","2004-01-01")
 #' range(hepatitis$year)
