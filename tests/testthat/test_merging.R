@@ -96,7 +96,7 @@ test_that("`merging` returns the good number of provinces", {
     merging_province(chickenpox, "1992-01-01", "2015-12-31"), 53)
 
   expect_length(
-    merging_province(chickenpox, "1997-01-01", "2015-12-31"), 61)
+    merging_province(chickenpox, "1997-01-01", "2003-12-31"), 61)
 
   expect_length(
     merging_province(chickenpox, "2004-01-01", "2007-12-31"), 64)
