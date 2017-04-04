@@ -343,7 +343,7 @@ make_demographic_epidemiology_NG <- function(vector) {
 dack_lak_function <- function(df) {
   df[which(df$year < 2004 & df$province == "Dak Lak"), ] <-
     filter(df, province == "Dak Lak", year < 2004) %>%
-    mutate(province = "Dack Lack")
+    mutate(province = "Dack Lak")
   df
 }
 
