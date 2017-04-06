@@ -175,6 +175,11 @@ names_col <- setNames(names_col[, 2], names_col[, 1])
 # Provinces tables for translation
 province <- readRDS("data-raw/province.RDS")
 
+# Lists of splits events in the province history in Vietnam (necessary for the
+# merging function)
+splits <- readRDS(file = "data-raw/splits.RDS")
+ah_splits <- readRDS(file = "data-raw/ah_splits.RDS")
+
 # Functions --------------------------------------------------------------------
 
 # Use for both type of excel files ---------------------------------------------
@@ -450,14 +455,12 @@ make_demography_epidemiology_total <- function(vector, filename) {
 # package and may be useful for computing on the various files.
 make_summary_table <- function(lst) {
   lapply(seq_along(lst),function(x){
-    file <- names(lst[x])
-    nobs <- dim(lst[[x]])[1]
-    nvar <- dim(lst[[x]])[2]
+    disease <- names(lst[x])
     year <- unique(lst[[x]]$year)
-    year_start <- min(year)
-    year_end <- max(year)
-    data.frame(file, nobs, nvar, year_start, year_end)
-  }) %>% bind_rows
+    from <- min(year) %>% paste0(.,"-","01","-","01")  %>% as.Date()
+    to <- max(year) %>% paste0(.,"-","12","-","31")  %>% as.Date()
+    data.frame(disease, from, to)
+  }) %>% bind_rows %>% arrange(disease)
 }
 
 # Read data-raw and made data --------------------------------------------------
@@ -469,15 +472,13 @@ vector <- c(
   "data-raw/Nien giam 2015r.xls")
 
 total <- make_demography_epidemiology_total(vector, filename)
-epidemiology_summary <- make_summary_table(total$epidemiology)
+diseases <- make_summary_table(total$epidemiology)
 list2env(total$epidemiology, environment())
 
-devtools::use_data(epidemiology_summary, overwrite = TRUE)
-list_data <- grep(paste(names(total$epidemiology), collapse = "|"),
-  ls(), value = T)
-for(I in seq_along(list_data)){
-  save(list = list_data[I],
-       file = paste("data/", list_data[I], ".rda", sep = ""),
-      envir = .GlobalEnv)
-}
+devtools::use_data(diseases, overwrite = TRUE, internal = FALSE)
+devtools::use_data(cholera, typhoid, shigella, amoebiasis, diarrhea,
+  encephalitis, vhf, malaria, hepatitis, rabies, meningitis, chickenpox,
+  diphteria, pertussis, nntetanus, tetanus, polio, measles, mumps, rubella, ili,
+  h5n1, adenovirus, plague, anthrax, leptospiriosis, enterovirus, ssuis, dengue,
+  dysenteria, splits, ah_splits, internal = TRUE, overwrite = TRUE)
 
