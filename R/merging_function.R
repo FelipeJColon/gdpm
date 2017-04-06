@@ -251,5 +251,12 @@ getid <- function(disease, from, to) {
     df <- suppressWarnings(merge_time_serie(ah_splits, disease, from, to)),
     df <- suppressWarnings(merge_time_serie(splits, disease, from, to)))
 
+  # arrange and return the data frame with the good format for all the data
+  df %<>%
+    ungroup %>%
+    mutate(year = as.integer(year)) %>%
+    arrange(province, year, month) %>%
+    as.data.frame()
+
   return(df)
 }
