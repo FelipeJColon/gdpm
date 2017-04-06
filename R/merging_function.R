@@ -229,17 +229,27 @@ getid <- function(disease, from, to) {
   # get disease data frame
   disease <- get(disease)
 
+  # test time range
+  if(
+    from < range(disease$year)  %>%
+      min  %>%
+      paste0(.,"-","01","-","01")  %>%
+      as.Date()){
+    warning ('The argument "from" is out of the time range for this
+      disease. The closest time range was selected')
+  } else if(
+    to > range(disease$year)  %>%
+      max  %>%
+      paste0(.,"-","01","-","01")  %>%
+      as.Date()){
+    warning('The argument "to" is out of the time range for this
+      disease. The closest time range was selected')}
+
   # test which split history should be selected
   test <- filter(disease, year == 1990)$province %>% unique() %>% length()
   ifelse (test == 40,
     df <- suppressWarnings(merge_time_serie(ah_splits, disease, from, to)),
     df <- suppressWarnings(merge_time_serie(splits, disease, from, to)))
 
-  # arrange and return the data frame with the good format for all the data
-  df %<>%
-    ungroup %>%
-    mutate(year = as.integer(year)) %>%
-    arrange(province, year, month) %>%
-    as.data.frame()
   return(df)
 }
