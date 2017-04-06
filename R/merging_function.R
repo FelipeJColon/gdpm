@@ -197,11 +197,16 @@ merge_time_serie <- function(splits_lst, df, from, to) {
 }
 
 ################################################################################
-#' Merges provinces
+#' Gets Infectious Diseases
 #'
 #' Merges epidemiological data accordingly to a time range and merges the
 #' provinces concern by a split/combined event if necessary and returns a data
 #' frame for the time range imputed.
+#'
+#' @details A dataset called \code{diseases} contains the description of all the
+#' epidemiological data frames available in this package. The dataset is ordered
+#' by the names of each disease and the time range of the data.
+#' This table can be used as a resume.
 #'
 #' @param df An epidemiological data frame (e.g. \code{ili} or \code{dengue}).
 #' Should contain at least the variables \code{province}, \code{year},
@@ -211,24 +216,30 @@ merge_time_serie <- function(splits_lst, df, from, to) {
 #' @return A object of the same class as \code{df} in which all the provinces
 #' that needed to be merged (according to the time range) are merged.
 #' @examples
-#' # For a time range starting on the first of January 1980, finishing on the
-#' # first of January 2004, to obtain a data frame with all the provinces and in
-#' # which all the provinces that needed to be merged, are merged:
 #' library(gdpm)
-#' data("dengue")
-#' data("hepatitis")
-#' data("amoebiasis")
-#' range(dengue$year)
-#' merging(dengue,"1990-01-01","2004-01-01")
-#' range(hepatitis$year)
-#' merging(hepatitis,"1980-01-01","2009-01-01")
-#' range(amoebiasis$year)
-#' merging(amoebiasis,"1980-01-01","2009-01-01")
+#' # Load a resume table of all the epidemiological data frame contains in the
+#' # package.
+#' diseases
+#' # Return a data frame in which all the provinces that needed to be merged
+#' # (according to the time range) are merged.
+#' getid("dengue","1990-01-01","2004-01-01")
+#' getid("hepatitis","1980-01-01","2009-01-01")
 #' @export
-merging <- function(df, from, to) {
-  test <- filter(df, year == 1990)$province %>% unique() %>% length()
+getid <- function(disease, from, to) {
+  # get disease data frame
+  disease <- get(disease)
+
+  # test which split history should be selected
+  test <- filter(disease, year == 1990)$province %>% unique() %>% length()
   ifelse (test == 40,
-    df <- merge_time_serie(ah_splits, df, from, to),
-    df <- merge_time_serie(splits, df, from, to))
+    df <- suppressWarnings(merge_time_serie(ah_splits, disease, from, to)),
+    df <- suppressWarnings(merge_time_serie(splits, disease, from, to)))
+
+  # arrange and return the data frame with the good format for all the data
+  df %<>%
+    ungroup %>%
+    mutate(year = as.integer(year)) %>%
+    arrange(province, year, month) %>%
+    as.data.frame()
   return(df)
 }
