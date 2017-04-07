@@ -223,24 +223,36 @@ merge_time_serie <- function(splits_lst, df, from, to) {
 #' # Return a data frame in which all the provinces that needed to be merged
 #' # (according to the time range) are merged.
 #' getid_("dengue", "1990-01-01", "2004-01-01")
-#' getid(hepatitis,1980-01-01 ,2009-01-01)
+#' getid(hepatitis, `1980-01-01` ,`2009-01-01`)
+#' # By default, the time range selected is from 2004-01-01 to 2015-12-31.
+#' getid_("cholera")
+#' getid(hepatitis)
+#' # For the time range, just the year can be entered as parameters and by
+#' # default, the first day of the year "from" and the last day of the year
+#' # "to" will be selected as time range.
+#' getid_("dengue", "1990", "2004")
+#' getid(hepatitis,1980 ,2009)
 #' @export
 getid_ <- function(disease, from = "2004-01-01", to = "2015-12-31") {
   # get disease data frame
   disease <- get(disease)
 
+  # get from and to in the right format
+  from %<>% paste0("-01-01") %>% as.Date
+  to %<>% paste0("-12-31") %>% as.Date
+
   # test time range
   if(
     from < range(disease$year)  %>%
       min  %>%
-      paste0(.,"-","01","-","01")  %>%
+      paste0("-01-01")  %>%
       as.Date()){
     warning ('The argument "from" is out of the time range for this
       disease. The closest time range was selected')
   } else if(
     to > range(disease$year)  %>%
       max  %>%
-      paste0(.,"-","12","-","31")  %>%
+      paste0("-12-31")  %>%
       as.Date()){
     warning('The argument "to" is out of the time range for this
       disease. The closest time range was selected')}
