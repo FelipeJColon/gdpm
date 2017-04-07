@@ -6,6 +6,7 @@ context("data provinces name")
 test_that("correct names of provinces", {
   province_name_ye <- function(df, ye) {
     df %>%
+      get %>%
       filter(year == ye) %>%
       select(province) %>%
       ungroup %>%
@@ -15,7 +16,7 @@ test_that("correct names of provinces", {
   }
 
   expect_equal(
-    province_name_ye(chickenpox, "1980"),
+    province_name_ye("chickenpox", "1980"),
     c("An Giang", "Ba Ria - Vung Tau", "Bac Thai", "Ben Tre",  "Binh Tri Thien",
       "Cao Bang", "Cuu Long", "Dack Lak", "Dong Nai", "Dong Thap",
       "Gia Lai - Kon Tum", "Ha Bac", "Ha Nam Ninh", "Ha Noi", "Ha Son Binh",
@@ -26,7 +27,7 @@ test_that("correct names of provinces", {
       "Thai Binh", "Thanh Hoa", "Thuan Hai", "Tien Giang", "Vinh Phu"))
 
   expect_equal(
-    province_name_ye(chickenpox, "1990"),
+    province_name_ye("chickenpox", "1990"),
     c("An Giang", "Ba Ria - Vung Tau", "Bac Thai", "Ben Tre",  "Binh Dinh",
       "Cao Bang", "Cuu Long", "Dack Lak", "Dong Nai", "Dong Thap",
       "Gia Lai - Kon Tum", "Ha Bac", "Ha Nam Ninh", "Ha Noi", "Ha Son Binh",
@@ -38,7 +39,7 @@ test_that("correct names of provinces", {
       "Thuan Hai", "Tien Giang", "Vinh Phu"))
 
   expect_equal(
-    province_name_ye(chickenpox, "1991"),
+    province_name_ye("chickenpox", "1991"),
     c("An Giang", "Ba Ria - Vung Tau", "Bac Thai", "Ben Tre",  "Binh Dinh",
       "Cao Bang", "Cuu Long", "Dack Lak", "Dong Nai", "Dong Thap",
       "Gia Lai - Kon Tum", "Ha Bac", "Ha Nam Ninh", "Ha Noi", "Ha Son Binh",
@@ -50,7 +51,7 @@ test_that("correct names of provinces", {
       "Thua Thien - Hue", "Thuan Hai", "Tien Giang", "Vinh Phu"))
 
   expect_equal(
-    province_name_ye(chickenpox, "1992"),
+    province_name_ye("chickenpox", "1992"),
     c("An Giang", "Ba Ria - Vung Tau", "Bac Thai", "Ben Tre",  "Binh Dinh",
       "Binh Thuan", "Can Tho", "Cao Bang", "Dack Lak", "Dong Nai", "Dong Thap",
       "Gia Lai", "Ha Bac", "Ha Giang", "Ha Noi", "Ha Tay", "Ha Tinh",
@@ -63,7 +64,7 @@ test_that("correct names of provinces", {
       "Tuyen Quang", "Vinh Long", "Vinh Phu", "Yen Bai"))
 
   expect_equal(
-    province_name_ye(chickenpox, "1997"),
+    province_name_ye("chickenpox", "1997"),
     c("An Giang", "Ba Ria - Vung Tau", "Bac Giang", "Bac Kan", "Bac Lieu",
       "Bac Ninh", "Ben Tre",  "Binh Dinh", "Binh Duong", "Binh Phuoc",
       "Binh Thuan", "Ca Mau", "Can Tho", "Cao Bang", "Da Nang", "Dack Lak",
@@ -78,7 +79,7 @@ test_that("correct names of provinces", {
       "Yen Bai"))
 
   expect_equal(
-    province_name_ye(chickenpox, "2004"),
+    province_name_ye("chickenpox", "2004"),
     c("An Giang", "Ba Ria - Vung Tau", "Bac Giang", "Bac Kan", "Bac Lieu",
       "Bac Ninh", "Ben Tre",  "Binh Dinh", "Binh Duong", "Binh Phuoc",
       "Binh Thuan", "Ca Mau", "Can Tho", "Cao Bang", "Da Nang", "Dak Lak",
@@ -93,7 +94,7 @@ test_that("correct names of provinces", {
       "Tuyen Quang", "Vinh Long", "Vinh Phuc", "Yen Bai"))
 
   expect_equal(
-    province_name_ye(chickenpox, "2008"),
+    province_name_ye("chickenpox", "2008"),
     c("An Giang", "Ba Ria - Vung Tau", "Bac Giang", "Bac Kan", "Bac Lieu",
       "Bac Ninh", "Ben Tre",  "Binh Dinh", "Binh Duong", "Binh Phuoc",
       "Binh Thuan", "Ca Mau", "Can Tho", "Cao Bang", "Da Nang", "Dak Lak",
