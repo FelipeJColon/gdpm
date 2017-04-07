@@ -240,7 +240,7 @@ getid <- function(disease, from, to) {
   } else if(
     to > range(disease$year)  %>%
       max  %>%
-      paste0(.,"-","01","-","01")  %>%
+      paste0(.,"-","12","-","31")  %>%
       as.Date()){
     warning('The argument "to" is out of the time range for this
       disease. The closest time range was selected')}
