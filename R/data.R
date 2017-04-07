@@ -1,14 +1,13 @@
-#' Epidemiologic Summary Data From Monthly Surveillance Data
+#' Summary Data From Monthly Surveillance Data
 #'
 #' A dataset containing the description of all the data frames contained in the
 #' package.
 #'
-#' The dataset contains, the names of each data frame,the dimension of the data
-#' frame, the first year and the last year of the data.
-#' This table can be used as a resume of all the other data frame contain in
-#' this package and may be useful for computing on the various files.
+#' The dataset contains, the names of each data frame, the time range of the
+#' data. This table can be used as a resume of all the other data frame contain
+#' in this package and may be useful for computing on the various files.
 #'
-#' @usage data(epidemiology_summary)
+#' @usage data(diseases)
 #'
 #' @format A data frame of 30 rows and 5 variables:
 #' \itemize{
@@ -24,7 +23,7 @@
 #' (NIHE), and supported by the Oxford University Clinical Research Unit (OUCRU)
 #' and the French National Research Institute for Sustainable Development (IRD).
 #'
-"epidemiology_summary"
+"diseases"
 
 
 #' Adenovirus Epidemiologic Data From Monthly Surveillance Data
