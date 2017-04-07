@@ -10,13 +10,14 @@ getid_(disease, from = "2004-01-01", to = "2015-12-31")
 getid(disease, from = `2004-01-01`, to = `2015-12-31`)
 }
 \arguments{
+\item{disease}{An epidemiological data frame (e.g. \code{ili} or
+\code{dengue}). Should contain at least the variables \code{province},
+\code{year}, \code{month} and the variables \code{incidence} and
+\code{mortality}.}
+
 \item{from}{Initial date of the time range, of the class \code{Date}.}
 
 \item{to}{Final date of the data, of the class \code{Date}.}
-
-\item{df}{An epidemiological data frame (e.g. \code{ili} or \code{dengue}).
-Should contain at least the variables \code{province}, \code{year},
-\code{month} and the variables \code{incidence} and \code{mortality}.}
 }
 \value{
 A object of the same class as \code{df} in which all the provinces

@@ -208,9 +208,10 @@ merge_time_serie <- function(splits_lst, df, from, to) {
 #' by the names of each disease and the time range of the data.
 #' This table can be used as a resume.
 #'
-#' @param df An epidemiological data frame (e.g. \code{ili} or \code{dengue}).
-#' Should contain at least the variables \code{province}, \code{year},
-#' \code{month} and the variables \code{incidence} and \code{mortality}.
+#' @param disease An epidemiological data frame (e.g. \code{ili} or
+#' \code{dengue}). Should contain at least the variables \code{province},
+#' \code{year}, \code{month} and the variables \code{incidence} and
+#' \code{mortality}.
 #' @param from Initial date of the time range, of the class \code{Date}.
 #' @param to Final date of the data, of the class \code{Date}.
 #' @return A object of the same class as \code{df} in which all the provinces

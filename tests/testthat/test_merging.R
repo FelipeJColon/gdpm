@@ -6,7 +6,7 @@ context("`merging` merges provinces accordingly to the time range")
 
 test_that("`merging` returns the correct incidence data", {
   merging_incidence <- function(df, ye1, ye2, prov, x = "incidence") {
-    getid(df, ye1, ye2) %>%
+    getid_(df, ye1, ye2) %>%
       filter(province == prov) %>%
       arrange(year, month) %>%
       ungroup %>%
@@ -76,7 +76,7 @@ test_that("`merging` returns the correct incidence data", {
 
 test_that("`merging` returns the good number and names of provinces", {
   merging_province <- function(df, ye1, ye2) {
-    getid(df, ye1, ye2) %>%
+    getid_(df, ye1, ye2) %>%
       ungroup %>%
       select(province) %>%
       unlist %>%
@@ -85,7 +85,7 @@ test_that("`merging` returns the good number and names of provinces", {
   }
 
   expect_length(
-    merging_province("chickenpox", "1980-01-01", "2015-12-31"), 40)
+    merging_province("chickenpox", "1980-01-01", "2015-12-31"), 39)
 
   expect_identical(
     merging_province("chickenpox", "1980-01-01", "2015-12-31"),
@@ -99,7 +99,7 @@ test_that("`merging` returns the good number and names of provinces", {
       "Thuan Hai", "Tien Giang", "Vinh Phu"))
 
   expect_length(
-    merging_province("chickenpox", "1990-01-01", "2015-12-31"), 44)
+    merging_province("chickenpox", "1990-01-01", "2015-12-31"), 43)
 
   expect_identical(
     merging_province("chickenpox", "1990-01-01", "2015-12-31"),
@@ -114,7 +114,7 @@ test_that("`merging` returns the good number and names of provinces", {
       "Thuan Hai", "Tien Giang", "Vinh Phu"))
 
   expect_length(
-    merging_province("chickenpox", "1991-01-01", "2015-12-31"), 45)
+    merging_province("chickenpox", "1991-01-01", "2015-12-31"), 44)
 
   expect_identical(
     merging_province("chickenpox", "1991-01-01", "2015-12-31"),
@@ -129,7 +129,7 @@ test_that("`merging` returns the good number and names of provinces", {
       "Thua Thien - Hue", "Thuan Hai", "Tien Giang", "Vinh Phu"))
 
   expect_length(
-    merging_province("chickenpox", "1992-01-01", "2015-12-31"), 53)
+    merging_province("chickenpox", "1992-01-01", "2015-12-31"), 52)
 
   expect_identical(
     merging_province("chickenpox", "1992-01-01", "2015-12-31"),
@@ -184,7 +184,7 @@ test_that("`merging` returns the good number and names of provinces", {
     merging_province("chickenpox", "2008-01-01", "2015-12-31"), 63)
 
   expect_identical(
-    merging_province("chickenpox", "2008-01-01", "2015-12-31"),
+    merging_province("chickenpox", "2008", "2015"),
     c("An Giang", "Ba Ria - Vung Tau", "Bac Giang", "Bac Kan", "Bac Lieu",
       "Bac Ninh", "Ben Tre",  "Binh Dinh", "Binh Duong", "Binh Phuoc",
       "Binh Thuan", "Ca Mau", "Can Tho", "Cao Bang", "Da Nang", "Dak Lak",
@@ -199,13 +199,13 @@ test_that("`merging` returns the good number and names of provinces", {
       "Vinh Long", "Vinh Phuc", "Yen Bai"))
 
   expect_length(
-    merging_province("hepatitis", "1980-01-01", "2015-12-31"), 40)
+    merging_province("hepatitis", "1980", "2015"), 39)
 
   expect_length(
-    merging_province("hepatitis", "1990-01-01", "2015-12-31"), 40)
+    merging_province("hepatitis", "1990", "2015"), 39)
 
   expect_identical(
-    merging_province("hepatitis", "1990-01-01", "2015-12-31"),
+    merging_province("hepatitis", "1990", "2015"),
     c("An Giang", "Ba Ria - Vung Tau", "Bac Thai", "Ben Tre",  "Binh Tri Thien",
       "Cao Bang", "Cuu Long", "Dack Lak", "Dong Nai", "Dong Thap",
       "Gia Lai - Kon Tum", "Ha Bac", "Ha Nam Ninh", "Ha Noi", "Ha Tuyen",
@@ -216,10 +216,10 @@ test_that("`merging` returns the good number and names of provinces", {
       "Thuan Hai", "Tien Giang", "Vinh Phu"))
 
   expect_length(
-    merging_province("hepatitis", "1991-01-01", "2015-12-31"), 45)
+    merging_province("hepatitis", "1991", "2015"), 44)
 
   expect_identical(
-    merging_province("hepatitis", "1991-01-01", "2015-12-31"),
+    merging_province("hepatitis", "1991", "2015"),
     c("An Giang", "Ba Ria - Vung Tau", "Bac Thai", "Ben Tre",  "Binh Dinh",
       "Cao Bang", "Cuu Long", "Dack Lak", "Dong Nai", "Dong Thap",
       "Gia Lai - Kon Tum", "Ha Bac", "Ha Nam Ninh", "Ha Noi",
@@ -231,5 +231,5 @@ test_that("`merging` returns the good number and names of provinces", {
       "Thua Thien - Hue", "Thuan Hai", "Tien Giang", "Vinh Phu"))
 
   expect_length(
-    merging_province("hepatitis", "1992-01-01", "2015-12-31"), 53)
+    merging_province("hepatitis", "1992", "2015"), 52)
 })
