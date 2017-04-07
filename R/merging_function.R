@@ -222,10 +222,10 @@ merge_time_serie <- function(splits_lst, df, from, to) {
 #' diseases
 #' # Return a data frame in which all the provinces that needed to be merged
 #' # (according to the time range) are merged.
-#' getid("dengue","1990-01-01","2004-01-01")
-#' getid("hepatitis","1980-01-01","2009-01-01")
+#' getid_("dengue", "1990-01-01", "2004-01-01")
+#' getid(hepatitis,1980-01-01 ,2009-01-01)
 #' @export
-getid <- function(disease, from, to) {
+getid_ <- function(disease, from = "2004-01-01", to = "2015-12-31") {
   # get disease data frame
   disease <- get(disease)
 
@@ -260,3 +260,17 @@ getid <- function(disease, from, to) {
 
   return(df)
 }
+
+#' @rdname getid_
+#' @export
+getid <- function(disease, from = `2004-01-01`, to = `2015-12-31`) {
+  from <- deparse(substitute(from))
+  to <- deparse(substitute(to))
+  disease <- deparse(substitute(disease)) %>%
+    getid_(from, to)
+  return(disease)
+}
+
+
+
+
