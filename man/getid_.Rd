@@ -7,7 +7,7 @@
 \usage{
 getid_(disease, from = "2004-01-01", to = "2015-12-31")
 
-getid(disease, from = "2004-01-01", to = "2015-12-31")
+getid(disease, from = `2004-01-01`, to = `2015-12-31`)
 }
 \arguments{
 \item{from}{Initial date of the time range, of the class \code{Date}.}
@@ -40,7 +40,15 @@ library(gdpm)
 diseases
 # Return a data frame in which all the provinces that needed to be merged
 # (according to the time range) are merged.
-getid_("dengue","1990-01-01","2004-01-01")
-getid(hepatitis,"1980-01-01","2009-01-01")
+getid_("dengue", "1990-01-01", "2004-01-01")
+getid(hepatitis, `1980-01-01` ,`2009-01-01`)
+# By default, the time range selected is from 2004-01-01 to 2015-12-31.
+getid_("cholera")
+getid(hepatitis)
+# For the time range, just the year can be entered as parameters and by
+# default, the first day of the year "from" and the last day of the year
+# "to" will be selected as time range.
+getid_("dengue", "1990", "2004")
+getid(hepatitis,1980 ,2009)
 }
 
