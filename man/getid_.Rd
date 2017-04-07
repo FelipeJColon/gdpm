@@ -15,13 +15,15 @@ getid(disease, from = `2004-01-01`, to = `2015-12-31`)
 \code{year}, \code{month} and the variables \code{incidence} and
 \code{mortality}.}
 
-\item{from}{Initial date of the time range, of the class \code{Date}.}
+\item{from}{Initial date of the time range, of the class \code{Date}, by
+default: the 1st January of 2004.}
 
-\item{to}{Final date of the data, of the class \code{Date}.}
+\item{to}{Final date of the data, of the class \code{Date}, by default :
+the 31st December of 2015.}
 }
 \value{
 A object of the same class as \code{df} in which all the provinces
-that needed to be merged (according to the time range) are merged.
+that needed to be merged (according to the time range provided) are merged.
 }
 \description{
 Merges epidemiological data accordingly to a time range and merges the
@@ -30,9 +32,13 @@ frame for the time range imputed.
 }
 \details{
 A dataset called \code{diseases} contains the description of all the
-epidemiological data frames available in this package. The dataset is ordered
-by the names of each disease and the time range of the data.
+epidemiological data frames available in this package. The dataframe is
+ordered by the names of each disease and the time range of the data.
 This table can be used as a resume.
+In each epidemiological data frames The incidence corresponds to the number
+of new cases and the mortality corresponds to the number of deaths. Before
+1991, \code{NA} corresponds to "no case" or "no report". After 1991,
+\code{NA} corresponds to "no report" and \code{0} to "no case".
 }
 \examples{
 library(gdpm)
@@ -50,6 +56,6 @@ getid(hepatitis)
 # default, the first day of the year "from" and the last day of the year
 # "to" will be selected as time range.
 getid_("dengue", "1990", "2004")
-getid(hepatitis,1980 ,2009)
+getid(hepatitis, 1980 , 2009)
 }
 
