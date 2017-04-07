@@ -14,6 +14,7 @@
 #' @importFrom dplyr mutate
 #' @importFrom dplyr select
 #' @importFrom dplyr rename
+#' @importFrom dplyr arrange
 #' @importFrom dplyr select_
 #' @importFrom dplyr rename_
 #' @importFrom dplyr bind_rows
