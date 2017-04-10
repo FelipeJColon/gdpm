@@ -204,17 +204,24 @@ merge_time_serie <- function(splits_lst, df, from, to) {
 #' frame for the time range imputed.
 #'
 #' @details A dataset called \code{diseases} contains the description of all the
-#' epidemiological data frames available in this package. The dataset is ordered
-#' by the names of each disease and the time range of the data.
+#' epidemiological data frames available in this package. The dataframe is
+#' ordered by the names of each disease and the time range of the data.
 #' This table can be used as a resume.
+#' In each epidemiological data frames The incidence corresponds to the number
+#' of new cases and the mortality corresponds to the number of deaths. Before
+#' 1991, \code{NA} corresponds to "no case" or "no report". After 1991,
+#' \code{NA} corresponds to "no report" and \code{0} to "no case".
 #'
-#' @param df An epidemiological data frame (e.g. \code{ili} or \code{dengue}).
-#' Should contain at least the variables \code{province}, \code{year},
-#' \code{month} and the variables \code{incidence} and \code{mortality}.
-#' @param from Initial date of the time range, of the class \code{Date}.
-#' @param to Final date of the data, of the class \code{Date}.
+#' @param disease An epidemiological data frame (e.g. \code{ili} or
+#' \code{dengue}). Should contain at least the variables \code{province},
+#' \code{year}, \code{month} and the variables \code{incidence} and
+#' \code{mortality}.
+#' @param from Initial date of the time range, of the class \code{Date}, by
+#' default: the 1st January of 2004.
+#' @param to Final date of the data, of the class \code{Date}, by default :
+#' the 31st December of 2015.
 #' @return A object of the same class as \code{df} in which all the provinces
-#' that needed to be merged (according to the time range) are merged.
+#' that needed to be merged (according to the time range provided) are merged.
 #' @examples
 #' library(gdpm)
 #' # Load a resume table of all the epidemiological data frame contains in the
@@ -222,28 +229,40 @@ merge_time_serie <- function(splits_lst, df, from, to) {
 #' diseases
 #' # Return a data frame in which all the provinces that needed to be merged
 #' # (according to the time range) are merged.
-#' getid("dengue","1990-01-01","2004-01-01")
-#' getid("hepatitis","1980-01-01","2009-01-01")
+#' getid_("dengue", "1990-01-01", "2004-01-01")
+#' getid(hepatitis, `1980-01-01` ,`2009-01-01`)
+#' # By default, the time range selected is from 2004-01-01 to 2015-12-31.
+#' getid_("cholera")
+#' getid(hepatitis)
+#' # For the time range, just the year can be entered as parameters and by
+#' # default, the first day of the year "from" and the last day of the year
+#' # "to" will be selected as time range.
+#' getid_("dengue", "1990", "2004")
+#' getid(hepatitis, 1980 , 2009)
 #' @export
-getid <- function(disease, from, to) {
+getid_ <- function(disease, from = "2004-01-01", to = "2015-12-31") {
   # get disease data frame
   disease <- get(disease)
+
+  # get from and to in the right format
+  from %<>% paste0("-01-01") %>% as.Date
+  to %<>% paste0("-12-31") %>% as.Date
 
   # test time range
   if(
     from < range(disease$year)  %>%
       min  %>%
-      paste0(.,"-","01","-","01")  %>%
+      paste0("-01-01")  %>%
       as.Date()){
     warning ('The argument "from" is out of the time range for this
-      disease. The closest time range was selected')
+      disease. The closest time range was selected.')
   } else if(
     to > range(disease$year)  %>%
       max  %>%
-      paste0(.,"-","01","-","01")  %>%
+      paste0("-12-31")  %>%
       as.Date()){
     warning('The argument "to" is out of the time range for this
-      disease. The closest time range was selected')}
+      disease. The closest time range was selected.')}
 
   # test which split history should be selected
   test <- filter(disease, year == 1990)$province %>% unique() %>% length()
@@ -260,3 +279,17 @@ getid <- function(disease, from, to) {
 
   return(df)
 }
+
+#' @rdname getid_
+#' @export
+getid <- function(disease, from = `2004-01-01`, to = `2015-12-31`) {
+  from <- deparse(substitute(from))
+  to <- deparse(substitute(to))
+  disease <- deparse(substitute(disease)) %>%
+    getid_(from, to)
+  return(disease)
+}
+
+
+
+

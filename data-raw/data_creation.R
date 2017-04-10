@@ -457,8 +457,8 @@ make_summary_table <- function(lst) {
   lapply(seq_along(lst),function(x){
     disease <- names(lst[x])
     year <- unique(lst[[x]]$year)
-    from <- min(year) %>% paste0(.,"-","01","-","01")  %>% as.Date()
-    to <- max(year) %>% paste0(.,"-","12","-","31")  %>% as.Date()
+    from <- min(year) %>% paste0("-01-01")  %>% as.Date()
+    to <- max(year) %>% paste0("-12-31")  %>% as.Date()
     data.frame(disease, from, to)
   }) %>% bind_rows %>% arrange(disease)
 }

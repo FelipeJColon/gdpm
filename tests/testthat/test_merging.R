@@ -6,7 +6,7 @@ context("`merging` merges provinces accordingly to the time range")
 
 test_that("`merging` returns the correct incidence data", {
   merging_incidence <- function(df, ye1, ye2, prov, x = "incidence") {
-    merging(df, ye1, ye2) %>%
+    getid_(df, ye1, ye2) %>%
       filter(province == prov) %>%
       arrange(year, month) %>%
       ungroup %>%
@@ -16,21 +16,21 @@ test_that("`merging` returns the correct incidence data", {
   }
 
   expect_equal(
-    merging_incidence(chickenpox, "2000-01-01", "2000-12-01", "Cao Bang"),
+    merging_incidence("chickenpox", "2000-01-01", "2000-12-01", "Cao Bang"),
     c(0, 21, 0, 0, 0 ,7 , 0, 0, 1, 0, 0, 0))
 
   expect_equal(
-    merging_incidence(chickenpox, "1991-01-01", "1992-12-01", "Ha Nam Ninh"),
+    merging_incidence("chickenpox", "1991-01-01", "1992-12-01", "Ha Nam Ninh"),
     c(75, 0, 36, 0, 57, 69, 122, 88, 98, 119, 65, 27, 21, 18, 62, 59, 74, 89,
       144, 67, 59, 37, 22, 24))
 
   expect_equal(
-    merging_incidence(chickenpox, "1996-01-01", "1997-12-01", "Nam Ha"),
+    merging_incidence("chickenpox", "1996-01-01", "1997-12-01", "Nam Ha"),
     c(17, 24, 57, 8, 0, 6, 7, 19, 17, 12, 39, 5, 67, 18, 35, 21, 12, 13, 31, 29,
       20, 6, 22, 10))
 
   expect_equal(
-    merging_incidence(chickenpox, "1991-01-01", "1997-12-01", "Ha Nam Ninh"),
+    merging_incidence("chickenpox", "1991-01-01", "1997-12-01", "Ha Nam Ninh"),
     c(75, 0, 36, 0, 57, 69, 122, 88, 98, 119, 65, 27, 21, 18, 62, 59, 74, 89,
       144, 67, 59, 37, 22, 24, 17, 11, 52, 9, 34, 78, 142, 141, 131, 39, 13, 23,
       82, 15, 69, 65, 54, 60, 83, 56, 21, 15, 15, 1, 7, 17, 45, 51, 31, 36, 69,
@@ -38,21 +38,21 @@ test_that("`merging` returns the correct incidence data", {
       39, 21, 18, 20, 33, 35, 25, 6, 23, 10))
 
   expect_equal(
-    merging_incidence(chickenpox, "1989-01-01", "1990-12-01", "Binh Tri Thien"),
+    merging_incidence("chickenpox", "1989-01-01", "1990-12-01", "Binh Tri Thien"),
     c(8, 6, 4, 25, 0, 0, 0, 17, 30, 1, 3, 0, 10, 6, 3, 8, 4, 2, 0, 0, 0, 0, 0,
       13))
 
   expect_equal(
-    merging_incidence(chickenpox, "1991-01-01", "1992-12-01", "Ha Son Binh"),
+    merging_incidence("chickenpox", "1991-01-01", "1992-12-01", "Ha Son Binh"),
     c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
 
   expect_equal(
-    merging_incidence(chickenpox, "2007-01-01", "2008-12-01", "Ha Noi"),
+    merging_incidence("chickenpox", "2007-01-01", "2008-12-01", "Ha Noi"),
     c(273, 1315, 1569, 674, 461, 347, 244, 227, 51, 52, 143, 192, 680, 653,
       1260, 988, 459, 406, 289, 84, 714, 106, 89, 85))
 
   expect_equal(
-    merging_incidence(chickenpox, "1991-01-01", "2008-12-01", "Ha Noi"),
+    merging_incidence("chickenpox", "1991-01-01", "2008-12-01", "Ha Noi"),
     c(164, 52, 107, 132, 162, 106, 58, 111, 56, 120, 30, 22, 57, 119, 134, 117,
       70, 53, 32, 69, 66, 23, 21, 44, 42, 34, 39, 102, 134, 107, 38, 97, 91, 46,
       33, 27, 67, 96, 130, 72, 46, 64, 44, 16, 19, 18, 51, 35, 20, 39, 38, 53,
@@ -68,51 +68,168 @@ test_that("`merging` returns the correct incidence data", {
       267, 773, 668, 1304, 1152, 545, 505, 307, 102, 725, 111, 99, 105))
 
   expect_equal(
-    merging_incidence(hepatitis, "1990-01-01", "1991-12-01", "Binh Tri Thien"),
+    merging_incidence("hepatitis", "1990-01-01", "1991-12-01", "Binh Tri Thien"),
     c(74, 30, 14, 19, 21, 18, 9, 30, 91, 25, 81, 19 ,12, 6, 27, 77, 77, 7, 57,
       35, 38, 49, 99, 43))
 })
 
 
-test_that("`merging` returns the good number of provinces", {
+test_that("`merging` returns the good number and names of provinces", {
   merging_province <- function(df, ye1, ye2) {
-    merging(df, ye1, ye2) %>%
+    getid_(df, ye1, ye2) %>%
       ungroup %>%
       select(province) %>%
       unlist %>%
-      unique
+      unique %>%
+      sort
   }
 
   expect_length(
-    merging_province(chickenpox, "1980-01-01", "2015-12-31"), 40)
+    merging_province("chickenpox", "1980-01-01", "2015-12-31"), 39)
+
+  expect_identical(
+    merging_province("chickenpox", "1980-01-01", "2015-12-31"),
+    c("An Giang", "Ba Ria - Vung Tau", "Bac Thai", "Ben Tre",  "Binh Tri Thien",
+      "Cao Bang", "Cuu Long", "Dack Lak", "Dong Nai", "Dong Thap",
+      "Gia Lai - Kon Tum", "Ha Bac", "Ha Nam Ninh", "Ha Noi", "Ha Tuyen",
+      "Hai Hung", "Hai Phong", "Hau Giang", "Ho Chi Minh", "Hoang Lien Son",
+      "Kien Giang", "Lai Chau", "Lam Dong", "Lang Son", "Long An",  "Minh Hai",
+      "Nghe Tinh", "Nghia Binh", "Phu Khanh", "Quang Nam - Da Nang",
+      "Quang Ninh", "Son La", "Song Be", "Tay Ninh", "Thai Binh", "Thanh Hoa",
+      "Thuan Hai", "Tien Giang", "Vinh Phu"))
 
   expect_length(
-    merging_province(chickenpox, "1990-01-01", "2015-12-31"), 44)
+    merging_province("chickenpox", "1990-01-01", "2015-12-31"), 43)
+
+  expect_identical(
+    merging_province("chickenpox", "1990-01-01", "2015-12-31"),
+    c("An Giang", "Ba Ria - Vung Tau", "Bac Thai", "Ben Tre",  "Binh Dinh",
+      "Cao Bang", "Cuu Long", "Dack Lak", "Dong Nai", "Dong Thap",
+      "Gia Lai - Kon Tum", "Ha Bac", "Ha Nam Ninh", "Ha Noi",
+      "Ha Tuyen", "Hai Hung", "Hai Phong", "Hau Giang", "Ho Chi Minh",
+      "Hoang Lien Son", "Khanh Hoa", "Kien Giang", "Lai Chau", "Lam Dong",
+      "Lang Son", "Long An",  "Minh Hai", "Nghe Tinh", "Phu Yen", "Quang Binh",
+      "Quang Nam - Da Nang", "Quang Ngai", "Quang Ninh", "Quang Tri", "Son La",
+      "Song Be", "Tay Ninh", "Thai Binh", "Thanh Hoa", "Thua Thien - Hue",
+      "Thuan Hai", "Tien Giang", "Vinh Phu"))
 
   expect_length(
-    merging_province(chickenpox, "1991-01-01", "2015-12-31"), 45)
+    merging_province("chickenpox", "1991-01-01", "2015-12-31"), 44)
+
+  expect_identical(
+    merging_province("chickenpox", "1991-01-01", "2015-12-31"),
+    c("An Giang", "Ba Ria - Vung Tau", "Bac Thai", "Ben Tre",  "Binh Dinh",
+      "Cao Bang", "Cuu Long", "Dack Lak", "Dong Nai", "Dong Thap",
+      "Gia Lai - Kon Tum", "Ha Bac", "Ha Nam Ninh", "Ha Noi",
+      "Ha Tinh", "Ha Tuyen", "Hai Hung", "Hai Phong", "Hau Giang",
+      "Ho Chi Minh", "Hoang Lien Son", "Khanh Hoa", "Kien Giang", "Lai Chau",
+      "Lam Dong", "Lang Son", "Long An",  "Minh Hai", "Nghe An", "Phu Yen",
+      "Quang Binh", "Quang Nam - Da Nang", "Quang Ngai", "Quang Ninh",
+      "Quang Tri", "Son La", "Song Be", "Tay Ninh", "Thai Binh", "Thanh Hoa",
+      "Thua Thien - Hue", "Thuan Hai", "Tien Giang", "Vinh Phu"))
 
   expect_length(
-    merging_province(chickenpox, "1992-01-01", "2015-12-31"), 53)
+    merging_province("chickenpox", "1992-01-01", "2015-12-31"), 52)
+
+  expect_identical(
+    merging_province("chickenpox", "1992-01-01", "2015-12-31"),
+    c("An Giang", "Ba Ria - Vung Tau", "Bac Thai", "Ben Tre",  "Binh Dinh",
+      "Binh Thuan", "Can Tho", "Cao Bang", "Dack Lak", "Dong Nai", "Dong Thap",
+      "Gia Lai", "Ha Bac", "Ha Giang", "Ha Noi", "Ha Tinh",
+      "Hai Hung", "Hai Phong", "Ho Chi Minh", "Hoa Binh", "Khanh Hoa",
+      "Kien Giang", "Kon Tum", "Lai Chau", "Lam Dong", "Lang Son", "Lao Cai",
+      "Long An",  "Minh Hai", "Nam Ha", "Nghe An", "Ninh Binh", "Ninh Thuan",
+      "Phu Yen", "Quang Binh", "Quang Nam - Da Nang", "Quang Ngai",
+      "Quang Ninh", "Quang Tri", "Soc Trang", "Son La", "Song Be", "Tay Ninh",
+      "Thai Binh", "Thanh Hoa", "Thua Thien - Hue", "Tien Giang", "Tra Vinh",
+      "Tuyen Quang", "Vinh Long", "Vinh Phu", "Yen Bai"))
 
   expect_length(
-    merging_province(chickenpox, "1997-01-01", "2003-12-31"), 61)
+    merging_province("chickenpox", "1997-01-01", "2003-12-31"), 61)
+
+  expect_identical(
+    merging_province("chickenpox", "1997-01-01", "2003-12-31"),
+    c("An Giang", "Ba Ria - Vung Tau", "Bac Giang", "Bac Kan", "Bac Lieu",
+      "Bac Ninh", "Ben Tre",  "Binh Dinh", "Binh Duong", "Binh Phuoc",
+      "Binh Thuan", "Ca Mau", "Can Tho", "Cao Bang", "Da Nang", "Dack Lak",
+      "Dong Nai", "Dong Thap", "Gia Lai", "Ha Giang", "Ha Nam", "Ha Noi",
+      "Ha Tay", "Ha Tinh", "Hai Duong", "Hai Phong", "Ho Chi Minh", "Hoa Binh",
+      "Hung Yen", "Khanh Hoa", "Kien Giang", "Kon Tum", "Lai Chau", "Lam Dong",
+      "Lang Son", "Lao Cai", "Long An", "Nam Dinh", "Nghe An", "Ninh Binh",
+      "Ninh Thuan", "Phu Tho", "Phu Yen", "Quang Binh", "Quang Nam",
+      "Quang Ngai", "Quang Ninh", "Quang Tri", "Soc Trang", "Son La",
+      "Tay Ninh", "Thai Binh", "Thai Nguyen", "Thanh Hoa", "Thua Thien - Hue",
+      "Tien Giang", "Tra Vinh", "Tuyen Quang", "Vinh Long", "Vinh Phuc",
+      "Yen Bai"))
 
   expect_length(
-    merging_province(chickenpox, "2004-01-01", "2007-12-31"), 64)
+    merging_province("chickenpox", "2004-01-01", "2007-12-31"), 64)
+
+  expect_identical(
+    merging_province("chickenpox", "2004-01-01", "2007-12-31"),
+    c("An Giang", "Ba Ria - Vung Tau", "Bac Giang", "Bac Kan", "Bac Lieu",
+      "Bac Ninh", "Ben Tre",  "Binh Dinh", "Binh Duong", "Binh Phuoc",
+      "Binh Thuan", "Ca Mau", "Can Tho", "Cao Bang", "Da Nang", "Dak Lak",
+      "Dak Nong", "Dien Bien", "Dong Nai", "Dong Thap", "Gia Lai", "Ha Giang",
+      "Ha Nam", "Ha Noi", "Ha Tay", "Ha Tinh", "Hai Duong", "Hai Phong",
+      "Hau Giang", "Ho Chi Minh", "Hoa Binh", "Hung Yen", "Khanh Hoa",
+      "Kien Giang", "Kon Tum", "Lai Chau", "Lam Dong", "Lang Son", "Lao Cai",
+      "Long An", "Nam Dinh", "Nghe An", "Ninh Binh", "Ninh Thuan", "Phu Tho",
+      "Phu Yen", "Quang Binh", "Quang Nam", "Quang Ngai", "Quang Ninh",
+      "Quang Tri", "Soc Trang", "Son La", "Tay Ninh", "Thai Binh",
+      "Thai Nguyen", "Thanh Hoa", "Thua Thien - Hue", "Tien Giang", "Tra Vinh",
+      "Tuyen Quang", "Vinh Long", "Vinh Phuc", "Yen Bai"))
 
   expect_length(
-    merging_province(chickenpox, "2008-01-01", "2015-12-31"), 63)
+    merging_province("chickenpox", "2008-01-01", "2015-12-31"), 63)
+
+  expect_identical(
+    merging_province("chickenpox", "2008", "2015"),
+    c("An Giang", "Ba Ria - Vung Tau", "Bac Giang", "Bac Kan", "Bac Lieu",
+      "Bac Ninh", "Ben Tre",  "Binh Dinh", "Binh Duong", "Binh Phuoc",
+      "Binh Thuan", "Ca Mau", "Can Tho", "Cao Bang", "Da Nang", "Dak Lak",
+      "Dak Nong", "Dien Bien", "Dong Nai", "Dong Thap", "Gia Lai", "Ha Giang",
+      "Ha Nam", "Ha Noi", "Ha Tinh", "Hai Duong", "Hai Phong", "Hau Giang",
+      "Ho Chi Minh", "Hoa Binh", "Hung Yen", "Khanh Hoa", "Kien Giang",
+      "Kon Tum", "Lai Chau", "Lam Dong", "Lang Son", "Lao Cai", "Long An",
+      "Nam Dinh", "Nghe An", "Ninh Binh", "Ninh Thuan", "Phu Tho", "Phu Yen",
+      "Quang Binh", "Quang Nam", "Quang Ngai", "Quang Ninh", "Quang Tri",
+      "Soc Trang", "Son La", "Tay Ninh", "Thai Binh", "Thai Nguyen",
+      "Thanh Hoa", "Thua Thien - Hue", "Tien Giang", "Tra Vinh", "Tuyen Quang",
+      "Vinh Long", "Vinh Phuc", "Yen Bai"))
 
   expect_length(
-    merging_province(hepatitis, "1980-01-01", "2015-12-31"), 40)
+    merging_province("hepatitis", "1980", "2015"), 39)
 
   expect_length(
-    merging_province(hepatitis, "1990-01-01", "2015-12-31"), 40)
+    merging_province("hepatitis", "1990", "2015"), 39)
+
+  expect_identical(
+    merging_province("hepatitis", "1990", "2015"),
+    c("An Giang", "Ba Ria - Vung Tau", "Bac Thai", "Ben Tre",  "Binh Tri Thien",
+      "Cao Bang", "Cuu Long", "Dack Lak", "Dong Nai", "Dong Thap",
+      "Gia Lai - Kon Tum", "Ha Bac", "Ha Nam Ninh", "Ha Noi", "Ha Tuyen",
+      "Hai Hung", "Hai Phong", "Hau Giang", "Ho Chi Minh", "Hoang Lien Son",
+      "Kien Giang", "Lai Chau", "Lam Dong", "Lang Son", "Long An",  "Minh Hai",
+      "Nghe Tinh", "Nghia Binh", "Phu Khanh", "Quang Nam - Da Nang",
+      "Quang Ninh", "Son La", "Song Be", "Tay Ninh", "Thai Binh", "Thanh Hoa",
+      "Thuan Hai", "Tien Giang", "Vinh Phu"))
 
   expect_length(
-    merging_province(hepatitis, "1991-01-01", "2015-12-31"), 45)
+    merging_province("hepatitis", "1991", "2015"), 44)
+
+  expect_identical(
+    merging_province("hepatitis", "1991", "2015"),
+    c("An Giang", "Ba Ria - Vung Tau", "Bac Thai", "Ben Tre",  "Binh Dinh",
+      "Cao Bang", "Cuu Long", "Dack Lak", "Dong Nai", "Dong Thap",
+      "Gia Lai - Kon Tum", "Ha Bac", "Ha Nam Ninh", "Ha Noi",
+      "Ha Tinh", "Ha Tuyen", "Hai Hung", "Hai Phong", "Hau Giang",
+      "Ho Chi Minh", "Hoang Lien Son", "Khanh Hoa", "Kien Giang", "Lai Chau",
+      "Lam Dong", "Lang Son", "Long An",  "Minh Hai", "Nghe An", "Phu Yen",
+      "Quang Binh", "Quang Nam - Da Nang", "Quang Ngai", "Quang Ninh",
+      "Quang Tri", "Son La", "Song Be", "Tay Ninh", "Thai Binh", "Thanh Hoa",
+      "Thua Thien - Hue", "Thuan Hai", "Tien Giang", "Vinh Phu"))
 
   expect_length(
-    merging_province(hepatitis, "1992-01-01", "2015-12-31"), 53)
+    merging_province("hepatitis", "1992", "2015"), 52)
 })
