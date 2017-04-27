@@ -6,11 +6,11 @@ context("`merging` merges provinces accordingly to the time range")
 
 test_that("`merging` returns the correct incidence data", {
   merging_incidence <- function(df, ye1, ye2, prov, x = "incidence") {
-    getid_(df, ye1, ye2) %>%
+    getid_(df, from = ye1, to = ye2) %>%
       filter(province == prov) %>%
       arrange(year, month) %>%
       ungroup %>%
-      select_(x) %>%
+      select(contains(x)) %>%
       unlist %>%
       as.vector
   }
@@ -76,7 +76,7 @@ test_that("`merging` returns the correct incidence data", {
 
 test_that("`merging` returns the good number and names of provinces", {
   merging_province <- function(df, ye1, ye2) {
-    getid_(df, ye1, ye2) %>%
+    getid_(df, from = ye1,  to = ye2) %>%
       ungroup %>%
       select(province) %>%
       unlist %>%

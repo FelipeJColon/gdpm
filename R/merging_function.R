@@ -197,7 +197,7 @@ merge_time_serie <- function(splits_lst, df, from, to) {
 }
 
 ################################################################################
-#' Gets Infectious Diseases
+#' Merges Provinces in Infectious Disease (for one disease)
 #'
 #' @description Merges epidemiological data accordingly to a time range and
 #' merges the provinces concern by a split/combined event if necessary and
@@ -212,15 +212,134 @@ merge_time_serie <- function(splits_lst, df, from, to) {
 #' corresponds to "no case" or "no report". After 1991, \code{<NA>} corresponds
 #' to "no report" and \code{0} to "no case".
 #'
+#' @param splits_lst A list containing a list of event, each code with a slot
+#' \code{combined} and a slot \code{elements}. The first one contains the name
+#' of the merged provinces and the second one contains a vector of the names of
+#' the provinces to merge.
 #' @param disease An epidemiological data frame (e.g. \code{ili} or
 #' \code{dengue}). Should contain at least the variables \code{province},
 #' \code{year}, \code{month} and the variables \code{incidence} and
 #' \code{mortality}.
-#' @param from Initial date of the time range, of the class \code{Date}, by
-#' default: the 1st January of 2004.
-#' @param to Final date of the data, of the class \code{Date}, by default :
-#' the 31st December of 2015.
+#' @param from Initial date of the time range, of the class \code{Date}.
+#' @param to Final date of the data, of the class \code{Date}.
 #' @return A object of the same class as \code{df} in which all the provinces
+#' that needed to be merged (according to the time range provided) are merged.
+#' @keywords internal
+#' @noRd
+merge_province <- function(splits_list, disease, from, to) {
+  # get from and to in the right format
+  from %<>% paste0("-01-01") %>% as.Date
+  to %<>% paste0("-12-31") %>% as.Date
+
+  df <- suppressWarnings(merge_time_serie(splits_list, disease, from, to)) %>%
+    ungroup %>%
+    mutate(year = as.integer(year)) %>%
+    arrange(province, year, month) %>%
+    as.data.frame() %>%
+    select(province, year, month, incidence, mortality)
+
+}
+
+
+################################################################################
+#' Selects first and last year of a list
+#'
+#' @description Selects the first and the last year of multiple data frames
+#' contain in a list.
+#'
+#' @param lst a list containing one or multiple data frame containing, each one
+#' of them, at least one numeric column named identically.
+#' @param sel a numeric (1 or 2), to select the first (1) or the last year (2).
+#' @param col column named containing the value (by default = year)
+#' @return A numeric
+#' @keywords internal
+#' @noRd
+select_min <- function(lst, sel, col = "year"){
+  year <- purrr::map(lst, select, contains(col)) %>%
+    purrr::map(range)  %>%
+    purrr::map(sel)  %>% unlist  %>% min
+  year
+}
+
+#' @rdname select_min
+#' #' @keywords internal
+#' @noRd
+select_max <- function(lst, sel, col = "year"){
+  year <- purrr::map(lst, select, contains(col)) %>%
+    purrr::map(range)  %>%
+    purrr::map(sel)  %>% unlist  %>% max
+  year
+}
+
+################################################################################
+#' Merges multiples data frame
+#'
+#' @description Merges multiple epidemiological data accordingly to a time range
+#' and merges the provinces concern by a split/combined event if necessary and
+#' returns a data frame for the time range imputed with, for each disease, one
+#' column \code{incidence_disease} and one column \code{mortality_disease}
+#'
+#' @param vect a vector containing the name of each disease.
+#' @param from Initial date of the time range, can be an object of class
+#' \code{Date}, \code{character} or \code{numeric}.
+#' @param to Final date of the data, of the class \code{Date}, \code{character}
+#' or \code{numeric}.
+#' @return A dataframe in which all the provinces
+#' that needed to be merged (according to the time range provided) are merged
+#' and keep all the incidence and mortality data for each disease selected.
+#' @keywords internal
+#' @noRd
+multiple_disease <- function(lst, splits_list, from, to){
+  lapply(seq_along(lst), function(x){
+    df <- suppressWarnings(merge_province(splits_list, lst[[x]], from, to))
+    colnames(df) <- sub("incidence",
+      paste0("incidence_", names(lst)[x]), colnames(df))
+    colnames(df) <- sub("mortality",
+      paste0("mortality_", names(lst)[x]), colnames(df))
+    df %<>% as.data.frame
+  }) %>% plyr::join_all(., by = c("province", "year", "month"),
+    type = "full") %>%
+    arrange(province, year, month)
+}
+
+################################################################################
+#' Gets Infectious Diseases
+#'
+#' @description Merges epidemiological data accordingly to a time range and
+#' merges the provinces concern by a split/combined event if necessary and
+#' returns a data frame for the time range imputed.
+#'
+#' @details One dataset called \code{diseases} contains the description of all
+#' the epidemiological data frames available in this package. The dataframe is
+#' ordered by the names of each disease and the time range of the data. This
+#' table can be used as a resume.
+#' \cr\cr The time range can be implemented in the function by three different
+#'  way : \code{from}, \code{to} and \code{range_cut}.
+#'  \cr\cr In each epidemiological data frames, the incidence corresponds to the
+#' number of new cases and the mortality  corresponds to the number of deaths.
+#' \cr \cr Before 1991, \code{<NA>} corresponds to "no case" or "no report".
+#' After 1991, \code{<NA>} corresponds to "no report" and \code{0} to "no case".
+#' \cr \cr For two diseases: \code{hepatitis} and \code{amoebiasis}, the
+#' story of splits/combined province is different. The merges events of 1990
+#' take place in 1991. An other list (\code{ah_splits}) of event have been
+#' created for these two diseases and if one or the two of them are selected,
+#' this story will be applied on all the disease selected, in the function.
+#'
+#' @param disease An epidemiological data frame (e.g. \code{ili},
+#' \code{dengue} ...). Should contain at least the variables \code{province},
+#' \code{year}, \code{month} and the variables \code{incidence} and
+#' \code{mortality}.
+#' @param ... Other(s) epidemiological data frame(s).
+#' @param from Initial date of the time range, can be an object of class
+#' \code{Date}, \code{character} or \code{numeric}.
+#' @param to Final date of the data, of the class \code{Date}, \code{character}
+#' or \code{numeric}.
+#' @param range_cut if \code{"none"}, the time range selected contains all the
+#' data from all the diseases. If \code{"longest"}, the time range starts when
+#' all diseases have available data and ends when the latest disease end.
+#' If \code{"shortest"}: start swhen all the diseases have data and ends as soon
+#'  as one disease as no more available data.
+#' @return An object of the same class as \code{df} in which all the provinces
 #' that needed to be merged (according to the time range provided) are merged.
 #' @examples
 #' library(gdpm)
@@ -229,74 +348,117 @@ merge_time_serie <- function(splits_lst, df, from, to) {
 #' # package.
 #' diseases
 #' # Return a data frame in which all the provinces that needed to be merged
-#' # (according to the time range) are merged.
-#' gdpm_("dengue", "1990-01-01", "2004-01-01")
-#' gdpm(hepatitis, 1980 ,2009)
+#' # (according to the time range) are merged. By default, the time range is the
+#' # time range of the disease selected.
+#' getid_("dengue")
+#' getid(hepatitis)
 #'
-#' # By default, the time range selected is the time range of the disease
-#' selected.
-#' gdpm_("cholera") # the time range will be from 1980 to 2015 (include)
-#' gdpm(dengue) # the time range will be from 1980 to 2010 (include)
 #'
-#' # For the time range, just the year can be entered as parameters and by
-#' # default, the first day of the year "from" and the last day of the year
-#' # "to" will be selected as time range.
-#' gdpm_("dengue", "1990", "2004")
-#' gdpm(hepatitis, "1980" , "2009")
+#' # Return a data frame in which all the provinces that needed to be merged
+#' # (according to the time range) are merged. By default, the time range
+#' # selected is the one containing the data for all the diseases
+#' # time range of the disease selected.
+#' getid_("cholera", "malaria", "ili") # time range: 1980-01-01 to 2015-12-31
+#' getid(dengue, chickenpox, anthrax) # time range: 1980-01-01 to 2015-12-31
+#'
+#' # If range_cut = "shortest" is selected, the time range selected is the one
+#' # containing data for each year, for example the malaria data start in 2003,
+#' # so the year before will not be selected. And, it is the same for dengue,
+#' # the data stop in 2010, so the year after will not be selected.
+#' getid_("cholera", "malaria", "ili", range_cut = "shortest")
+#' # time range: 2003-01-01 to 2015-12-31
+#' getid(dengue, chickenpox, anthrax, range_cut = "shortest")
+#' # time range: 1990-01-01 to 2010-12-31
+#'
+#' # If range_cut = "longest" is selected, the time range selected is the one
+#' # starting when all the data begin, for example the malaria data start in
+#' # 2003, so the year before will not be selected.
+#' getid_("cholera", "malaria", "ili", range_cut = "longest")
+#' # time range: 2003-01-01 to 2015-12-31
+#' getid(dengue, chickenpox, anthrax, range_cut = "longest")
+#' # time range: 1990-01-01 to 2015-12-31
+#'
+#'
+#' # For the time range, the year can also be entered as parameters:
+#' # As numeric or character and by default, the first day of the year "from"
+#' # and the last day of the year "to" will be selected as time range.
+#' getid_("dengue", "ili", "cholera", from = 1990, to = 2004)
+#' getid(chickenpox, anthrax, from = "1980" , to = "2009")
+#' # Or directly as Date
+#' getid_("dengue", "ili", "cholera", from = "1990-01-01", to = "2004-12-31")
+#' getid(chickenpox, anthrax, from = "1980-01-01" , to = "2009-12-31")
 #' @export
-gdpm_ <- function(disease,
-  from = range(disease$year)[1],
-  to = range(disease$year)[2]) {
-  # get disease data frame
-  disease <- get(disease)
+getid_ <- function(disease, ..., from, to, range_cut = "none") {
+  # create a character vector of all the diseases names
+  vect <- c(disease, list(...)) %>%
+    unlist %>% as.vector() %>%
+    as.character()
 
-  # get from and to in the right format
-  from %<>% paste0("-01-01") %>% as.Date
-  to %<>% paste0("-12-31") %>% as.Date
+  lst_disease <- mget(vect, inherits = TRUE)
+
+  # define the value of the time range and test for all mistakes
+  if(missing(from) & range_cut == "none"){from = select_min(lst_disease, 1)}
+  if(missing(to) & range_cut == "none"){to = select_max(lst_disease, 2)}
+  if(missing(from) & range_cut == "shortest"){from = select_max(lst_disease, 1)}
+  if(missing(to) & range_cut == "shortest"){to = select_min(lst_disease, 2)}
+  if(missing(from) & range_cut == "longest"){from = select_max(lst_disease, 1)}
+  if(missing(to) & range_cut == "longest"){to = select_max(lst_disease, 2)}
+
+  if(from > to |
+      from > select_max(lst_disease, 2)){
+    stop("The time range selected is out of bound or incorrect: ", from, "-",
+      to, ". The widest time range for this selection is: ", select_min(
+        lst_disease, 1), "-", select_max(lst_disease, 2), ". Maybe, try an other
+    range_cut option or enter different value for the parameters 'from'and to'."
+      , call. = FALSE)
+  }
+
+  test <- purrr::map(lst_disease, select, contains("year"))  %>%
+    purrr::map(range)
+  if( mean(to < test  %>%
+       purrr::map(1) %>%
+      unlist %>%
+       as.vector()) > 0){
+    name_error <- names(which(purrr::map(test, 1) > to))
+    stop("The time range selected is out of bound or incorrect: ", from, "-",
+      to, ". One of the diseases selected can be out of range: ", paste(
+        name_error, collapse = ", "), ", associated time range: ", paste(
+          test[name_error], collapse = ", "), ". Maybe, range_cut option or
+      enter different value for the parameters 'from' and to'.", call. = FALSE)
+  }
 
   # test which split history should be selected
-  test <- filter(disease, year == 1990)$province %>% unique() %>% length()
-  ifelse (test == 40,
-    df <- suppressWarnings(merge_time_serie(ah_splits, disease, from, to)),
-    df <- suppressWarnings(merge_time_serie(splits, disease, from, to)))
-
-  # arrange and return the data frame with the good format for all the data
-  df %<>%
-    ungroup %>%
-    mutate(year = as.integer(year)) %>%
-    arrange(province, year, month) %>%
-    as.data.frame() %>%
-    select(province, year, month, incidence, mortality)
-
-  # test time range
-  if(
-    from < range(disease$year)  %>%
-      min  %>%
-      paste0("-01-01")  %>%
-      as.Date()){
-    warning(paste0('The argument "from" is out of the time range for this
-      disease: ', range(disease$year) %>% paste(collapse = "-") ,
-      '. The closest time range was selected: ', range(df$year) %>% paste(
-        collapse = "-"),'.'))
-  } else if(
-    to > range(disease$year)  %>%
-      max  %>%
-      paste0("-12-31")  %>%
-      as.Date()){
-    warning(paste0('The argument "to" is out of the time range for this
-      disease: ', range(disease$year) %>% paste(collapse = "-"),
-      '. The closest time range was selected: ', range(df$year) %>% paste(
-        collapse = "-"),'.'))
+  if (grep("hepatitis|amoebiasis", vect) %>% length >= 1){
+    diseases <- multiple_disease(lst_disease, ah_splits, from, to)
+  } else {
+    diseases <- multiple_disease(lst_disease, splits, from, to)
   }
-  return(df)
+
+  # warnings message if error on the time range
+  if( !missing (from) || !missing(to)){
+    if(from < select_min(lst_disease, 1)) {
+      warning(paste0('The argument "from" is out of the time range for this
+        (these) disease(s): ', paste0(select_min(lst_disease, 1), "-",
+          select_max(lst_disease, 2) ), '. The closest time range was selected:
+        ', range(diseases$year) %>% paste(collapse = "-"),'.'))
+    } else if (to > select_max(lst_disease, 2)) {
+      warning(paste0('The argument "to" is out of the time range for this
+        (these) disease(s): ', paste0(select_min(lst_disease, 1), "-",
+          select_max(lst_disease, 2) ), '. The closest time range was selected:
+        ', range(diseases$year) %>% paste(collapse = "-"),'.'))
+    }
+  }
+  return(diseases)
 }
 
-#' @rdname gdpm_
+#' @rdname getid_
 #' @export
-gdpm <- function(disease, from = 2004, to = 2005) {
-  disease <- deparse(substitute(disease)) %>%
-    gdpm_(from, to)
-  return(disease)
+getid <- function(disease, ..., from, to, range_cut = "none"){
+  disease <- deparse(substitute(disease))
+  vect <- as.character(substitute(list(...))) %>%
+    grep("list", ., invert = T, value = T)
+
+  diseases <- getid_(
+    disease, vect, from = from, to = to , range_cut = range_cut)
+  return(diseases)
 }
-
-
