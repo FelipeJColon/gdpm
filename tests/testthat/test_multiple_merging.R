@@ -158,3 +158,19 @@ test_that("`getid` returns the correct province name", {
       "Thai Binh", "Thanh Hoa", "Thuan Hai", "Tien Giang", "Vinh Phu"))
 
 })
+
+
+
+test_that("`getid` returns an error", {
+
+  expect_error(getid(chickenpox, ili, dengue, malaria, from = 1980, to = 2002))
+
+  expect_error(getid(chickenpox, ili, dengue, malaria, from = 2028))
+
+  expect_error(getid_("chickenpox","dengue","ili","vhf","malaria",
+    range_cut = "shortest"))
+
+  expect_error(getid_("vhf","mumps", from = "1990", to = "1980"))
+
+})
+

@@ -408,9 +408,9 @@ getid_ <- function(disease, ..., from, to, range_cut = "none") {
       from > select_max(lst_disease, 2)){
     stop("The time range selected is out of bound or incorrect: ", from, "-",
       to, ". The widest time range for this selection is: ", select_min(
-        lst_disease, 1), "-", select_max(lst_disease, 2), ". Maybe, try an other
-    range_cut option or enter different value for the parameters 'from'and to'."
-      , call. = FALSE)
+        lst_disease, 1), "-", select_max(lst_disease, 2), ". Maybe, try another"
+," range_cut option or enter a different value for the parameters 'from'",
+" and/or 'to'.", call. = FALSE)
   }
 
   test <- purrr::map(lst_disease, select, contains("year"))  %>%
@@ -422,9 +422,11 @@ getid_ <- function(disease, ..., from, to, range_cut = "none") {
     name_error <- names(which(purrr::map(test, 1) > to))
     stop("The time range selected is out of bound or incorrect: ", from, "-",
       to, ". One of the diseases selected can be out of range: ", paste(
-        name_error, collapse = ", "), ", associated time range: ", paste(
-          test[name_error], collapse = ", "), ". Maybe, range_cut option or
-      enter different value for the parameters 'from' and to'.", call. = FALSE)
+        name_error, collapse = ", "), " (associated time range: ", paste(
+          test[name_error], collapse = ", "), "). The widest time range for",
+      " this selection is: ", select_min(lst_disease, 1), "-", select_max(
+        lst_disease, 2), ". Maybe, try another range_cut option or enter a",
+      " different value for the parameters 'from' and to'.", call. = FALSE)
   }
 
   # test which split history should be selected
