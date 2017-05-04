@@ -106,7 +106,8 @@ gather_sum <- function(df, x) {
     gather(name, value, contains(x)) %>%
     select(-matches("name")) %>%
     group_by(year, month) %>%
-    summarise(value = sum(value, na.rm=TRUE)) %>%
+    summarise(value = ifelse(mean(is.na(value)) == 1,
+      sum(value), sum(value, na.rm = TRUE))) %>%
     rename_(.dots = setNames(list("value"), x))
 }
 

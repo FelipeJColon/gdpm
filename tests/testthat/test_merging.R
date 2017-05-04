@@ -38,13 +38,10 @@ test_that("`getid` returns the correct incidence data", {
       39, 21, 18, 20, 33, 35, 25, 6, 23, 10))
 
   expect_equal(
-    merging_incidence("chickenpox", "1989-01-01", "1990-12-01", "Binh Tri Thien"),
-    c(8, 6, 4, 25, 0, 0, 0, 17, 30, 1, 3, 0, 10, 6, 3, 8, 4, 2, 0, 0, 0, 0, 0,
-      13))
-
-  expect_equal(
-    merging_incidence("chickenpox", "1991-01-01", "1992-12-01", "Ha Son Binh"),
-    c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
+    merging_incidence("chickenpox", "1989-01-01", "1990-12-01",
+      "Binh Tri Thien"),
+    c(8, 6, 4, 25, NA, NA, NA, 17, 30, 1, 3, NA, 10, 6, 3, 8, 4, 2, NA, NA, NA,
+      NA, NA, 13))
 
   expect_equal(
     merging_incidence("chickenpox", "2007-01-01", "2008-12-01", "Ha Noi"),
