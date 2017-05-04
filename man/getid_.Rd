@@ -5,9 +5,9 @@
 \alias{getid_}
 \title{Gets Infectious Diseases}
 \usage{
-getid_(disease, ..., from, to, range_cut = "none")
+getid_(disease, ..., from, to, shortest = FALSE)
 
-getid(disease, ..., from, to, range_cut = "none")
+getid(disease, ..., from, to, shortest = FALSE)
 }
 \arguments{
 \item{disease}{An epidemiological data frame (e.g. \code{ili},
@@ -23,11 +23,10 @@ getid(disease, ..., from, to, range_cut = "none")
 \item{to}{Final date of the data, of the class \code{Date}, \code{character}
 or \code{numeric}.}
 
-\item{range_cut}{if \code{"none"}, the time range selected contains all the
-data from all the diseases. If \code{"longest"}, the time range starts when
-all diseases have available data and ends when the latest disease end.
-If \code{"shortest"}: start swhen all the diseases have data and ends as soon
- as one disease as no more available data.}
+\item{shortest}{if \code{FALSE}, the time range selected contains all the
+data from all the diseases.
+If \code{TRUE}: starts when all the diseases have data and ends as soon
+ as one disease as no more available data. (selects the overlaps year)}
 }
 \value{
 An object of the same class as \code{df} in which all the provinces
@@ -44,7 +43,7 @@ the epidemiological data frames available in this package. The dataframe is
 ordered by the names of each disease and the time range of the data. This
 table can be used as a resume.
 \cr\cr The time range can be implemented in the function by three different
- way : \code{from}, \code{to} and \code{range_cut}.
+ way : \code{from}, \code{to} and \code{shortest}.
  \cr\cr In each epidemiological data frames, the incidence corresponds to the
 number of new cases and the mortality  corresponds to the number of deaths.
 \cr \cr Before 1991, \code{<NA>} corresponds to "no case" or "no report".
@@ -75,22 +74,14 @@ getid(hepatitis)
 getid_("cholera", "malaria", "ili") # time range: 1980-01-01 to 2015-12-31
 getid(dengue, chickenpox, anthrax) # time range: 1980-01-01 to 2015-12-31
 
-# If range_cut = "shortest" is selected, the time range selected is the one
-# containing data for each year, for example the malaria data start in 2003,
-# so the year before will not be selected. And, it is the same for dengue,
-# the data stop in 2010, so the year after will not be selected.
-getid_("cholera", "malaria", "ili", range_cut = "shortest")
+# If shortest = TRUE, the time range selected is the one
+# containing overlaps data for each year, for example the malaria data start
+# in 2003, the years before will not be selected. And, it is the same for
+# dengue, the data stop in 2010, so the years after will not be selected.
+getid_("cholera", "malaria", "ili", shortest = TRUE)
 # time range: 2003-01-01 to 2015-12-31
-getid(dengue, chickenpox, anthrax, range_cut = "shortest")
+getid(dengue, chickenpox, anthrax, shortest = TRUE)
 # time range: 1990-01-01 to 2010-12-31
-
-# If range_cut = "longest" is selected, the time range selected is the one
-# starting when all the data begin, for example the malaria data start in
-# 2003, so the year before will not be selected.
-getid_("cholera", "malaria", "ili", range_cut = "longest")
-# time range: 2003-01-01 to 2015-12-31
-getid(dengue, chickenpox, anthrax, range_cut = "longest")
-# time range: 1990-01-01 to 2015-12-31
 
 
 # For the time range, the year can also be entered as parameters:
