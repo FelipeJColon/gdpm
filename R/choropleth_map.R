@@ -1,6 +1,7 @@
 # System
 library(dplyr)
 library(magrittr)
+library(gdpm)
 
 # Function ####################################################################
 # Specific GDPM ----------------------------------------------------------------
@@ -47,14 +48,14 @@ idcm <- function(df, ye,
   plot(provinces, col = classint_colors)
 
   # legend
-  wrap_legend(legend = classint$brks, col = pal, adj = 0)
+  wrap_legend(legend = classint$brks, col = pal, ...)
   #usr <- par("usr")
   #legend2(usr[1], usr[4]-0.5, legend = classint$brks, col = pal, adj = 0, ...)
 
 }
 
 legend2 <- function(x, y, legend, col = c("red", "green", "blue"),
-  h = 1, w = 1, tl = .2, s = .4, adj = 0, ...) {
+  h = 1, w = 1, tl = .2, s = .4, ...) {
   xleft <- x
   xright <- x + w
   y <- y - (0:length(col)) * h
@@ -68,7 +69,7 @@ legend2 <- function(x, y, legend, col = c("red", "green", "blue"),
 
 # read the data
 gdpm_chloropleth("ili", 1980, n = 6, col = "YlOrBr", style = "jenks",
-  col_na = "chartreuse")
+  col_na = "chartreuse", adj = 0)
 gdpm_chloropleth("ili", 2004, n = 6, col = heat.colors(6), style = "jenks")
 
 # Development -----------------------------------------------------------------
@@ -86,16 +87,21 @@ wrap_legend <- function(x, y, legend, col, h, w, tl, s, ...){
   }
 
   if (missing(h) | missing(w) | missing(tl) | missing(s)){
-    h = diff(ylim)/10
-    w = diff(xlim)/100
+    h = diff(ylim)/25
+    w = diff(xlim)/20
     tl = (diff(ylim)/50)
-    s = diff(ylim)/25
+    s = diff(ylim)/50
   }
 
   legend2(x, y, legend = legend, col = col , h = h, w = w, tl = tl, s = s, ...)
 }
 # because by default, the coordinate range is
 # extended by 4% so : 27 = (100 + 2*4) / 4
+
+
+
+
+
 
 
 
