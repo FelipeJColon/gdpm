@@ -13,7 +13,9 @@ LazyData: TRUE
 Suggests:
     knitr,
     rmarkdown,
-    testthat
+    testthat,
+    RColorBrewer,
+    gadmVN
 VignetteBuilder: knitr
 Imports:
     dplyr,

@@ -2,6 +2,7 @@
 
 export(getid)
 export(getid_)
+export(sthm)
 importFrom(dplyr,arrange)
 importFrom(dplyr,bind_rows)
 importFrom(dplyr,contains)

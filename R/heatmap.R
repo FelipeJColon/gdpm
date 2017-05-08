@@ -1,49 +1,57 @@
 #' Makes a spatio-temporal heatmap of a disease
 #'
-#' @param \code{df} an data frame outputed from the \code{getid} function or with
-#' the same structure as an output from this funtion.
-#' @param \code{f} a transforming function. By default the identity function.
-#' @param \code{col} a vector of colors to use for the heatmap.
-#' @param \code{col_na} the color with which to represent the missing values.
-#' @param \code{x} a vector of values between 0 and 1. In proportion of the
+#' @param df an data frame outputed from the \code{getid} function or
+#' with the same structure as an output from this funtion.
+#' @param f a transforming function. By default the identity function.
+#' @param col a vector of colors to use for the heatmap.
+#' @param col_na the color with which to represent the missing values.
+#' @param x a vector of values between 0 and 1. In proportion of the
 #' figure's range, these numbers express the location of the right end of the
-#' heatmap, and the beginning and end of the color scale that stands on the right
-#' of the heatmap.
-#' @param \code{show_names} logical value saying whether the names of the provinces
-#' should be returned as an output of the function call or not. By default FALSE.
+#' heatmap, and the beginning and end of the color scale that stands on the
+#' right of the heatmap.
+#' @param show_names logical value saying whether the names of the
+#' provinces should be returned as an output of the function call or not.
+#' By default FALSE.
 #'
 #' @examples
 #' # A heatmap of the ILI data:
-#' ili <- getid(ili, 2004)
-#' heatmap(ili)
+#' ili <- getid(ili, from = 2004)
+#' sthm(ili)
 #' # with some data transformations in order to reflect better the contrasts:
-#' heatmap(ili, f = sqrt)
-#' heatmap(ili, f = function(x) x^.3)
+#' sthm(ili, f = sqrt)
+#' sthm(ili, f = function(x) x^.3)
 #' # using some other color palettes, for examples the ones fromt the
 #' # RColorBrewer package:
 #' library(RColorBrewer)
 #' # to see the available color palettes:
 #' display.brewer.all()
-#' heatmap(ili, f = function(x) x^.3, col = brewer.pal(11, "RdYlGn"))
-#' heatmap(ili, f = function(x) x^.3, col = brewer.pal(11, "RdYlBu"))
-#' heatmap(ili, f = function(x) x^.3, col = brewer.pal(11, "PRGn"))
-#' heatmap(ili, f = function(x) x^.3, col = brewer.pal(9, "YlOrRd"))
-#' heatmap(ili, f = function(x) x^.3, col = brewer.pal(9, "YlOrBr"))
+#' sthm(ili, f = function(x) x^.3, col = brewer.pal(11, "RdYlGn"))
+#' sthm(ili, f = function(x) x^.3, col = brewer.pal(11, "RdYlBu"))
+#' sthm(ili, f = function(x) x^.3, col = brewer.pal(11, "PRGn"))
+#' sthm(ili, f = function(x) x^.3, col = brewer.pal(9, "YlOrRd"))
+#' sthm(ili, f = function(x) x^.3, col = brewer.pal(9, "YlOrBr"))
 #' # changing the color of the missing values:
 #' rubella <- getid(rubella)
-#' heatmap(rubella, f = sqrt, col = brewer.pal(9, "YlOrRd"))
-#' heatmap(rubella, f = sqrt, col = brewer.pal(9, "YlOrRd"), col_na = "blue")
+#' sthm(rubella, f = sqrt, col = brewer.pal(9, "YlOrRd"))
+#' sthm(rubella, f = sqrt, col = brewer.pal(9, "YlOrRd"), col_na = "blue")
 #' # to order the provinces by latitude:
 #' library(gadmVN)
+#' library(dplyr)
 #' provinces <- gadm()
 #' coord <- coordinates(provinces)
 #' order <- rownames(coord[order(coord[, 2]), ])
-#' order <- data.frame(province = order, order = seq_along(tmp))
-#' rubella <- left_join(rubella, order)
-#' rubella %<>% arrange(order)
-#' heatmap(rubella, f = sqrt, col = brewer.pal(9, "YlOrRd"), col_na = "blue")
-heatmap <- function(df, f = function(x) x, col = heat.colors(12), col_na = "grey", x = c(.85, .87, .92), show_names = FALSE) {
-  require(dplyr)  # for "mutate", "arrange"
+#' order <- data.frame(province = order, order = seq_along(order))
+#' rubella <- left_join(rubella, order, by = "province")
+#' rubella <-  arrange(rubella, order)
+#' sthm(rubella, f = sqrt, col = brewer.pal(9, "YlOrRd"), col_na = "blue")
+#' @export
+sthm <- function(df,
+  f = function(x) x, col = heat.colors(12),
+  col_na = "grey", x = c(.85, .87, .92), show_names = FALSE) {
+  #require(dplyr)  # for "mutate", "arrange"
+  warn_old <- unlist(options("warn"))
+  options(warn = -1)
+  on.exit(options(warn = warn_old))
 
 # Data preparation:
   df %<>%
@@ -52,7 +60,8 @@ heatmap <- function(df, f = function(x) x, col = heat.colors(12), col_na = "grey
   time_vec <- unique(df$time)
   provinces_names <- unique(df$province)
   values <- sapply(provinces_names,
-                   function(x) subset(df, province == x, select = incidence))
+                   function(x) filter(df, province == x) %>%
+      select(contains("incidence")))
   values <- f(as.matrix(as.data.frame(values)))
 
 # Options and graphical parameters:
