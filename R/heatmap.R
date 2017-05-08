@@ -45,7 +45,8 @@
 #' rubella <-  arrange(rubella, order)
 #' sthm(rubella, f = sqrt, col = brewer.pal(9, "YlOrRd"), col_na = "blue")
 #' @export
-sthm <- function(df, f = function(x) x, col = heat.colors(12),
+sthm <- function(df,
+  f = function(x) x, col = heat.colors(12),
   col_na = "grey", x = c(.85, .87, .92), show_names = FALSE) {
   #require(dplyr)  # for "mutate", "arrange"
   warn_old <- unlist(options("warn"))
@@ -61,7 +62,6 @@ sthm <- function(df, f = function(x) x, col = heat.colors(12),
   values <- sapply(provinces_names,
                    function(x) filter(df, province == x) %>%
       select(contains("incidence")))
-                     #subset(df, province == x, select = incidence))
   values <- f(as.matrix(as.data.frame(values)))
 
 # Options and graphical parameters:
