@@ -7,8 +7,9 @@ library(gdpm)
 # Specific GDPM ----------------------------------------------------------------
 
 # select the incidence data for one specific year
-gdpm_chloropleth <- function(disease, ye, sel = "incidence", n = 6,
-  col = "YlOrBr", style = "quantile",  col_na = "grey", adj = 0, ...)
+gdpm_chloropleth <- function(disease, ye, x, y, sel = "incidence", n = 6,
+  col = "YlOrBr", style = "quantile",  col_na = "grey",
+  h = 0.75, w = 0.75, tl = .2, s = .4, adj = 0, ...)
   {
   # prepare the table in the right format
   name <- paste0(sel,"_",disease)
@@ -21,7 +22,7 @@ gdpm_chloropleth <- function(disease, ye, sel = "incidence", n = 6,
     ungroup
   # draw the choropleth map
   idcm(df, ye, x, y, n = n, col = col, style = style, col_na = col_na,
-    legend = legend, adj = adj, ...)
+    legend = legend,  h = h, w = w, tl = tl, s = s, adj = adj, ...)
 }
 
 # GENERIC ----------------------------------------------------------------------
@@ -29,7 +30,7 @@ gdpm_chloropleth <- function(disease, ye, sel = "incidence", n = 6,
 # draw a chloropleth map
 idcm <- function(df, ye, x, y,
   n = 6, col = "YlOrBr", style = "quantile",  col_na = "grey",
-  legend,h = 0.75, w = 0.75, tl = .2, s = .4, ...) {
+  legend,h = 0.75, w = 0.75, tl = .2, s = .4, adj = 0, ...) {
 
   # implement the incidence data in the shape file data
   require(gadmVN)
@@ -53,12 +54,12 @@ idcm <- function(df, ye, x, y,
   plot(provinces, col = classint_colors)
 
   # legend
-  wrap_legend(x, y, legend = classint$brks, col = pal, h = h, w = w, tl = tl, s = s, ...)
+  wrap_legend(x, y, legend = classint$brks, col = pal, h = h, w = w, tl = tl, s = s, adj = adj, ...)
 }
 
 # add a legend to a plot
 legend2 <- function(x, y, legend, col = c("red", "green", "blue"),
-  h = 0.75, w = 0.75, tl = .2, s = .4, ...) {
+  h = 0.75, w = 0.75, tl = .2, s = .4, adj = 0, ...) {
   xleft <- x
   xright <- x + w
   y <- y - (0:length(col)) * h
@@ -66,7 +67,7 @@ legend2 <- function(x, y, legend, col = c("red", "green", "blue"),
     rect(xleft, y[i + 1], xright, y[i], col = col[i], border = NA)
   rect(xleft, tail(y, 1), xright, y[1])
   segments(xright, y, xright + tl, y)
-  text(xright + tl + s, y, rev(legend), ...)
+  text(xright + tl + s, y, rev(legend), adj = adj, ...)
 }
 
 
@@ -75,13 +76,13 @@ gdpm_chloropleth("ili", 1980, n = 6, col = "YlOrBr", style = "jenks",
   col_na = "chartreuse")
 gdpm_chloropleth("ili", 2004, n = 6, col = heat.colors(6), style = "jenks")
 
-gdpm_chloropleth("ili", 1980, x = 22, n = 6, col = "YlOrBr", style = "jenks",
+gdpm_chloropleth("ili", 1980, x = 112, y = 22, n = 6, col = "YlOrBr", style = "jenks",
   col_na = "chartreuse", adj = 0)
 
 # Development -----------------------------------------------------------------
 locator(1)
 
-wrap_legend <- function(x, y, legend, col, h = 0.75, w = 0.75, tl = .2, s = .4, ...){
+wrap_legend <- function(x, y, legend, col, h = 0.75, w = 0.75, tl = .2, s = .4, adj = 0, ...){
 
   if (missing(x) & missing(y)){
     usr <- par("usr")
@@ -93,7 +94,7 @@ wrap_legend <- function(x, y, legend, col, h = 0.75, w = 0.75, tl = .2, s = .4, 
     y <- ylim[2]
   }
 
-  legend2(x, y, legend = legend, col = col , h = h, w = w, tl = tl, s = s, ...)
+  legend2(x, y, legend = legend, col = col , h = h, w = w, tl = tl, s = s, adj = adj, ...)
 }
 
 
