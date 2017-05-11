@@ -5,9 +5,46 @@ library(gdpm)
 
 # Function ####################################################################
 # Specific GDPM ----------------------------------------------------------------
-
-# select the incidence data for one specific year
-gdpm_chloropleth <- function(disease, ye, x, y, sel = "incidence", n = 6,
+#' Makes a spatio-temporal choropleth map of a disease
+#'
+#' @param disease name of an epidemiological data frame (e.g. \code{ili}
+#' @param ye an year to indicate the temporal information
+#' @param x a value for the x coordinate of the top-left part of the legend
+#' @param y a value for the y coordinate of the top-left part of the legend
+#' @param sel a character value which can be "incidence" (by default) or
+#' "mortality" used to select the data expressed in the map
+#' @param col a vector of colors to use for the heatmap.
+#' @param style a character value isued from the \code{classint} package, and
+#' used to select a method for the different way of calculating the intervals
+#' @param col_na the color with which to represent the missing values
+#' @param h legend parameter expressing the height of one rectangle
+#' @param w legend parameter expressing the width of the rectangle
+#' @param tl legend parameter expressing the length of the tick
+#' @param s legend parameter expressing the space between the text and the
+#' tick
+#' @param adj legend parameter expressing the alignment of the text, 1 (to the
+#' right) by default
+#' @param ... if need to imput more text parameter
+#'
+#'
+#' @examples
+#' # A heatmap of the ILI data:
+#' gdpm_choropleth("ili", 1980, x = 93, y = 18)
+#' # with some data transformations in order to reflect better the contrasts:
+#' gdpm_choropleth("ili", 1980, x = 93, y = 18, n = 6, col = heat.colors(6),
+#'      style = "jenks")
+#' # using some other color palettes, for examples the ones fromt the
+#' # RColorBrewer package:
+#' library(RColorBrewer)
+#' # to see the available color palettes:
+#' display.brewer.all()
+#' gdpm_choropleth("ili", 1980, x = 93, y = 18, n = 6, col = "YlOrBr",
+#'      style = "jenks")
+#' # changing the color of the missing values:
+#' gdpm_choropleth("ili", 1980, x = 93, y = 18, n = 6, col = "YlOrBr",
+#'      style = "jenks", col_na = "chartreuse")
+#' @export
+gdpm_choropleth <- function(disease, ye, x, y, sel = "incidence", n = 6,
   col = "YlOrBr", style = "quantile",  col_na = "grey",
   h = 0.75, w = 0.75, tl = .2, s = .4, adj = 1, ...)
   {
@@ -27,7 +64,7 @@ gdpm_chloropleth <- function(disease, ye, x, y, sel = "incidence", n = 6,
 
 # GENERIC ----------------------------------------------------------------------
 
-# draw a chloropleth map
+# draw a choropleth map
 idcm <- function(df, ye, x, y,
   n = 6, col = "YlOrBr", style = "quantile",  col_na = "grey",
   legend,h = 0.75, w = 0.75, tl = .2, s = .4, adj = 1, ...) {
@@ -54,7 +91,8 @@ idcm <- function(df, ye, x, y,
   plot(provinces, col = classint_colors)
 
   # legend
-  wrap_legend(x, y, legend = classint$brks, col = pal, h = h, w = w, tl = tl, s = s, adj = adj, ...)
+  wrap_legend(x, y, legend = classint$brks, col = pal, h = h, w = w, tl = tl,
+    s = s, adj = adj, ...)
 }
 
 
@@ -64,7 +102,8 @@ legend2 <- function(x, y, legend, col = c("red", "green", "blue"),
 
   # calculate size of one character
   usr <- par("usr")  # figure dimension in coordinates unity
-  usrr <- c(diff(usr[1:2]) - 0.08 * diff(usr[1:2]), diff(usr[3:4]) - 0.08 * diff(usr[3:4]))
+  usrr <- c(diff(usr[1:2]) - 0.08 * diff(usr[1:2]),
+    diff(usr[3:4]) - 0.08 * diff(usr[3:4]))
   pin <- par("pin")
   pinr <- pin - 0.08 * pin
   cin <- par("cin")
@@ -86,32 +125,12 @@ legend2 <- function(x, y, legend, col = c("red", "green", "blue"),
   segments(xleft, y, xleft - tl, y)
   text(x + size_legend[1], y, rev(legend), adj = adj, ...)
 
-  return(size_legend[1])
 }
 
-# test
-plot(1:10, 1:10)
-points(1, 9, col = "blue")
-legend2(1,9, letters[1:3], col = heat.colors(4))
-#gdpm_chloropleth("ili", 1980, x = 98.85, y = 18, n = 6, col = "YlOrBr", style = "jenks",
- # col_na = "chartreuse", adj = 1)
-
-#points(98.85 + 0.75, 18 , col = "red")
-#legend2(98.85,18,c("ab","cd","ef","gh"))
-
-
-# read the data
-gdpm_chloropleth("ili", 1980, n = 6, col = "YlOrBr", style = "jenks",
-  col_na = "chartreuse")
-gdpm_chloropleth("ili", 2004, n = 6, col = heat.colors(6), style = "jenks")
-
-gdpm_chloropleth("ili", 1980, x = 112, y = 22, n = 6, col = "YlOrBr", style = "jenks",
-  col_na = "chartreuse", adj = 1)
-
 # Development -----------------------------------------------------------------
-locator(1)
 
-wrap_legend <- function(x, y, legend, col, h = 0.75, w = 0.75, tl = .2, s = .4, adj = 1, ...){
+wrap_legend <- function(x, y, legend, col, h = 0.75, w = 0.75, tl = .2, s = .4,
+  adj = 1, ...){
 
   if (missing(x) & missing(y)){
     usr <- par("usr")
@@ -123,10 +142,28 @@ wrap_legend <- function(x, y, legend, col, h = 0.75, w = 0.75, tl = .2, s = .4, 
     y <- ylim[2]
   }
 
-  legend2(x, y, legend = legend, col = col , h = h, w = w, tl = tl, s = s, adj = adj, ...)
+  legend2(x, y, legend = legend, col = col , h = h, w = w, tl = tl, s = s,
+    adj = adj, ...)
 }
 
+# test -------------------------------------------------------------------------
 
+plot(1:10, 1:10)
+points(1, 9, col = "blue")
+legend2(1,9, letters[1:3], col = heat.colors(4))
+#gdpm_choropleth("ili", 1980, x = 98.85, y = 18, n = 6, col = "YlOrBr",
+#   style = "jenks", col_na = "chartreuse", adj = 1)
+
+#points(98.85 + 0.75, 18 , col = "red")
+#legend2(98.85,18,c("ab","cd","ef","gh"))
+
+
+# read the data
+gdpm_choropleth("ili", 1980, n = 6, col = "YlOrBr", style = "jenks")
+gdpm_choropleth("ili", 2004, n = 6, col = heat.colors(6), style = "jenks")
+
+gdpm_choropleth("ili", 1980, x = 110, y = 22, n = 6, col = "YlOrBr",
+  style = "jenks", col_na = "chartreuse", adj = 1)
 
 
 
