@@ -44,7 +44,7 @@ library(gdpm)
 #' gdpm_choropleth("ili", 1980, x = 93, y = 18, n = 6, col = "YlOrBr",
 #'      style = "jenks", col_na = "chartreuse")
 #' @export
-gdpm_choropleth <- function(disease, ye, x, y, sel = "incidence", n = 6,
+gdpm_choropleth <- function(disease, ye, x, y, locate = FALSE, sel = "incidence", n = 6,
   col = "YlOrBr", style = "quantile",  col_na = "grey",
   h = 0.75, w = 0.75, tl = .2, s = .4, adj = 1, ...)
   {
@@ -58,7 +58,7 @@ gdpm_choropleth <- function(disease, ye, x, y, sel = "incidence", n = 6,
       sum(incidence), sum(incidence, na.rm = TRUE))) %>%
     ungroup
   # draw the choropleth map
-  idcm(df, ye, x, y, n = n, col = col, style = style, col_na = col_na,
+  idcm(df, ye, x, y, locate = locate, n = n, col = col, style = style, col_na = col_na,
     legend = legend,  h = h, w = w, tl = tl, s = s, adj = adj, ...)
 }
 
@@ -67,7 +67,7 @@ gdpm_choropleth <- function(disease, ye, x, y, sel = "incidence", n = 6,
 # draw a choropleth map
 idcm <- function(df, ye, x, y,
   n = 6, col = "YlOrBr", style = "quantile",  col_na = "grey",
-  legend,h = 0.75, w = 0.75, tl = .2, s = .4, adj = 1, ...) {
+  legend, locate= FALSE, h = 0.75, w = 0.75, tl = .2, s = .4, adj = 1, ...) {
 
   # implement the incidence data in the shape file data
   require(gadmVN)
@@ -91,7 +91,8 @@ idcm <- function(df, ye, x, y,
   plot(provinces, col = classint_colors)
 
   # legend
-  wrap_legend(x, y, legend = classint$brks, col = pal, h = h, w = w, tl = tl,
+  wrap_legend(x, y, legend = classint$brks, col = pal, locate = locate,
+    h = h, w = w, tl = tl,
     s = s, adj = adj, ...)
 }
 
@@ -116,23 +117,23 @@ legend2 <- function(x, y, legend, col = c("red", "green", "blue"),
   size_legend <-  size_legend * crl
 
   # define point of the legend
-  xleft <- x + size_legend[1] + tl + s
+  xleft <- x + (size_legend[1] + tl + s)
   xright <- xleft + w
   y <- y - (0:length(col)) * h
   for(i in seq_along(col))
     rect(xleft, y[i + 1], xright, y[i], col = col[i], border = NA)
   rect(xleft, tail(y, 1), xright, y[1])
   segments(xleft, y, xleft - tl, y)
-  text(x + size_legend[1], y, rev(legend), adj = adj, ...)
+  text((x + size_legend[1]), y, rev(legend), adj = adj, ...)
 
 }
 
 # Development -----------------------------------------------------------------
 
-wrap_legend <- function(x, y, legend, col, h = 0.75, w = 0.75, tl = .2, s = .4,
-  adj = 1, ...){
+wrap_legend <- function(x, y, legend, col, locate = FALSE, h = 0.75,
+  w = 0.75, tl = .2, s = .4, adj = 1, ...){
 
-  if (missing(x) & missing(y)){
+  if (missing(x) & missing(y) & locate == FALSE){
     usr <- par("usr")
     xr <- (usr[2] - usr[1]) * 0.08
     yr <- (usr[4] - usr[3]) * 0.08
@@ -140,6 +141,12 @@ wrap_legend <- function(x, y, legend, col, h = 0.75, w = 0.75, tl = .2, s = .4,
     ylim <- c(usr[3] + yr, usr[4] - yr)
     x <- xlim[1]
     y <- ylim[2]
+  }
+
+  if (missing(x) & missing(y) & locate == TRUE){
+    coordinates <- locator(1)
+    x = coordinates$x
+    y = coordinates$y
   }
 
   legend2(x, y, legend = legend, col = col , h = h, w = w, tl = tl, s = s,
@@ -150,7 +157,9 @@ wrap_legend <- function(x, y, legend, col, h = 0.75, w = 0.75, tl = .2, s = .4,
 
 plot(1:10, 1:10)
 points(1, 9, col = "blue")
-legend2(1,9, letters[1:3], col = heat.colors(4))
+legend2(1,9, letters[1:3], col = heat.colors(2))
+wrap_legend(locate = TRUE, legend = c("zero", "yellow", "red"), col = heat.colors(2))
+wrap_legend(locate = TRUE, legend = letters[1:3], col = heat.colors(2))
 #gdpm_choropleth("ili", 1980, x = 98.85, y = 18, n = 6, col = "YlOrBr",
 #   style = "jenks", col_na = "chartreuse", adj = 1)
 
