@@ -160,7 +160,7 @@ wrap_legend <- function(x, y, legend, col, pos = "top-left", locate = FALSE,
       y <- ylim[2]
     }
     if (pos == "top-right"){
-      x <- xlim[2] - w - size_legend
+      x <- xlim[2] - w - size_legend - tl -s
       y <- ylim[2]
     }
     if (pos == "bottom-left"){
@@ -168,7 +168,7 @@ wrap_legend <- function(x, y, legend, col, pos = "top-left", locate = FALSE,
       y <- ylim[1] + ((length(legend)-1)* h )
     }
     if (pos == "bottom-right"){
-      x <- xlim[2] - w - size_legend
+      x <- xlim[2] - w - size_legend -tl - s
       y <- ylim[1] + ((length(legend)-1)* h )
     }
 
