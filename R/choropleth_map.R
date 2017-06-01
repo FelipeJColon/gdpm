@@ -46,7 +46,7 @@ library(gdpm)
 #' @export
 gdpm_choropleth <- function(disease, ye, x, y, sel = "incidence", n = 6,
   col = "YlOrBr", style = "quantile",  col_na = "grey",
-  locate = FALSE, pos = "top-left",
+  locate = FALSE, pos = "top-left", distrib = TRUE,
   h = 0.75, w = 0.75, tl = .2, s = .2, adj = 1, ...)
   {
   # prepare the table in the right format
@@ -60,17 +60,21 @@ gdpm_choropleth <- function(disease, ye, x, y, sel = "incidence", n = 6,
     ungroup
   # draw the choropleth map
   idcm(df, ye, x, y, locate = locate, pos = pos,
-    n = n, col = col, style = style, col_na = col_na,
-    legend = legend,  h = h, w = w, tl = tl, s = s, adj = adj, ...)
+    n = n, col = col, style = style, col_na = col_na, distrib = distrib,
+    legend = legend, h = h, w = w, tl = tl, s = s, adj = adj, ...)
 }
 
 # GENERIC ----------------------------------------------------------------------
 
 # draw a choropleth map
 idcm <- function(df, ye, x, y,
+  distrib = FALSE,
   n = 6, col = "YlOrBr", style = "quantile",  col_na = "grey",
   legend, pos = "top-left",
   locate= FALSE, h = 0.75, w = 0.75, tl = .2, s = .2, adj = 1, ...) {
+
+  # graph parameters
+  par <- par(fig = c(0,1,0,1), mar = c(5.1, 4.1, 4.1, 2.1))
 
   # implement the incidence data in the shape file data
   require(gadmVN)
@@ -81,9 +85,9 @@ idcm <- function(df, ye, x, y,
   require(RColorBrewer)
   require(classInt)
   if (length(grep("#", col[1])) >= 1) {
-    pal = col
+    pal = col %>% rev
   } else {
-    pal = rev(brewer.pal(n, col))
+    pal = brewer.pal(n, col)
   }
   classint <- suppressWarnings(classIntervals(provinces$value, n = n,
     style = style, na.rm = TRUE))
@@ -97,6 +101,21 @@ idcm <- function(df, ye, x, y,
   wrap_legend(x, y, legend = classint$brks, col = pal, locate = locate,
     pos = pos, h = h, w = w, tl = tl,
     s = s, adj = adj, ...)
+
+  # if ask, plot the quantile distribution (bottom right)
+  if (distrib == TRUE){
+    plotdim <- par("plt")
+    xleft <- plotdim[2] - (plotdim[2] - plotdim[1]) * 0.2
+    xright <- plotdim[2]
+    ybottom <- plotdim[3]
+    ytop <- plotdim[4] - (plotdim[4] - plotdim[3]) * 0.3
+    par(fig = c(xleft, xright, ybottom, ytop), new = TRUE, mar = c(0,0,0,0))
+
+    quantile <- suppressWarnings(classIntervals(provinces$value, n = n ,
+      style = style, na.rm = TRUE))
+    plot(quantile, pal = pal, main = "")
+  }
+
 }
 
 
@@ -104,39 +123,20 @@ idcm <- function(df, ye, x, y,
 legend2 <- function(x, y, legend, col = c("red", "green", "blue"),
   h = 0.75, w = 0.75, tl = .2, s = .2, adj = 1, ...) {
 
-  # calculate size of one character
-  usr <- par("usr")  # figure dimension in coordinates unity
-
-  usr <- par("usr")
-  xr <- (usr[2] - usr[1])/27
-  yr <- (usr[4] - usr[3])/27
-  xlim <- c(usr[1] + xr, usr[2] - xr)
-  ylim <- c(usr[3] + yr, usr[4] - yr)
-  usrr <- c(xlim, ylim)
-  #usrr <- c(diff(usr[1:2]) - 0.08 * diff(usr[1:2]),
-   # diff(usr[3:4]) - 0.08 * diff(usr[3:4]))
-  #pin <- par("pin")
-  #pinr <- pin - 0.08 * pin
-  #pinr <- pin - pin/27
-  #cin <- par("cin")
-  #cinr <- cin - 0.08 * cin
-  #cinr <- cin - cin/27
-  #crl <- (cinr /  pinr) * usrr
-
   # size of the top character (width height)
-  size_legend <- legend %>% as.character %>% tail(1) #%>%
-   #nchar()
-  #size_legend <-  size_legend * par("cxy")#crl
+  size_legend <- legend %>% as.character %>% tail(1) %>%
+    strwidth()
 
   # define point of the legend
-  xleft <- x + strwidth(size_legend) + tl + s
+  xleft <- x + size_legend + tl + s
   xright <- xleft + w
   y <- y - (0:length(col)) * h
+  col %<>% rev
   for(i in seq_along(col))
     rect(xleft, y[i + 1], xright, y[i], col = col[i], border = NA)
   rect(xleft, tail(y, 1), xright, y[1])
   segments(xleft, y, xleft - tl, y)
-  text(x + strwidth(size_legend), y, rev(legend), adj = adj, ...)
+  text(x + size_legend, y, rev(legend), adj = adj, ...)
 
 }
 
@@ -204,21 +204,33 @@ gdpm_choropleth("ili", 1980, n = 6, col = "YlOrBr", style = "jenks")
 gdpm_choropleth("ili", 1980, n = 6, col = "YlOrBr", style = "jenks", cex = 0.5)
 
 # test colors
-gdpm_choropleth("ili", 2004, n = 6, col = heat.colors(6), style = "jenks")
+gdpm_choropleth("ili", 1980, n = 6, col = heat.colors(6), style = "jenks")
+
+# test styles
+gdpm_choropleth("ili", 1980, n = 6, col = heat.colors(6), style = "quantile")
 
 # test locator
-gdpm_choropleth("ili", 2004, n = 6, locate = TRUE, col = heat.colors(6), style = "jenks")
+gdpm_choropleth("ili", 1980, n = 6, locate = TRUE, col = heat.colors(6),
+  style = "jenks")
+
+# test distribution FALSE
+gdpm_choropleth("ili", 1980, n = 6, distrib = FALSE, col = heat.colors(6),
+  style = "jenks")
 
 # test position
 # top left
 gdpm_choropleth("ili", 2004, n = 6, col = heat.colors(6), style = "jenks")
-gdpm_choropleth("ili", 2004, n = 6, pos = "top-left", col = heat.colors(6), style = "jenks")
+gdpm_choropleth("ili", 2004, n = 6, pos = "top-left", col = heat.colors(6),
+  style = "jenks")
 # top right
-gdpm_choropleth("ili", 2004, n = 6, pos = "top-right",col = heat.colors(6), style = "jenks")
+gdpm_choropleth("ili", 2004, n = 6, pos = "top-right",col = heat.colors(6),
+  style = "jenks", distrib = FALSE)
 # bottom left
-gdpm_choropleth("ili", 2004, n = 6, pos = "bottom-left",col = heat.colors(6), style = "jenks")
+gdpm_choropleth("ili", 2004, n = 6, pos = "bottom-left",col = heat.colors(6),
+  style = "jenks")
 # bottom right
-gdpm_choropleth("ili", 2004, n = 6, pos = "bottom-right",col = heat.colors(6), style = "jenks")
+gdpm_choropleth("ili", 2004, n = 6, pos = "bottom-right",col = heat.colors(6),
+  style = "jenks", distrib = FALSE)
 
 # test when x & y are inputed
 gdpm_choropleth("ili", 1980, x = 110, y = 22, n = 6, col = "YlOrBr",
