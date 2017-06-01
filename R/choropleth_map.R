@@ -9,6 +9,7 @@ library(gdpm)
 #'
 #' @param disease name of an epidemiological data frame (e.g. \code{ili}
 #' @param ye an year to indicate the temporal information
+#' @param month month to precise the temporal information
 #' @param x a value for the x coordinate of the top-left part of the legend
 #' @param y a value for the y coordinate of the top-left part of the legend
 #' @param sel a character value which can be "incidence" (by default) or
@@ -44,20 +45,24 @@ library(gdpm)
 #' gdpm_choropleth("ili", 1980, x = 93, y = 18, n = 6, col = "YlOrBr",
 #'      style = "jenks", col_na = "chartreuse")
 #' @export
-gdpm_choropleth <- function(disease, ye, x, y, sel = "incidence", n = 6,
+gdpm_choropleth <- function(disease, ye, month, x, y, sel = "incidence", n = 6,
   col = "YlOrBr", style = "quantile",  col_na = "grey",
   locate = FALSE, pos = "top-left", distrib = TRUE,
   h = 0.75, w = 0.75, tl = .2, s = .2, adj = 1, ...)
   {
+  if (sel == "incidence"){off <- "mortality"}
+  if (sel == "mortality"){off <- "incidence"}
+
   # prepare the table in the right format
   name <- paste0(sel,"_",disease)
   df <- getid_(disease, from = ye, to = ye) %>%
-    select(-year, -contains("mortality")) %>%
-    group_by(province) %>%
-    rename_("incidence" = name) %>%
-    summarise(value = ifelse(mean(is.na(incidence)) == 1,
-      sum(incidence), sum(incidence, na.rm = TRUE))) %>%
-    ungroup
+    select(-year, -contains(off)) %>%
+    rename_("value" = name)
+  df <- df[which(df$month == month),] %>%
+    select(-month)
+    #summarise(value = ifelse(mean(is.na(incidence)) == 1,
+     # sum(incidence), sum(incidence, na.rm = TRUE))) %>%
+    #ungroup
   # draw the choropleth map
   idcm(df, ye, x, y, locate = locate, pos = pos,
     n = n, col = col, style = style, col_na = col_na, distrib = distrib,
@@ -197,47 +202,59 @@ wrap_legend(legend = letters[1:3], col = heat.colors(2))
 wrap_legend(legend = letters[1:3], col = heat.colors(2), pos = "top-right")
 
 # read the data
-gdpm_choropleth("ili", 1980)
-gdpm_choropleth("ili", 1980, n = 6, col = "YlOrBr", style = "jenks")
+gdpm_choropleth("ili", 1980, "January")
+gdpm_choropleth("ili", 1980, "April", n = 6, col = "YlOrBr", style = "jenks")
 
 # ... correspond to the legend text parameters
-gdpm_choropleth("ili", 1980, n = 6, col = "YlOrBr", style = "jenks", cex = 0.5)
+gdpm_choropleth("ili", 1980, "April", n = 6, col = "YlOrBr", style = "jenks",
+  cex = 0.5)
 
 # test colors
-gdpm_choropleth("ili", 1980, n = 6, col = heat.colors(6), style = "jenks")
+gdpm_choropleth("ili", 1980, "April", n = 6, col = heat.colors(6),
+  style = "jenks")
 
 # test styles
-gdpm_choropleth("ili", 1980, n = 6, col = heat.colors(6), style = "quantile")
+gdpm_choropleth("ili", 1980, "April", n = 6, col = heat.colors(6),
+  style = "quantile")
 
 # test locator
-gdpm_choropleth("ili", 1980, n = 6, locate = TRUE, col = heat.colors(6),
-  style = "jenks")
+gdpm_choropleth("ili", 1980, "April", n = 6, locate = TRUE,
+  col = heat.colors(6), style = "jenks")
 
 # test distribution FALSE
-gdpm_choropleth("ili", 1980, n = 6, distrib = FALSE, col = heat.colors(6),
-  style = "jenks")
+gdpm_choropleth("ili", 1980, "April", n = 6, distrib = FALSE,
+  col = heat.colors(6), style = "jenks")
 
 # test position
 # top left
-gdpm_choropleth("ili", 2004, n = 6, col = heat.colors(6), style = "jenks")
-gdpm_choropleth("ili", 2004, n = 6, pos = "top-left", col = heat.colors(6),
+gdpm_choropleth("ili", 2004, "April", n = 6, col = heat.colors(6),
   style = "jenks")
+gdpm_choropleth("ili", 2004, "April", n = 6, pos = "top-left",
+  col = heat.colors(6), style = "jenks")
 # top right
-gdpm_choropleth("ili", 2004, n = 6, pos = "top-right",col = heat.colors(6),
-  style = "jenks", distrib = FALSE)
+gdpm_choropleth("ili", 2004, "April", n = 6, pos = "top-right",
+  col = heat.colors(6), style = "jenks", distrib = FALSE)
 # bottom left
-gdpm_choropleth("ili", 2004, n = 6, pos = "bottom-left",col = heat.colors(6),
-  style = "jenks")
+gdpm_choropleth("ili", 2004, "April", n = 6, pos = "bottom-left",
+  col = heat.colors(6), style = "jenks")
 # bottom right
-gdpm_choropleth("ili", 2004, n = 6, pos = "bottom-right",col = heat.colors(6),
-  style = "jenks", distrib = FALSE)
+gdpm_choropleth("ili", 2004, "April", n = 6, pos = "bottom-right",
+  col = heat.colors(6), style = "jenks", distrib = FALSE)
 
 # test when x & y are inputed
-gdpm_choropleth("ili", 1980, x = 110, y = 22, n = 6, col = "YlOrBr",
+gdpm_choropleth("ili", 1980, "April", x = 110, y = 22, n = 6, col = "YlOrBr",
   style = "jenks", col_na = "chartreuse", adj = 1)
 points(110,22, col = "red")
 
 # test color NA
-gdpm_choropleth("ili", 1980, n = 6, col = "YlOrBr",
+gdpm_choropleth("ili", 1980,  "April", n = 6, col = "YlOrBr",
      style = "jenks", col_na = "chartreuse", adj = 1)
+
+# test sel parameters
+gdpm_choropleth("ili", 2004, "April", n = 6, sel = "incidence",
+  col = heat.colors(6), style = "jenks")
+gdpm_choropleth("ili", 2004, "January", n = 3, sel = "mortality",
+  col = heat.colors(3), style = "jenks")
+
+
 
