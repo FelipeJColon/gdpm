@@ -44,9 +44,10 @@ library(gdpm)
 #' gdpm_choropleth("ili", 1980, x = 93, y = 18, n = 6, col = "YlOrBr",
 #'      style = "jenks", col_na = "chartreuse")
 #' @export
-gdpm_choropleth <- function(disease, ye, x, y, locate = FALSE, sel = "incidence", n = 6,
+gdpm_choropleth <- function(disease, ye, x, y, sel = "incidence", n = 6,
   col = "YlOrBr", style = "quantile",  col_na = "grey",
-  h = 0.75, w = 0.75, tl = .2, s = .4, adj = 1, ...)
+  locate = FALSE, pos = "top-left",
+  h = 0.75, w = 0.75, tl = .2, s = .2, adj = 1, ...)
   {
   # prepare the table in the right format
   name <- paste0(sel,"_",disease)
@@ -58,7 +59,8 @@ gdpm_choropleth <- function(disease, ye, x, y, locate = FALSE, sel = "incidence"
       sum(incidence), sum(incidence, na.rm = TRUE))) %>%
     ungroup
   # draw the choropleth map
-  idcm(df, ye, x, y, locate = locate, n = n, col = col, style = style, col_na = col_na,
+  idcm(df, ye, x, y, locate = locate, pos = pos,
+    n = n, col = col, style = style, col_na = col_na,
     legend = legend,  h = h, w = w, tl = tl, s = s, adj = adj, ...)
 }
 
@@ -67,7 +69,8 @@ gdpm_choropleth <- function(disease, ye, x, y, locate = FALSE, sel = "incidence"
 # draw a choropleth map
 idcm <- function(df, ye, x, y,
   n = 6, col = "YlOrBr", style = "quantile",  col_na = "grey",
-  legend, locate= FALSE, h = 0.75, w = 0.75, tl = .2, s = .4, adj = 1, ...) {
+  legend, pos = "top-left",
+  locate= FALSE, h = 0.75, w = 0.75, tl = .2, s = .2, adj = 1, ...) {
 
   # implement the incidence data in the shape file data
   require(gadmVN)
@@ -92,55 +95,83 @@ idcm <- function(df, ye, x, y,
 
   # legend
   wrap_legend(x, y, legend = classint$brks, col = pal, locate = locate,
-    h = h, w = w, tl = tl,
+    pos = pos, h = h, w = w, tl = tl,
     s = s, adj = adj, ...)
 }
 
 
 # add a legend to a plot
 legend2 <- function(x, y, legend, col = c("red", "green", "blue"),
-  h = 0.75, w = 0.75, tl = .2, s = .4, adj = 1, ...) {
+  h = 0.75, w = 0.75, tl = .2, s = .2, adj = 1, ...) {
 
   # calculate size of one character
   usr <- par("usr")  # figure dimension in coordinates unity
-  usrr <- c(diff(usr[1:2]) - 0.08 * diff(usr[1:2]),
-    diff(usr[3:4]) - 0.08 * diff(usr[3:4]))
-  pin <- par("pin")
-  pinr <- pin - 0.08 * pin
-  cin <- par("cin")
-  cinr <- cin - 0.08 * cin
-  crl <- (cinr /  pinr) * usrr
+
+  usr <- par("usr")
+  xr <- (usr[2] - usr[1])/27
+  yr <- (usr[4] - usr[3])/27
+  xlim <- c(usr[1] + xr, usr[2] - xr)
+  ylim <- c(usr[3] + yr, usr[4] - yr)
+  usrr <- c(xlim, ylim)
+  #usrr <- c(diff(usr[1:2]) - 0.08 * diff(usr[1:2]),
+   # diff(usr[3:4]) - 0.08 * diff(usr[3:4]))
+  #pin <- par("pin")
+  #pinr <- pin - 0.08 * pin
+  #pinr <- pin - pin/27
+  #cin <- par("cin")
+  #cinr <- cin - 0.08 * cin
+  #cinr <- cin - cin/27
+  #crl <- (cinr /  pinr) * usrr
 
   # size of the top character (width height)
-  size_legend <- legend %>% as.character %>% tail(1) %>%
-   nchar()
-  size_legend <-  size_legend * crl
+  size_legend <- legend %>% as.character %>% tail(1) #%>%
+   #nchar()
+  #size_legend <-  size_legend * par("cxy")#crl
 
   # define point of the legend
-  xleft <- x + (size_legend[1] + tl + s)
+  xleft <- x + strwidth(size_legend) + tl + s
   xright <- xleft + w
   y <- y - (0:length(col)) * h
   for(i in seq_along(col))
     rect(xleft, y[i + 1], xright, y[i], col = col[i], border = NA)
   rect(xleft, tail(y, 1), xright, y[1])
   segments(xleft, y, xleft - tl, y)
-  text((x + size_legend[1]), y, rev(legend), adj = adj, ...)
+  text(x + strwidth(size_legend), y, rev(legend), adj = adj, ...)
 
 }
 
 # Development -----------------------------------------------------------------
 
-wrap_legend <- function(x, y, legend, col, locate = FALSE, h = 0.75,
-  w = 0.75, tl = .2, s = .4, adj = 1, ...){
+wrap_legend <- function(x, y, legend, col, pos = "top-left", locate = FALSE,
+  h = 0.75, w = 0.75, tl = .2, s = .2, adj = 1, ...){
 
   if (missing(x) & missing(y) & locate == FALSE){
     usr <- par("usr")
-    xr <- (usr[2] - usr[1]) * 0.08
-    yr <- (usr[4] - usr[3]) * 0.08
+    xr <- (usr[2] - usr[1])/27
+    yr <- (usr[4] - usr[3])/27
     xlim <- c(usr[1] + xr, usr[2] - xr)
     ylim <- c(usr[3] + yr, usr[4] - yr)
-    x <- xlim[1]
-    y <- ylim[2]
+
+    size_legend <- legend %>% as.character %>% tail(1) %>%
+      strwidth()
+
+    if (pos == "top-left"){
+      x <- xlim[1] + size_legend
+      y <- ylim[2]
+    }
+    if (pos == "top-right"){
+      x <- xlim[2] - w - size_legend
+      y <- ylim[2]
+    }
+    if (pos == "bottom-left"){
+      x <- xlim[1] + size_legend
+      y <- ylim[1] + ((length(legend)-1)* h )
+    }
+    if (pos == "bottom-right"){
+      x <- xlim[2] - w - size_legend
+      y <- ylim[1] + ((length(legend)-1)* h )
+    }
+
   }
 
   if (missing(x) & missing(y) & locate == TRUE){
@@ -157,24 +188,44 @@ wrap_legend <- function(x, y, legend, col, locate = FALSE, h = 0.75,
 
 plot(1:10, 1:10)
 points(1, 9, col = "blue")
-legend2(1,9, letters[1:3], col = heat.colors(2))
-wrap_legend(locate = TRUE, legend = c("zero", "yellow", "red"), col = heat.colors(2))
+points(2, 9, col ="pink" )
+#legend2(1,9, letters[1:3], col = heat.colors(2))
+legend2(1,9, rep("patate", 3), col = heat.colors(2))
+wrap_legend(legend = c("zero", "yellow", "red"), col = heat.colors(2))
 wrap_legend(locate = TRUE, legend = letters[1:3], col = heat.colors(2))
-#gdpm_choropleth("ili", 1980, x = 98.85, y = 18, n = 6, col = "YlOrBr",
-#   style = "jenks", col_na = "chartreuse", adj = 1)
-
-#points(98.85 + 0.75, 18 , col = "red")
-#legend2(98.85,18,c("ab","cd","ef","gh"))
-
+wrap_legend(legend = letters[1:3], col = heat.colors(2))
+wrap_legend(legend = letters[1:3], col = heat.colors(2), pos = "top-right")
 
 # read the data
+gdpm_choropleth("ili", 1980)
 gdpm_choropleth("ili", 1980, n = 6, col = "YlOrBr", style = "jenks")
+
+# ... correspond to the legend text parameters
+gdpm_choropleth("ili", 1980, n = 6, col = "YlOrBr", style = "jenks", cex = 0.5)
+
+# test colors
 gdpm_choropleth("ili", 2004, n = 6, col = heat.colors(6), style = "jenks")
 
+# test locator
+gdpm_choropleth("ili", 2004, n = 6, locate = TRUE, col = heat.colors(6), style = "jenks")
+
+# test position
+# top left
+gdpm_choropleth("ili", 2004, n = 6, col = heat.colors(6), style = "jenks")
+gdpm_choropleth("ili", 2004, n = 6, pos = "top-left", col = heat.colors(6), style = "jenks")
+# top right
+gdpm_choropleth("ili", 2004, n = 6, pos = "top-right",col = heat.colors(6), style = "jenks")
+# bottom left
+gdpm_choropleth("ili", 2004, n = 6, pos = "bottom-left",col = heat.colors(6), style = "jenks")
+# bottom right
+gdpm_choropleth("ili", 2004, n = 6, pos = "bottom-right",col = heat.colors(6), style = "jenks")
+
+# test when x & y are inputed
 gdpm_choropleth("ili", 1980, x = 110, y = 22, n = 6, col = "YlOrBr",
   style = "jenks", col_na = "chartreuse", adj = 1)
+points(110,22, col = "red")
 
-
-
-
+# test color NA
+gdpm_choropleth("ili", 1980, n = 6, col = "YlOrBr",
+     style = "jenks", col_na = "chartreuse", adj = 1)
 
