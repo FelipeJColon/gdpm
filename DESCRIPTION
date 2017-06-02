@@ -8,19 +8,21 @@ Description: Contains the data from the General Department of Preventive
     Medicine (last update, March 2017).
 License: GPL-3
 Depends:
-    R (>= 2.10)
+    R (>= 2.10),
+    sp
 LazyData: TRUE
 Suggests:
     knitr,
     rmarkdown,
     testthat,
-    RColorBrewer,
-    gadmVN
+    RColorBrewer
 VignetteBuilder: knitr
 Imports:
     dplyr,
     magrittr,
     tidyr,
     purrr,
-    plyr
+    plyr,
+    classInt,
+    gadmVN
 RoxygenNote: 5.0.1

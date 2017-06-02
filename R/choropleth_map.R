@@ -10,8 +10,8 @@
 #' @param n a numeric indicating the number of intervals to represent the data
 #' (by default, \code{n = 6})
 #' @param col a vector of colors to use for the map (by default,
-#' \code{col = "YlOrBr"}.The colors from the package RColorBrewer can also be
-#' used.
+#' \code{col = heat.colors(6)}.The colors from the package RColorBrewer can also
+#'  be used.
 #' @param style a character value issued from the \code{classint} package, and
 #' used to select a method for the different way of calculating the intervals
 #' (by default \code{style = "quantile"})
@@ -43,25 +43,25 @@
 #' gdpm_choropleth("ili", 2004, "April")
 #'
 #' # with some data transformations in order to reflect better the contrasts:
-#' gdpm_choropleth("ili", 2004, "April", x = 93, y = 18, n = 6, col = "YlOrBr",
-#'      style = "jenks")
+#' gdpm_choropleth("ili", 2004, "April", x = 93, y = 18, n = 6,
+#' col = heat.colors(6), style = "jenks")
 #'
 #' # using some other color palettes, for examples the ones from the
 #' # RColorBrewer package or the one in the color Palettes of R :
 #' library(RColorBrewer)
 #' # to see the available color palettes:
 #' display.brewer.all()
-#' gdpm_choropleth("ili", 2004, "April", x = 93, y = 18, n = 6, col = "YlOrBr",
-#'      style = "jenks")
 #' gdpm_choropleth("ili", 2004, "April", x = 93, y = 18, n = 6,
-#'  col = heat.colors(6), style = "jenks")
+#' col = heat.colors(6), style = "jenks")
+#' gdpm_choropleth("ili", 2004, "April", x = 93, y = 18, n = 6,
+#'  col = "YlOrBr", style = "jenks")
 #'
 #' # changing the color of the missing values:
 #' gdpm_choropleth("ili", 1980, "April", col_na = "chartreuse")
 #'
 #' # changing the legend text parameters
-#' gdpm_choropleth("ili", 1980, "April", n = 6, col = "YlOrBr", style = "jenks",
-#'   cex = 0.5)
+#' gdpm_choropleth("ili", 1980, "April", n = 6, col = heat.colors(6),
+#' style = "jenks", cex = 0.5)
 #' # Print the numeric legend with 2 decimals
 #' gdpm_choropleth("ili", 1980, "April", n = 6, n_round = 2)
 #'
@@ -109,7 +109,7 @@
 #'
 #' @export
 gdpm_choropleth <- function(disease, ye, month, x, y, sel = "incidence", n = 6,
-  col = "YlOrBr", style = "quantile", col_na = "grey", fixedBreaks = NULL,
+  col = heat.colors(6), style = "quantile", col_na = "grey", fixedBreaks = NULL,
   locate = FALSE, pos = "top-left", distrib = TRUE, n_round = 0,
   h = 0.75, w = 0.75, tl = .2, s = .2, ...)
   {
@@ -143,8 +143,8 @@ gdpm_choropleth <- function(disease, ye, month, x, y, sel = "incidence", n = 6,
 #' @param n a numeric indicating the number of intervals to represent the data
 #' (by default, \code{n = 6})
 #' @param col a vector of colors to use for the map (by default,
-#' \code{col = "YlOrBr"}).The colors from the package RColorBrewer can also be
-#' used.
+#' \code{col = heat.colors(6)}).The colors from the package RColorBrewer can
+#' also be used.
 #' @param style a character value issued from the \code{classint} package, and
 #' used to select a method for the different way of calculating the intervals
 #' (by default \code{style = "quantile"})
@@ -172,7 +172,7 @@ gdpm_choropleth <- function(disease, ye, month, x, y, sel = "incidence", n = 6,
 #' @keywords internal
 #' @noRd
 idcm <- function(df, ye, x, y,
-  n = 6, col = "YlOrBr", style = "quantile",  col_na = "grey",
+  n = 6, col = heat.colors(6), style = "quantile",  col_na = "grey",
   fixedBreaks = NULL, locate = FALSE, pos = "top-left", distrib = TRUE,
   n_round = 0, h = 0.75, w = 0.75, tl = .2, s = .2, ...) {
 
@@ -180,17 +180,14 @@ idcm <- function(df, ye, x, y,
   par <- par(fig = c(0,1,0,1), mar = c(5.1, 4.1, 4.1, 2.1))
 
   # implement the incidence data in the shape file data
-  require(gadmVN)
-  provinces <- gadm(date = ye)
+  provinces <- gadmVN::gadm(date = ye)
   provinces <- sp::merge(provinces, df)
 
   # choose class interval and color
-  require(RColorBrewer)
-  require(classInt)
   if (length(grep("#", col[1])) >= 1) {
     pal = col %>% rev
   } else {
-    pal = brewer.pal(n, col)
+    pal = RColorBrewer::brewer.pal(n, col)
   }
    if(length(fixedBreaks) != 0){
      classint <- suppressWarnings(classIntervals(provinces$value, n = n,

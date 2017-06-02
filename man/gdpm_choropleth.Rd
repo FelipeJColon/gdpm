@@ -5,7 +5,7 @@
 \title{Makes a spatio-temporal choropleth map of a disease}
 \usage{
 gdpm_choropleth(disease, ye, month, x, y, sel = "incidence", n = 6,
-  col = "YlOrBr", style = "quantile", col_na = "grey",
+  col = heat.colors(6), style = "quantile", col_na = "grey",
   fixedBreaks = NULL, locate = FALSE, pos = "top-left", distrib = TRUE,
   n_round = 0, h = 0.75, w = 0.75, tl = 0.2, s = 0.2, ...)
 }
@@ -27,8 +27,8 @@ gdpm_choropleth(disease, ye, month, x, y, sel = "incidence", n = 6,
 (by default, \code{n = 6})}
 
 \item{col}{a vector of colors to use for the map (by default,
-\code{col = "YlOrBr"}.The colors from the package RColorBrewer can also be
-used.}
+\code{col = heat.colors(6)}.The colors from the package RColorBrewer can also
+ be used.}
 
 \item{style}{a character value issued from the \code{classint} package, and
 used to select a method for the different way of calculating the intervals
@@ -75,25 +75,25 @@ library(gdpm)
 gdpm_choropleth("ili", 2004, "April")
 
 # with some data transformations in order to reflect better the contrasts:
-gdpm_choropleth("ili", 2004, "April", x = 93, y = 18, n = 6, col = "YlOrBr",
-     style = "jenks")
+gdpm_choropleth("ili", 2004, "April", x = 93, y = 18, n = 6,
+col = heat.colors(6), style = "jenks")
 
 # using some other color palettes, for examples the ones from the
 # RColorBrewer package or the one in the color Palettes of R :
 library(RColorBrewer)
 # to see the available color palettes:
 display.brewer.all()
-gdpm_choropleth("ili", 2004, "April", x = 93, y = 18, n = 6, col = "YlOrBr",
-     style = "jenks")
 gdpm_choropleth("ili", 2004, "April", x = 93, y = 18, n = 6,
- col = heat.colors(6), style = "jenks")
+col = heat.colors(6), style = "jenks")
+gdpm_choropleth("ili", 2004, "April", x = 93, y = 18, n = 6,
+ col = "YlOrBr", style = "jenks")
 
 # changing the color of the missing values:
 gdpm_choropleth("ili", 1980, "April", col_na = "chartreuse")
 
 # changing the legend text parameters
-gdpm_choropleth("ili", 1980, "April", n = 6, col = "YlOrBr", style = "jenks",
-  cex = 0.5)
+gdpm_choropleth("ili", 1980, "April", n = 6, col = heat.colors(6),
+style = "jenks", cex = 0.5)
 # Print the numeric legend with 2 decimals
 gdpm_choropleth("ili", 1980, "April", n = 6, n_round = 2)
 
