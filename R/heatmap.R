@@ -48,7 +48,7 @@
 sthm <- function(df,
   f = function(x) x, col = heat.colors(12),
   col_na = "grey", x = c(.85, .87, .92), show_names = FALSE) {
-  #require(dplyr)  # for "mutate", "arrange"
+
   warn_old <- unlist(options("warn"))
   options(warn = -1)
   on.exit(options(warn = warn_old))
