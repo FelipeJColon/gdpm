@@ -27,6 +27,8 @@
 #' if \code{x, y} are not indicated
 #' @param distrib if TRUE, print on the map, the distribution of the values by
 #' intervals
+#' @param n_round integer indicating the number of significant digits to be used
+#' in the legend, by default (\code{0})
 #' @param h legend parameter expressing the height of one rectangle
 #' in the legend
 #' @param w legend parameter expressing the width of the legend
@@ -60,6 +62,8 @@
 #' # changing the legend text parameters
 #' gdpm_choropleth("ili", 1980, "April", n = 6, col = "YlOrBr", style = "jenks",
 #'   cex = 0.5)
+#' # Print the numeric legend with 2 decimals
+#' gdpm_choropleth("ili", 1980, "April", n = 6, n_round = 2)
 #'
 # # Doesn't print the distribution of the value by intervals
 #' gdpm_choropleth("ili", 1980, "April", n = 6, distrib = FALSE,
@@ -106,7 +110,7 @@
 #' @export
 gdpm_choropleth <- function(disease, ye, month, x, y, sel = "incidence", n = 6,
   col = "YlOrBr", style = "quantile", col_na = "grey", fixedBreaks = NULL,
-  locate = FALSE, pos = "top-left", distrib = TRUE,
+  locate = FALSE, pos = "top-left", distrib = TRUE, n_round = 0,
   h = 0.75, w = 0.75, tl = .2, s = .2, ...)
   {
   if (sel == "incidence"){off <- "mortality"}
@@ -123,7 +127,7 @@ gdpm_choropleth <- function(disease, ye, month, x, y, sel = "incidence", n = 6,
   # draw the choropleth map
   idcm(df, ye, x, y, locate = locate, pos = pos, fixedBreaks = fixedBreaks,
     n = n, col = col, style = style, col_na = col_na, distrib = distrib,
-    h = h, w = w, tl = tl, s = s, ...)
+    n_round = n_round, h = h, w = w, tl = tl, s = s, ...)
 }
 
 # GENERIC ----------------------------------------------------------------------
@@ -156,6 +160,7 @@ gdpm_choropleth <- function(disease, ye, month, x, y, sel = "incidence", n = 6,
 #' if \code{x, y} are not indicated
 #' @param distrib if TRUE, print on the map, the distribution of the values by
 #' intervals
+#' @param n_round integer indicating the number of significant digits to be used
 #' @param h legend parameter expressing the height of one rectangle
 #' in the legend
 #' @param w legend parameter expressing the width of the legend
@@ -169,7 +174,7 @@ gdpm_choropleth <- function(disease, ye, month, x, y, sel = "incidence", n = 6,
 idcm <- function(df, ye, x, y,
   n = 6, col = "YlOrBr", style = "quantile",  col_na = "grey",
   fixedBreaks = NULL, locate = FALSE, pos = "top-left", distrib = TRUE,
-  h = 0.75, w = 0.75, tl = .2, s = .2, ...) {
+  n_round = 0, h = 0.75, w = 0.75, tl = .2, s = .2, ...) {
 
   # graph parameters
   par <- par(fig = c(0,1,0,1), mar = c(5.1, 4.1, 4.1, 2.1))
@@ -201,9 +206,9 @@ idcm <- function(df, ye, x, y,
   #return(provinces)
   plot(provinces, col = classint_colors)
 
-   legend
+  # legend
   legend2(x, y, legend = classint$brks, col = pal, locate = locate,
-    pos = pos, h = h, w = w, tl = tl,
+    pos = pos, n_round = n_round, h = h, w = w, tl = tl,
     s = s, ...)
 
   # if ask, plot the quantile distribution (bottom right)
@@ -234,6 +239,7 @@ idcm <- function(df, ye, x, y,
 #' @param y a value for the y coordinate of the top-left part of the legend
 #' @param legend a character vector
 #' @param col a vector of colors
+#' @param n_round integer indicating the number of significant digits to be used
 #' @param h legend parameter expressing the height of one rectangle
 #' in the legend
 #' @param w legend parameter expressing the width of the legend
@@ -244,7 +250,7 @@ idcm <- function(df, ye, x, y,
 #'
 #' @keywords internal
 #' @noRd
-square_legend <- function(x, y, legend, col,
+square_legend <- function(x, y, legend, col, n_round = 0,
   h = 0.75, w = 0.75, tl = .2, s = .2, ...) {
 
   # size of the top character (width height)
@@ -260,7 +266,11 @@ square_legend <- function(x, y, legend, col,
     rect(xleft, y[i + 1], xright, y[i], col = col[i], border = NA)
   rect(xleft, tail(y, 1), xright, y[1])
   segments(xleft, y, xleft - tl, y)
+  if (is.numeric(legend) == TRUE){
+    text(x + size_legend, y, round(rev(legend),n_round), adj = 1, ...)
+  } else {
   text(x + size_legend, y, rev(legend), adj = 1, ...)
+  }
 
 }
 
@@ -275,6 +285,7 @@ square_legend <- function(x, y, legend, col,
 #' @param pos by default \code{top-left}, but can be \code{top-right,
 #' bottom-left or bottom-right} can be used to indicate the position of the data
 #' if \code{x, y} are not indicated
+#' @param n_round integer indicating the number of significant digits to be used
 #' @param h legend parameter expressing the height of one rectangle
 #' in the legend
 #' @param w legend parameter expressing the width of the legend
@@ -286,7 +297,7 @@ square_legend <- function(x, y, legend, col,
 #' @keywords internal
 #' @noRd
 legend2 <- function(x, y, legend, col, locate = FALSE, pos = "top-left",
-  h = 0.75, w = 0.75, tl = .2, s = .2, ...){
+  n_round = 0, h = 0.75, w = 0.75, tl = .2, s = .2, ...){
 
   if (missing(x) & missing(y) & locate == FALSE){
     usr <- par("usr")
@@ -323,8 +334,8 @@ legend2 <- function(x, y, legend, col, locate = FALSE, pos = "top-left",
     y = coordinates$y
   }
 
-  square_legend(x, y, legend = legend, col = col , h = h, w = w, tl = tl,
-    s = s, ...)
+  square_legend(x, y, legend = legend, col = col , n_round = n_round, h = h,
+    w = w, tl = tl, s = s, ...)
 }
 
 

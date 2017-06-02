@@ -7,7 +7,7 @@
 gdpm_choropleth(disease, ye, month, x, y, sel = "incidence", n = 6,
   col = "YlOrBr", style = "quantile", col_na = "grey",
   fixedBreaks = NULL, locate = FALSE, pos = "top-left", distrib = TRUE,
-  h = 0.75, w = 0.75, tl = 0.2, s = 0.2, ...)
+  n_round = 0, h = 0.75, w = 0.75, tl = 0.2, s = 0.2, ...)
 }
 \arguments{
 \item{disease}{name of an epidemiological data frame (e.g. \code{ili}}
@@ -51,6 +51,9 @@ if \code{x, y} are not indicated}
 \item{distrib}{if TRUE, print on the map, the distribution of the values by
 intervals}
 
+\item{n_round}{integer indicating the number of significant digits to be used
+in the legend, by default (\code{0})}
+
 \item{h}{legend parameter expressing the height of one rectangle
 in the legend}
 
@@ -91,6 +94,8 @@ gdpm_choropleth("ili", 1980, "April", col_na = "chartreuse")
 # changing the legend text parameters
 gdpm_choropleth("ili", 1980, "April", n = 6, col = "YlOrBr", style = "jenks",
   cex = 0.5)
+# Print the numeric legend with 2 decimals
+gdpm_choropleth("ili", 1980, "April", n = 6, n_round = 2)
 
 gdpm_choropleth("ili", 1980, "April", n = 6, distrib = FALSE,
   col = heat.colors(6), style = "jenks")
