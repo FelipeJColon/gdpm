@@ -4,13 +4,15 @@
 \alias{gdpm_choropleth}
 \title{Makes a spatio-temporal choropleth map of a disease}
 \usage{
-gdpm_choropleth(disease, ye, month, x, y, sel = "incidence", n = 6,
+gdpm_choropleth(df, ye, month, x, y, sel_value = "incidence", n = 6,
   col = heat.colors(6), style = "quantile", col_na = "grey",
   fixedBreaks = NULL, locate = FALSE, pos = "top-left", distrib = TRUE,
   n_round = 0, h = 0.75, w = 0.75, tl = 0.2, s = 0.2, ...)
 }
 \arguments{
-\item{disease}{name of an epidemiological data frame (e.g. \code{ili}}
+\item{df}{a data frame containing the epidemiological data (e.g. \code{ili})
+and at least the colums "year", "month", "province" and "incidence" and/or
+"mortality"}
 
 \item{ye}{an year to indicate the temporal information}
 
@@ -20,7 +22,7 @@ gdpm_choropleth(disease, ye, month, x, y, sel = "incidence", n = 6,
 
 \item{y}{a value for the y coordinate of the top-left point of the legend}
 
-\item{sel}{a character value which can be "incidence" (by default) or
+\item{sel_value}{a character value which can be "incidence" (by default) or
 "mortality" used to select the data expressed in the map}
 
 \item{n}{a numeric indicating the number of intervals to represent the data
@@ -71,11 +73,12 @@ Makes a spatio-temporal choropleth map of a disease
 }
 \examples{
 library(gdpm)
+ili <- getid(ili)
 # A choroplet map of the ILI data:
-gdpm_choropleth("ili", 2004, "April")
+gdpm_choropleth(ili, 2004, "April")
 
 # with some data transformations in order to reflect better the contrasts:
-gdpm_choropleth("ili", 2004, "April", x = 93, y = 18, n = 6,
+gdpm_choropleth(ili, 2004, "April", x = 93, y = 18, n = 6,
 col = heat.colors(6), style = "jenks")
 
 # using some other color palettes, for examples the ones from the
@@ -83,60 +86,59 @@ col = heat.colors(6), style = "jenks")
 library(RColorBrewer)
 # to see the available color palettes:
 display.brewer.all()
-gdpm_choropleth("ili", 2004, "April", x = 93, y = 18, n = 6,
+gdpm_choropleth(ili, 2004, "April", x = 93, y = 18, n = 6,
 col = heat.colors(6), style = "jenks")
-gdpm_choropleth("ili", 2004, "April", x = 93, y = 18, n = 6,
+gdpm_choropleth(ili, 2004, "April", x = 93, y = 18, n = 6,
  col = "YlOrBr", style = "jenks")
 
 # changing the color of the missing values:
-gdpm_choropleth("ili", 1980, "April", col_na = "chartreuse")
+gdpm_choropleth(ili, 1980, "April", col_na = "chartreuse")
 
 # changing the legend text parameters
-gdpm_choropleth("ili", 1980, "April", n = 6, col = heat.colors(6),
+gdpm_choropleth(ili, 1980, "April", n = 6, col = heat.colors(6),
 style = "jenks", cex = 0.5)
 # Print the numeric legend with 2 decimals
-gdpm_choropleth("ili", 1980, "April", n = 6, n_round = 2)
+gdpm_choropleth(ili, 1980, "April", n = 6, n_round = 2)
 
-gdpm_choropleth("ili", 1980, "April", n = 6, distrib = FALSE,
+gdpm_choropleth(ili, 1980, "April", n = 6, distrib = FALSE,
   col = heat.colors(6), style = "jenks")
 
 # By default, the legend is on the top left of the figure, but the position
 # can be easily change by using the parameters pos
  # top left
-gdpm_choropleth("ili", 2004, "April", n = 6, col = heat.colors(6),
+gdpm_choropleth(ili, 2004, "April", n = 6, col = heat.colors(6),
   style = "jenks")
-gdpm_choropleth("ili", 2004, "April", n = 6, pos = "top-left",
+gdpm_choropleth(ili, 2004, "April", n = 6, pos = "top-left",
   col = heat.colors(6), style = "jenks")
 # top right
-gdpm_choropleth("ili", 2004, "April", n = 6, pos = "top-right",
+gdpm_choropleth(ili, 2004, "April", n = 6, pos = "top-right",
   col = heat.colors(6), style = "jenks", distrib = FALSE)
 # bottom left
-gdpm_choropleth("ili", 2004, "April", n = 6, pos = "bottom-left",
+gdpm_choropleth(ili, 2004, "April", n = 6, pos = "bottom-left",
   col = heat.colors(6), style = "jenks")
 # bottom right
-gdpm_choropleth("ili", 2004, "April", n = 6, pos = "bottom-right",
+gdpm_choropleth(ili, 2004, "April", n = 6, pos = "bottom-right",
   col = heat.colors(6), style = "jenks", distrib = FALSE)
 
 # By default, the function print the map of the incidence value for one
 # month of one year, but the mortality can also be printed.
-gdpm_choropleth("ili", 2004, "April", n = 6, sel = "incidence",
+gdpm_choropleth(ili, 2004, "April", n = 6, sel = "incidence",
   col = heat.colors(6), style = "jenks")
-gdpm_choropleth("ili", 2004, "January", n = 3, sel = "mortality",
+gdpm_choropleth(ili, 2004, "January", n = 3, sel = "mortality",
   col = heat.colors(3), style = "jenks")
 
 # The intervals used to expressed the value can be input directly as
 # parameters in the function via the parameters fixedBreaks.
 # The given breaks should be of length n+1.
-gdpm_choropleth("ili", 2004, "April", n = 3, col = heat.colors(3),
+gdpm_choropleth(ili, 2004, "April", n = 3, col = heat.colors(3),
   fixedBreaks = c(0, 5000, 10000, 15000))
 
 # Using the locator to choose where to print the legend
 \dontrun{
- gdpm_choropleth("ili", 1980, "April", n = 6, locate = TRUE,
+ gdpm_choropleth(ili, 1980, "April", n = 6, locate = TRUE,
   col = heat.colors(6), style = "jenks")
-gdpm_choropleth("ili", 1980, "April", n = 6, locate = TRUE, x = 95, y = 34,
+gdpm_choropleth(ili, 1980, "April", n = 6, locate = TRUE, x = 95, y = 34,
   col = heat.colors(6), style = "jenks")
 }
 
 }
-
