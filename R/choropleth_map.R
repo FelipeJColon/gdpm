@@ -270,7 +270,8 @@ square_legend <- function(x, y, legend, col, n_round = 0,
   rect(xleft, tail(y, 1), xright, y[1])
   segments(xleft, y, xleft - tl, y)
   if (is.numeric(legend) == TRUE){
-    text(x + size_legend, y, round(rev(legend),n_round), adj = 1, ...)
+    text(x + size_legend, y, format(round(rev(legend),n_round),
+                                    nsmall = n_round), adj = 1, ...)
   } else {
   text(x + size_legend, y, rev(legend), adj = 1, ...)
   }
