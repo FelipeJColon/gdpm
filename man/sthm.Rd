@@ -61,4 +61,3 @@ rubella <- left_join(rubella, order, by = "province")
 rubella <-  arrange(rubella, order)
 sthm(rubella, f = sqrt, col = brewer.pal(9, "YlOrRd"), col_na = "blue")
 }
-

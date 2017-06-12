@@ -9,4 +9,3 @@
 Monthly surveillance data aggregated by province by the Vietnamese General
 Department of Preventive Medicine (GDPM)
 }
-
