@@ -4,7 +4,7 @@
 #'  and at least the colums "year", "month", "province" and "incidence" and/or
 #'  "mortality"
 #' @param ye an year to indicate the temporal information
-#' @param month month to precise the temporal information
+#' @param mo month to precise the temporal information
 #' @param x a value for the x coordinate of the top-left point of the legend
 #' @param y a value for the y coordinate of the top-left point of the legend
 #' @param sel_value a character value which can be "incidence" (by default) or
@@ -41,7 +41,7 @@
 #'
 #' @examples
 #' library(gdpm)
-#' ili <- getid(ili)
+#' ili <- getid_("ili", from = 2004, to = 2004)
 #' # A choroplet map of the ILI data:
 #' gdpm_choropleth(ili, 2004, "April")
 #'
@@ -60,16 +60,17 @@
 #'  col = "YlOrBr", style = "jenks")
 #'
 #' # changing the color of the missing values:
-#' gdpm_choropleth(ili, 1980, "April", col_na = "chartreuse")
+#' ili80 <- getid(ili, from = 1980, to = 1980)
+#' gdpm_choropleth(ili80, 1980, "April", col_na = "chartreuse")
 #'
 #' # changing the legend text parameters
-#' gdpm_choropleth(ili, 1980, "April", n = 6, col = heat.colors(6),
+#' gdpm_choropleth(ili80, 1980, "April", n = 6, col = heat.colors(6),
 #' style = "jenks", cex = 0.5)
 #' # Print the numeric legend with 2 decimals
-#' gdpm_choropleth(ili, 1980, "April", n = 6, n_round = 2)
+#' gdpm_choropleth(ili80, 1980, "April", n = 6, n_round = 2)
 #'
 # # Doesn't print the distribution of the value by intervals
-#' gdpm_choropleth(ili, 1980, "April", n = 6, distrib = FALSE,
+#' gdpm_choropleth(ili80, 1980, "April", n = 6, distrib = FALSE,
 #'   col = heat.colors(6), style = "jenks")
 #'
 #' # By default, the legend is on the top left of the figure, but the position
@@ -104,15 +105,15 @@
 #'
 #' # Using the locator to choose where to print the legend
 #' \dontrun{
-#'  gdpm_choropleth(ili, 1980, "April", n = 6, locate = TRUE,
+#'  gdpm_choropleth(ili80, 1980, "April", n = 6, locate = TRUE,
 #'   col = heat.colors(6), style = "jenks")
-#' gdpm_choropleth(ili, 1980, "April", n = 6, locate = TRUE, x = 95, y = 34,
+#' gdpm_choropleth(ili80, 1980, "April", n = 6, locate = TRUE, x = 95, y = 34,
 #'   col = heat.colors(6), style = "jenks")
 #' }
 #'
 #' @export
 gdpm_choropleth <- function(#disease,
-                            df, ye, month, x, y, sel_value = "incidence", n = 6,
+                            df, ye, mo, x, y, sel_value = "incidence", n = 6,
   col = heat.colors(6), style = "quantile", col_na = "grey", fixedBreaks = NULL,
   locate = FALSE, pos = "top-left", distrib = TRUE, n_round = 0,
   h = 0.75, w = 0.75, tl = .2, s = .2, ...)
@@ -123,12 +124,8 @@ gdpm_choropleth <- function(#disease,
   # prepare the table in the right format
   sel <- grep(sel_value, names(df))
   names(df)[sel] <- "value"
-  #df <- getid_(disease, from = ye, to = ye) %>%
-  df <- filter(df, year == ye) %>%
-    select(-year, -contains(off))
-  df <- df[which(df$month == month),] %>%
-    select(-month)
-
+  df <- dplyr::filter(df, year == ye, month == mo) %>%
+    dplyr::select(-year, -contains(off), -month)
 
   # draw the choropleth map
   idcm(df, ye, x, y, locate = locate, pos = pos, fixedBreaks = fixedBreaks,
@@ -211,7 +208,7 @@ idcm <- function(df, ye, x, y,
 
   # legend
   legend2(x, y, legend = classint$brks, col = pal, locate = locate,
-    pos = pos, n_round = n_round, h = h, w = w, tl = tl,
+    pos = pos, n_round = n_round, col_na = col_na, h = h, w = w, tl = tl,
     s = s, ...)
 
   # if ask, plot the quantile distribution (bottom right)
@@ -243,6 +240,8 @@ idcm <- function(df, ye, x, y,
 #' @param legend a character vector
 #' @param col a vector of colors
 #' @param n_round integer indicating the number of significant digits to be used
+#' @param col_na the color with which to represent the missing values
+#' (by default \code{col_na = NULL})
 #' @param h legend parameter expressing the height of one rectangle
 #' in the legend
 #' @param w legend parameter expressing the width of the legend
@@ -253,7 +252,7 @@ idcm <- function(df, ye, x, y,
 #'
 #' @keywords internal
 #' @noRd
-square_legend <- function(x, y, legend, col, n_round = 0,
+square_legend <- function(x, y, legend, col, n_round = 0, col_na = NULL,
   h = 0.75, w = 0.75, tl = .2, s = .2, ...) {
 
   # size of the top character (width height)
@@ -263,19 +262,42 @@ square_legend <- function(x, y, legend, col, n_round = 0,
   # define point of the legend
   xleft <- x + size_legend + tl + s
   xright <- xleft + w
-  y <- y - (0:length(col)) * h
-  col %<>% rev
-  for(i in seq_along(col))
-    rect(xleft, y[i + 1], xright, y[i], col = col[i], border = NA)
-  rect(xleft, tail(y, 1), xright, y[1])
-  segments(xleft, y, xleft - tl, y)
-  if (is.numeric(legend) == TRUE){
-    text(x + size_legend, y, format(round(rev(legend),n_round),
-                                    nsmall = n_round), adj = 1, ...)
-  } else {
-  text(x + size_legend, y, rev(legend), adj = 1, ...)
-  }
 
+
+  if(length(col_na) != 0) {
+    # define the y for rectangle legend
+    col %<>% rev
+    y1 <- y - (0:length(col)) * h
+    # built the legend rectangles
+    for(i in seq_along(col))
+      rect(xleft, y1[i + 1], xright, y1[i], col = col[i], border = NA)
+    rect(xleft, tail(y1, 1), xright, y1[1])
+    rect(xleft, tail(y1, 1) - h , xright, tail(y1, 1) - h - h, col = col_na)
+    segments(xleft, y1, xleft - tl, y1)
+    # define the y for the text
+    ntcol <- length(col) + 2
+    y2 <- y - (0: ntcol) * h
+    y2[length(y2)] <- y2[length(y2)] + 0.5 * h
+    if (is.numeric(legend) == TRUE){
+      text(x + size_legend, y2, c(format(round(rev(legend),n_round),
+                                      nsmall = n_round), "", "NA"), adj = 1, ...)
+    } else {
+      text(x + size_legend, y2, c(rev(legend), "", "NA"), adj = 1, ...)
+    }
+  } else {
+    y <- y - (0:length(col)) * h
+    col %<>% rev
+    for(i in seq_along(col))
+      rect(xleft, y[i + 1], xright, y[i], col = col[i], border = NA)
+    rect(xleft, tail(y, 1), xright, y[1])
+    segments(xleft, y, xleft - tl, y)
+    if (is.numeric(legend) == TRUE){
+      text(x + size_legend, y, format(round(rev(legend),n_round),
+                                      nsmall = n_round), adj = 1, ...)
+    } else {
+      text(x + size_legend, y, rev(legend), adj = 1, ...)
+    }
+  }
 }
 
 #' Draws a legend
@@ -290,6 +312,8 @@ square_legend <- function(x, y, legend, col, n_round = 0,
 #' bottom-left or bottom-right} can be used to indicate the position of the data
 #' if \code{x, y} are not indicated
 #' @param n_round integer indicating the number of significant digits to be used
+#' @param col_na the color with which to represent the missing values
+#' (by default \code{col_na = NULL})
 #' @param h legend parameter expressing the height of one rectangle
 #' in the legend
 #' @param w legend parameter expressing the width of the legend
@@ -301,7 +325,7 @@ square_legend <- function(x, y, legend, col, n_round = 0,
 #' @keywords internal
 #' @noRd
 legend2 <- function(x, y, legend, col, locate = FALSE, pos = "top-left",
-  n_round = 0, h = 0.75, w = 0.75, tl = .2, s = .2, ...){
+  n_round = 0, col_na = NULL, h = 0.75, w = 0.75, tl = .2, s = .2, ...){
 
   if (missing(x) & missing(y) & locate == FALSE){
     usr <- par("usr")
@@ -338,8 +362,8 @@ legend2 <- function(x, y, legend, col, locate = FALSE, pos = "top-left",
     y = coordinates$y
   }
 
-  square_legend(x, y, legend = legend, col = col , n_round = n_round, h = h,
-    w = w, tl = tl, s = s, ...)
+  square_legend(x, y, legend = legend, col = col , n_round = n_round,
+                col_na = col_na, h = h, w = w, tl = tl, s = s, ...)
 }
 
 

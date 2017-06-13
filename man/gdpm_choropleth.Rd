@@ -4,7 +4,7 @@
 \alias{gdpm_choropleth}
 \title{Makes a spatio-temporal choropleth map of a disease}
 \usage{
-gdpm_choropleth(df, ye, month, x, y, sel_value = "incidence", n = 6,
+gdpm_choropleth(df, ye, mo, x, y, sel_value = "incidence", n = 6,
   col = heat.colors(6), style = "quantile", col_na = "grey",
   fixedBreaks = NULL, locate = FALSE, pos = "top-left", distrib = TRUE,
   n_round = 0, h = 0.75, w = 0.75, tl = 0.2, s = 0.2, ...)
@@ -16,7 +16,7 @@ and at least the colums "year", "month", "province" and "incidence" and/or
 
 \item{ye}{an year to indicate the temporal information}
 
-\item{month}{month to precise the temporal information}
+\item{mo}{month to precise the temporal information}
 
 \item{x}{a value for the x coordinate of the top-left point of the legend}
 
@@ -73,7 +73,7 @@ Makes a spatio-temporal choropleth map of a disease
 }
 \examples{
 library(gdpm)
-ili <- getid(ili)
+ili <- getid_("ili", from = 2004, to = 2004)
 # A choroplet map of the ILI data:
 gdpm_choropleth(ili, 2004, "April")
 
@@ -92,15 +92,16 @@ gdpm_choropleth(ili, 2004, "April", x = 93, y = 18, n = 6,
  col = "YlOrBr", style = "jenks")
 
 # changing the color of the missing values:
-gdpm_choropleth(ili, 1980, "April", col_na = "chartreuse")
+ili80 <- getid(ili, from = 1980, to = 1980)
+gdpm_choropleth(ili80, 1980, "April", col_na = "chartreuse")
 
 # changing the legend text parameters
-gdpm_choropleth(ili, 1980, "April", n = 6, col = heat.colors(6),
+gdpm_choropleth(ili80, 1980, "April", n = 6, col = heat.colors(6),
 style = "jenks", cex = 0.5)
 # Print the numeric legend with 2 decimals
-gdpm_choropleth(ili, 1980, "April", n = 6, n_round = 2)
+gdpm_choropleth(ili80, 1980, "April", n = 6, n_round = 2)
 
-gdpm_choropleth(ili, 1980, "April", n = 6, distrib = FALSE,
+gdpm_choropleth(ili80, 1980, "April", n = 6, distrib = FALSE,
   col = heat.colors(6), style = "jenks")
 
 # By default, the legend is on the top left of the figure, but the position
@@ -135,9 +136,9 @@ gdpm_choropleth(ili, 2004, "April", n = 3, col = heat.colors(3),
 
 # Using the locator to choose where to print the legend
 \dontrun{
- gdpm_choropleth(ili, 1980, "April", n = 6, locate = TRUE,
+ gdpm_choropleth(ili80, 1980, "April", n = 6, locate = TRUE,
   col = heat.colors(6), style = "jenks")
-gdpm_choropleth(ili, 1980, "April", n = 6, locate = TRUE, x = 95, y = 34,
+gdpm_choropleth(ili80, 1980, "April", n = 6, locate = TRUE, x = 95, y = 34,
   col = heat.colors(6), style = "jenks")
 }
 
