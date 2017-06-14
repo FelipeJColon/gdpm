@@ -31,6 +31,9 @@
 #' intervals
 #' @param n_round integer indicating the number of significant digits to be used
 #' in the legend, by default (\code{0})
+#' @param pos_brks if TRUE, the breaks values will all be positive, the first
+#' break will be superior or equal to zero, by default (\code{TRUE}). If false,
+#' allows negative value for breaks
 #' @param h legend parameter expressing the height of one rectangle
 #' in the legend
 #' @param w legend parameter expressing the width of the legend
@@ -112,10 +115,9 @@
 #' }
 #'
 #' @export
-gdpm_choropleth <- function(#disease,
-                            df, ye, mo, x, y, sel_value = "incidence", n = 6,
+gdpm_choropleth <- function(df, ye, mo, x, y, sel_value = "incidence", n = 6,
   col = heat.colors(6), style = "quantile", col_na = "grey", fixedBreaks = NULL,
-  locate = FALSE, pos = "top-left", distrib = TRUE, n_round = 0,
+  locate = FALSE, pos = "top-left", distrib = TRUE, n_round = 0, pos_brks =TRUE,
   h = 0.75, w = 0.75, tl = .2, s = .2, ...)
   {
   if (sel_value == "incidence"){off <- "mortality"}
@@ -130,7 +132,7 @@ gdpm_choropleth <- function(#disease,
   # draw the choropleth map
   idcm(df, ye, x, y, locate = locate, pos = pos, fixedBreaks = fixedBreaks,
     n = n, col = col, style = style, col_na = col_na, distrib = distrib,
-    n_round = n_round, h = h, w = w, tl = tl, s = s, ...)
+    n_round = n_round, pos_brks = pos_brks, h = h, w = w, tl = tl, s = s, ...)
 }
 
 # GENERIC ----------------------------------------------------------------------
@@ -164,6 +166,9 @@ gdpm_choropleth <- function(#disease,
 #' @param distrib if TRUE, print on the map, the distribution of the values by
 #' intervals
 #' @param n_round integer indicating the number of significant digits to be used
+#' @param pos_brks if TRUE, the breaks values will all be positive, the first
+#' break will be superior or equal to zero, by default (\code{TRUE}). If false,
+#' allows negative value for breaks
 #' @param h legend parameter expressing the height of one rectangle
 #' in the legend
 #' @param w legend parameter expressing the width of the legend
@@ -176,8 +181,8 @@ gdpm_choropleth <- function(#disease,
 #' @noRd
 idcm <- function(df, ye, x, y,
   n = 6, col = heat.colors(6), style = "quantile",  col_na = "grey",
-  fixedBreaks = NULL, locate = FALSE, pos = "top-left", distrib = TRUE,
-  n_round = 0, h = 0.75, w = 0.75, tl = .2, s = .2, ...) {
+  pos_brks = TRUE, fixedBreaks = NULL, locate = FALSE, pos = "top-left",
+  distrib = TRUE, n_round = 0, h = 0.75, w = 0.75, tl = .2, s = .2, ...) {
 
   # graph parameters
   ofig <- par("fig")
@@ -190,11 +195,6 @@ idcm <- function(df, ye, x, y,
   provinces <- sp::merge(provinces, df)
 
   # choose class interval and color
-  if (length(grep("#", col[1])) >= 1) {
-    pal = col %>% rev
-  } else {
-    pal = RColorBrewer::brewer.pal(n, col)
-  }
    if(length(fixedBreaks) != 0){
      classint <- suppressWarnings(classIntervals(provinces$value, n = n,
        style = "fixed", fixedBreaks = fixedBreaks, na.rm = TRUE))
@@ -202,6 +202,17 @@ idcm <- function(df, ye, x, y,
      classint <- suppressWarnings(classIntervals(provinces$value, n = n,
        style = style, na.rm = TRUE))
    }
+  if (length(grep("#", col[1])) >= 1) {
+    pal = col %>% rev
+  } else {
+    pal = RColorBrewer::brewer.pal(length(classint$brks) - 1, col)
+  }
+
+  # replace the value of brks below zero by zero
+  if (pos_brks == TRUE){
+    classint$brks[classint$brks < 0] <- 0
+  }
+
 
   # plot the result
   classint_colors <- findColours(classint, pal) %>%
