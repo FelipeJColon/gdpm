@@ -180,7 +180,10 @@ idcm <- function(df, ye, x, y,
   n_round = 0, h = 0.75, w = 0.75, tl = .2, s = .2, ...) {
 
   # graph parameters
-  par <- par(fig = c(0,1,0,1), mar = c(5.1, 4.1, 4.1, 2.1))
+  ofig <- par("fig")
+  omar <- par("mar")
+  par <- par(fig = ofig, mar = omar)
+  on.exit(par(fig = ofig, mar = omar))
 
   # implement the incidence data in the shape file data
   provinces <- gadmVN::gadm(date = ye)
