@@ -123,6 +123,13 @@ gdpm_choropleth <- function(df, ye, mo, x, y, sel_value = "incidence", n = 6,
   if (sel_value == "incidence"){off <- "mortality"}
   if (sel_value == "mortality"){off <- "incidence"}
 
+  # selection of the Vietnam map with the province accordingly to the year
+  # of the dataset
+  map <- gadmVN::gadm(date = min(df$year))
+  if (min(df$year) < 1992 & max(df$year) > 2007){
+    map[which(map$province == "Ha Son Binh"),] <- "Ha Noi"
+  }
+
   # prepare the table in the right format
   sel <- grep(sel_value, names(df))
   names(df)[sel] <- "value"
@@ -130,19 +137,19 @@ gdpm_choropleth <- function(df, ye, mo, x, y, sel_value = "incidence", n = 6,
     dplyr::select(-year, -contains(off), -month)
 
   # draw the choropleth map
-  idcm(df, ye, x, y, locate = locate, pos = pos, fixedBreaks = fixedBreaks,
-    n = n, col = col, style = style, col_na = col_na, distrib = distrib,
-    n_round = n_round, pos_brks = pos_brks, h = h, w = w, tl = tl, s = s, ...)
+  idcm(df = df, map = map, x = x, y = y, locate = locate, pos = pos,
+       fixedBreaks = fixedBreaks, n = n, col = col, style = style,
+       col_na = col_na, distrib = distrib, n_round = n_round,
+       pos_brks = pos_brks, h = h, w = w, tl = tl, s = s, ...)
 }
 
 # GENERIC ----------------------------------------------------------------------
 
-#' Draws a spatio-temporal choropleth map of Vietnam
+#' Draws a spatio-temporal choropleth map
 #'
 #' @param df a data frame containing two columns : one containing the province
 #' name and another containing the value to represent
-#' @param ye an year in a numeric format (to select the map corresponding to
-#' the data)
+#' @param map an object of class "SpatialPolygonsDataFrame"
 #' @param x a value for the x coordinate of the top-left part of the legend
 #' @param y a value for the y coordinate of the top-left part of the legend
 #' @param n a numeric indicating the number of intervals to represent the data
@@ -179,7 +186,7 @@ gdpm_choropleth <- function(df, ye, mo, x, y, sel_value = "incidence", n = 6,
 #'
 #' @keywords internal
 #' @noRd
-idcm <- function(df, ye, x, y,
+idcm <- function(df, map, x, y,
   n = 6, col = heat.colors(6), style = "quantile",  col_na = "grey",
   pos_brks = TRUE, fixedBreaks = NULL, locate = FALSE, pos = "top-left",
   distrib = TRUE, n_round = 0, h = 0.75, w = 0.75, tl = .2, s = .2, ...) {
@@ -187,12 +194,11 @@ idcm <- function(df, ye, x, y,
   # graph parameters
   ofig <- par("fig")
   omar <- par("mar")
-  par <- par(fig = ofig, mar = omar)
+  par <- par(fig = ofig, mar = c(2,2,2,1))
   on.exit(par(fig = ofig, mar = omar))
 
   # implement the incidence data in the shape file data
-  provinces <- gadmVN::gadm(date = ye)
-  provinces <- sp::merge(provinces, df)
+  provinces <- sp::merge(map, df)
 
   # choose class interval and color
    if(length(fixedBreaks) != 0){
@@ -221,9 +227,9 @@ idcm <- function(df, ye, x, y,
   plot(provinces, col = classint_colors)
 
   # legend
-  legend2(x, y, legend = classint$brks, col = pal, locate = locate,
-    pos = pos, n_round = n_round, col_na = col_na, h = h, w = w, tl = tl,
-    s = s, ...)
+  legend2(x = x, y = y, legend = classint$brks %>% round(n_round),
+          col = pal, locate = locate, pos = pos, n_round = n_round,
+          col_na = col_na, h = h, w = w, tl = tl, s = s, ...)
 
   # if ask, plot the quantile distribution (bottom right)
   if (distrib == TRUE){
@@ -341,6 +347,14 @@ square_legend <- function(x, y, legend, col, n_round = 0, col_na = NULL,
 legend2 <- function(x, y, legend, col, locate = FALSE, pos = "top-left",
   n_round = 0, col_na = NULL, h = 0.75, w = 0.75, tl = .2, s = .2, ...){
 
+  omar <- par("mar")
+  par(mar = c(2,2,2,1))
+  on.exit(par(mar = omar))
+
+  # size of the top character (width height)
+  size_legend <- legend %>% as.character %>% tail(1) %>%
+    strwidth()
+
   if (missing(x) & missing(y) & locate == FALSE){
     usr <- par("usr")
     xr <- (usr[2] - usr[1])/27
@@ -352,7 +366,7 @@ legend2 <- function(x, y, legend, col, locate = FALSE, pos = "top-left",
       strwidth()
 
     if (pos == "top-left"){
-      x <- xlim[1] + size_legend
+      x <- xlim[1] #+ size_legend
       y <- ylim[2]
     }
     if (pos == "top-right"){
@@ -360,7 +374,7 @@ legend2 <- function(x, y, legend, col, locate = FALSE, pos = "top-left",
       y <- ylim[2]
     }
     if (pos == "bottom-left"){
-      x <- xlim[1] + size_legend
+      x <- xlim[1] #+ size_legend
       y <- ylim[1] + ((length(legend)-1)* h )
     }
     if (pos == "bottom-right"){
