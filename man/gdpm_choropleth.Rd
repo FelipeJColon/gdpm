@@ -7,7 +7,8 @@
 gdpm_choropleth(df, ye, mo, x, y, sel_value = "incidence", n = 6,
   col = heat.colors(6), style = "quantile", col_na = "grey",
   fixedBreaks = NULL, locate = FALSE, pos = "top-left", distrib = TRUE,
-  n_round = 0, h = 0.75, w = 0.75, tl = 0.2, s = 0.2, ...)
+  n_round = 0, pos_brks = TRUE, h = 0.75, w = 0.75, tl = 0.2,
+  s = 0.2, ...)
 }
 \arguments{
 \item{df}{a data frame containing the epidemiological data (e.g. \code{ili})
@@ -55,6 +56,10 @@ intervals}
 
 \item{n_round}{integer indicating the number of significant digits to be used
 in the legend, by default (\code{0})}
+
+\item{pos_brks}{if TRUE, the breaks values will all be positive, the first
+break will be superior or equal to zero, by default (\code{TRUE}). If false,
+allows negative value for breaks}
 
 \item{h}{legend parameter expressing the height of one rectangle
 in the legend}
