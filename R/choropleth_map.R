@@ -194,78 +194,42 @@ idcm <- function(df, map, x, y,
   # graph parameters
   ofig <- par("fig")
   omar <- par("mar")
-  par <- par(fig = ofig, mar = c(2,2,2,1))
+  par <- par(mar = c(2,2,2,1))
   on.exit(par(fig = ofig, mar = omar))
 
   # implement the incidence data in the shape file data
   provinces <- sp::merge(map, df)
 
-  # draw a choropleth when all the data contain one single data
-  if(length(na.omit(unique(provinces$value))) <= 1){
+  # draw a choropleth when all the data contain one single data and no fixed
+  # breaks
+  if(length(na.omit(unique(provinces$value))) <= 1 &
+     length(fixedBreaks) == 0)
+    {
     distrib <- NULL
     choropleth_v1(provinces, x, y, col = col, col_na = col_na,
                   locate = locate, pos = pos, n_round = n_round, h = h, w = w,
                   tl = tl, s = s, ... )
 
-  } else {
-    # choose class interval and color
-    if(length(fixedBreaks) != 0){
-      classint <- suppressWarnings(classIntervals(provinces$value, n = n,
-                                                  style = "fixed",
-                                                  fixedBreaks = fixedBreaks))
-    } else {
-      classint <- suppressWarnings(classIntervals(provinces$value, n = n,
-                                                  style = style))
-    }
-    if (length(grep("#", col[1])) >= 1) {
-      pal <-  col %>% rev
-    }
-    else if (length(classint$brks) <= 3 & length(grep("#", col[1])) == 0) {
-      pal <-  RColorBrewer::brewer.pal(length(classint$brks), col)
-      pal <- pal[1:(length(classint$brks) - 1)]
-    } else {
-      pal = RColorBrewer::brewer.pal(length(classint$brks) - 1, col)
-    }
-
-    # replace the value of brks below zero by zero
-    if (pos_brks == TRUE){
-      classint$brks[classint$brks < 0] <- 0
-    }
-
-    # plot the result
-    classint_colors <- findColours(classint, pal) %>%
-      replace(is.na(.), col_na)
-    #return(provinces)
-    plot(provinces, col = classint_colors)
-
-    # legend
-    legend2(x = x, y = y, legend = classint$brks %>% round(n_round),
-            col = attr(classint_colors, "palette"), locate = locate, pos = pos,
-            n_round = n_round, col_na = col_na,
-            h = h, w = w, tl = tl, s = s, ...)
-
-    # if ask, plot the quantile distribution (bottom right)
-    if (distrib == TRUE){
-      plotdim <- par("plt")
-      xleft <- plotdim[2] - (plotdim[2] - plotdim[1]) * 0.2
-      xright <- plotdim[2]
-      ybottom <- plotdim[3]
-      ytop <- plotdim[4] - (plotdim[4] - plotdim[3]) * 0.3
-      par(fig = c(xleft, xright, ybottom, ytop), new = TRUE, mar = c(0,0,0,0))
-
-      if(length(fixedBreaks) != 0){
-        classbrks <- suppressWarnings(classIntervals(provinces$value, n = n,
-                                                     style = "fixed", fixedBreaks = fixedBreaks))
-      } else {
-        classbrks <- suppressWarnings(classIntervals(provinces$value, n = n ,
-                                                     style = style))
-      }
-      plot(classbrks, pal = pal, main = "")
-    }
   }
+  # draw a choropleth with multiple values and no fixed breaks
+  else if (length(na.omit(unique(provinces$value))) > 1 &
+           length(fixedBreaks) == 0)
+  {
+    choropleth_vm(provinces, x, y, col = col, col_na = col_na, n = n,
+                  style = style, locate = locate, pos = pos, n_round = n_round,
+                  distrib = distrib, h = h, w = w, tl = tl, s = s, ... )
+  }
+  # draw a choropleth map with a fixed breaks, class interval
+  else if (length(fixedBreaks) > 0){
+    choropleth_fix(provinces, x, y, col = col, col_na = col_na,
+                   fixedBreaks = fixedBreaks, locate = locate,
+                   n_round = n_round,
+                   pos = pos, h = h, w = w, tl = tl, s = s, ... )
+  }
+
 }
 
-#' Draws a spatio-temporal choropleth map
+#' Draws a spatio-temporal choropleth map with one unique value
 #'
 #' This function draxs a choropleth map when all the provinces or regions have
 #' the same value.
@@ -323,7 +287,160 @@ choropleth_v1 <- function (df, x, y, col = heat.colors(1), col_na = "grey",
 
 }
 
+#' Draws a spatio-temporal choropleth map with multiple value
+#'
+#' This function draxs a choropleth map when all the provinces or regions have
+#' the same value.
+#'
+#' @param df an object of class "SpatialPolygonsDataFrame" containing also
+#' the value to represent
+#' @param x a value for the x coordinate of the top-left part of the legend
+#' @param y a value for the y coordinate of the top-left part of the legend
+#' @param n a numeric indicating the number of intervals to represent the data
+#' (by default, \code{n = 6})
+#' @param col a vector of colors to use for the map (by default,
+#' \code{col = heat.colors(6)}).The colors from the package RColorBrewer can
+#' also be used.
+#' @param style a character value issued from the \code{classint} package, and
+#' used to select a method for the different way of calculating the intervals
+#' (by default \code{style = "quantile"})
+#' @param pos_brks if TRUE, the breaks values will all be positive, the first
+#' break will be superior or equal to zero, by default (\code{TRUE}). If false,
+#' allows negative value for breaks
+#' @param col_na the color with which to represent the missing values
+#' (by default \code{col_na = "grey"})
+#' @param locate if TRUE, call the function \code{locator} to indicate the
+#' top-left point of the legend
+#' @param pos by default \code{top-left}, but can be \code{top-right,
+#' bottom-left or bottom-right} can be used to indicate the position of the data
+#' if \code{x, y} are not indicated
+#' @param n_round integer indicating the number of significant digits to be used
+#' @param pos_brks if TRUE, the breaks values will all be positive, the first
+#' break will be superior or equal to zero, by default (\code{TRUE}). If false,
+#' allows negative value for breaks
+#' @param distrib if TRUE, print on the map, the distribution of the values by
+#' intervals
+#' @param h legend parameter expressing the height of one rectangle
+#' in the legend
+#' @param w legend parameter expressing the width of the legend
+#' @param tl legend parameter expressing the length of the tick
+#' @param s legend parameter expressing the space between the text and the
+#' tick
+#' @param ... if need to imput more text parameters for the legend
+#'
+#' @keywords internal
+#' @noRd
+choropleth_vm <- function (df, x, y, col = heat.colors(6), n = 6,
+                           style = "quantile", pos_brks = TRUE,
+                           locate = FALSE, pos = "top-left", n_round = 0,
+                           distrib = TRUE, col_na = "grey",
+                           h = 0.75, w = 0.75,tl = .2, s = .2, ...){
 
+  # choose class interval and colors
+    classint <- suppressWarnings(classIntervals(df$value, n = n,
+                                                style = style))
+
+  if (length(grep("#", col[1])) >= 1) {
+    pal <-  col %>% rev
+  } else if (length(classint$brks) <= 3 & length(grep("#", col[1])) == 0) {
+    pal <-  RColorBrewer::brewer.pal(length(classint$brks), col)
+    pal <- pal[1:(length(classint$brks) - 1)]
+  } else {
+    pal = RColorBrewer::brewer.pal(length(classint$brks) - 1, col)
+  }
+
+  # replace the value of brks below zero by zero
+  if (pos_brks == TRUE){
+    classint$brks[classint$brks < 0] <- 0
+  }
+
+  # plot the result
+  classint_colors <- findColours(classint, pal) %>%
+    replace(is.na(.), col_na)
+  #return(provinces)
+  plot(df, col = classint_colors)
+
+  # legend
+  legend2(x = x, y = y, legend = classint$brks %>% round(n_round),
+          col = attr(classint_colors, "palette"), locate = locate, pos = pos,
+          n_round = n_round, col_na = col_na,
+          h = h, w = w, tl = tl, s = s, ...)
+
+  # if ask, plot the quantile distribution (bottom right)
+  if (distrib == TRUE){
+    plotdim <- par("plt")
+    xleft <- plotdim[2] - (plotdim[2] - plotdim[1]) * 0.2
+    xright <- plotdim[2]
+    ybottom <- plotdim[3]
+    ytop <- plotdim[4] - (plotdim[4] - plotdim[3]) * 0.3
+    par(fig = c(xleft, xright, ybottom, ytop), new = TRUE, mar = c(0,0,0,0))
+
+    classbrks <- suppressWarnings(classIntervals(df$value, n = n ,
+                                                   style = style))
+
+    plot(classbrks, pal = pal, main = "")
+    }
+
+}
+
+#' Draws a spatio-temporal choropleth map with fixed breaks
+#'
+#' @param df a data frame containing two columns : one containing the province
+#' name and another containing the value to represent
+#' @param map an object of class "SpatialPolygonsDataFrame"
+#' @param x a value for the x coordinate of the top-left part of the legend
+#' @param y a value for the y coordinate of the top-left part of the legend
+#' @param col a vector of colors to use for the map (by default,
+#' \code{col = heat.colors(6)}).The colors from the package RColorBrewer can
+#' also be used.
+#' @param col_na the color with which to represent the missing values
+#' (by default \code{col_na = "grey"})
+#' @param fixedBreaks issued from the \code{classint} package. By default
+#' \code{NULL} but if a vector value is inputed, it will be used to specifen the
+#'  breaks
+#' @param locate if TRUE, call the function \code{locator} to indicate the
+#' top-left point of the legend
+#' @param pos by default \code{top-left}, but can be \code{top-right,
+#' bottom-left or bottom-right} can be used to indicate the position of the data
+#' if \code{x, y} are not indicated
+#' @param h legend parameter expressing the height of one rectangle
+#' in the legend
+#' @param w legend parameter expressing the width of the legend
+#' @param tl legend parameter expressing the length of the tick
+#' @param s legend parameter expressing the space between the text and the
+#' tick
+#' @param ... if need to imput more text parameters for the legend
+#'
+#' @keywords internal
+#' @noRd
+choropleth_fix <- function (df, x, y, col = heat.colors(6),
+                           fixedBreaks = NULL, n_round = 0,
+                           locate = FALSE, pos = "top-left", col_na = "grey",
+                           h = 0.75, w = 0.75,tl = .2, s = .2, ...){
+
+  # choose class interval and colors
+  if (length(grep("#", col[1])) >= 1) {
+    pal <-  col %>% rev
+  } else if (length(fixedBreaks) <= 3 & length(grep("#", col[1])) == 0) {
+    pal <-  RColorBrewer::brewer.pal(length(fixedBreaks) -1, col)
+    pal <- pal[1:(length(fixedBreaks) - 1)]
+  } else {
+    pal = RColorBrewer::brewer.pal(length(fixedBreaks) - 1, col)
+  }
+  pal2 <- colorRampPalette(pal)
+  df$col <- pal2(length(fixedBreaks) - 1)[cut(df$value, breaks = fixedBreaks,
+                                              include.lowest = TRUE)]
+  df$col <- replace(df$col, is.na(df$col), col_na)
+
+  #return(provinces)
+  plot(df, col = df$col)
+
+  # legend
+  legend2(x = x, y = y, legend = fixedBreaks,
+          col = pal, locate = locate, pos = pos,
+          n_round = n_round, col_na = col_na,
+          h = h, w = w, tl = tl, s = s, ...)
+}
 
 #' Draws a legend
 #'
@@ -434,11 +551,8 @@ legend2 <- function(x, y, legend, col, locate = FALSE, pos = "top-left",
     xlim <- c(usr[1] + xr, usr[2] - xr)
     ylim <- c(usr[3] + yr, usr[4] - yr)
 
-    size_legend <- legend %>% as.character %>% tail(1) %>%
-      strwidth()
-
     if (pos == "top-left"){
-      x <- xlim[1] #+ size_legend
+      x <- xlim[1] + size_legend
       y <- ylim[2]
     }
     if (pos == "top-right"){
@@ -446,7 +560,7 @@ legend2 <- function(x, y, legend, col, locate = FALSE, pos = "top-left",
       y <- ylim[2]
     }
     if (pos == "bottom-left"){
-      x <- xlim[1] #+ size_legend
+      x <- xlim[1] + size_legend
       y <- ylim[1] + ((length(legend)-1)* h + 2 * h)
     }
     if (pos == "bottom-right"){
