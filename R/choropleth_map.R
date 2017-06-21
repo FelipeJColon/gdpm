@@ -1,5 +1,13 @@
 #' Makes a spatio-temporal choropleth map of a disease
 #'
+#' @details The \code{n} parameter can be overuled by the number of breaks
+#' obtain by certain style. By default, the number of intervall will be decide
+#' by the \code{n} parameter but for certain \code{style} like "pretty", this
+#' value can be overruled. Please for more information, look at the
+#' documentation of the classint package.
+#' \cr\cr The map selected is automatically the one corresponding to the first
+#' year of the dataset inputed.
+#'
 #' @param df a data frame containing the epidemiological data (e.g. \code{ili})
 #'  and at least the colums "year", "month", "province" and "incidence" and/or
 #'  "mortality"
@@ -103,7 +111,7 @@
 #' # The intervals used to expressed the value can be input directly as
 #' # parameters in the function via the parameters fixedBreaks.
 #' # The given breaks should be of length n+1.
-#' gdpm_choropleth(ili, 2004, "April", n = 3, col = heat.colors(3),
+#' gdpm_choropleth(ili, 2004, "April", col = heat.colors(3),
 #'   fixedBreaks = c(0, 5000, 10000, 15000))
 #'
 #' # Using the locator to choose where to print the legend
@@ -123,7 +131,7 @@ gdpm_choropleth <- function(df, ye, mo, x, y, sel_value = "incidence", n = 6,
   if (sel_value == "incidence"){off <- "mortality"}
   if (sel_value == "mortality"){off <- "incidence"}
 
-  # selection of the Vietnam map with the province accordingly to the year
+  # selection of the Vietnam map with the province accordingly to the year range
   # of the dataset
   map <- gadmVN::gadm(date = min(df$year))
   if (min(df$year) < 1992 & max(df$year) > 2007){
@@ -200,7 +208,7 @@ idcm <- function(df, map, x, y,
   # implement the incidence data in the shape file data
   provinces <- sp::merge(map, df)
 
-  # draw a choropleth when all the data contain one single data and no fixed
+  # draw a choropleth map when all the data contain one single data and no fixed
   # breaks
   if(length(na.omit(unique(provinces$value))) <= 1 &
      length(fixedBreaks) == 0)
@@ -219,7 +227,7 @@ idcm <- function(df, map, x, y,
                   style = style, locate = locate, pos = pos, n_round = n_round,
                   distrib = distrib, h = h, w = w, tl = tl, s = s, ... )
   }
-  # draw a choropleth map with a fixed breaks, class interval
+  # draw a choropleth map with a fixed breaks
   else if (length(fixedBreaks) > 0){
     choropleth_fix(provinces, x, y, col = col, col_na = col_na,
                    fixedBreaks = fixedBreaks, locate = locate,
@@ -289,7 +297,7 @@ choropleth_v1 <- function (df, x, y, col = heat.colors(1), col_na = "grey",
 
 #' Draws a spatio-temporal choropleth map with multiple value
 #'
-#' This function draxs a choropleth map when all the provinces or regions have
+#' This function draws a choropleth map when all the provinces or regions have
 #' the same value.
 #'
 #' @param df an object of class "SpatialPolygonsDataFrame" containing also

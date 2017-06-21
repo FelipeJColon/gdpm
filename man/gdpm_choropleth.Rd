@@ -76,6 +76,15 @@ tick}
 \description{
 Makes a spatio-temporal choropleth map of a disease
 }
+\details{
+The \code{n} parameter can be overuled by the number of breaks
+obtain by certain style. By default, the number of intervall will be decide
+by the \code{n} parameter but for certain \code{style} like "pretty", this
+value can be overruled. Please for more information, look at the
+documentation of the classint package.
+\cr\cr The map selected is automatically the one corresponding to the first
+year of the dataset inputed.
+}
 \examples{
 library(gdpm)
 ili <- getid_("ili", from = 2004, to = 2004)
@@ -136,7 +145,7 @@ gdpm_choropleth(ili, 2004, "January", n = 3, sel = "mortality",
 # The intervals used to expressed the value can be input directly as
 # parameters in the function via the parameters fixedBreaks.
 # The given breaks should be of length n+1.
-gdpm_choropleth(ili, 2004, "April", n = 3, col = heat.colors(3),
+gdpm_choropleth(ili, 2004, "April", col = heat.colors(3),
   fixedBreaks = c(0, 5000, 10000, 15000))
 
 # Using the locator to choose where to print the legend
