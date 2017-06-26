@@ -7,8 +7,8 @@
 gdpm_choropleth(df, ye, mo, x, y, sel_value = "incidence", n = 6,
   col = heat.colors(6), style = "quantile", col_na = "grey",
   fixedBreaks = NULL, locate = FALSE, pos = "top-left", distrib = TRUE,
-  n_round = 0, pos_brks = TRUE, h = 0.75, w = 0.75, tl = 0.2,
-  s = 0.2, ...)
+  n_round = 0, pos_brks = TRUE, postext = "left", h = 0.75, w = 0.75,
+  tl = 0.2, s = 0.2, ...)
 }
 \arguments{
 \item{df}{a data frame containing the epidemiological data (e.g. \code{ili})
@@ -48,7 +48,7 @@ used to select a method for the different way of calculating the intervals
 top-left point of the legend}
 
 \item{pos}{by default \code{top-left}, but can be \code{top-right,
-bottom-left or bottom-right} can be used to indicate the position of the data
+bottom-left or bottom-right}, used to indicate the position of the data
 if \code{x, y} are not indicated}
 
 \item{distrib}{if TRUE, print on the map, the distribution of the values by
@@ -60,6 +60,9 @@ in the legend, by default (\code{0})}
 \item{pos_brks}{if TRUE, the breaks values will all be positive, the first
 break will be superior or equal to zero, by default (\code{TRUE}). If false,
 allows negative value for breaks}
+
+\item{postext}{define the side of the legend text, by default \code{left}
+but can be \code{right}}
 
 \item{h}{legend parameter expressing the height of one rectangle
 in the legend}
