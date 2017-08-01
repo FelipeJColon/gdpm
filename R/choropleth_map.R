@@ -1,11 +1,6 @@
 #' Makes a spatio-temporal choropleth map of a disease
 #'
-#' @details The \code{n} parameter can be overuled by the number of breaks
-#' obtain by certain style. By default, the number of intervall will be decide
-#' by the \code{n} parameter but for certain \code{style} like "pretty", this
-#' value can be overruled. Please for more information, look at the
-#' documentation of the classint package.
-#' \cr\cr The map selected is automatically the one corresponding to the first
+#' The map selected is automatically the one corresponding to the first
 #' year of the dataset inputed.
 #'
 #' @param df a data frame containing the epidemiological data (e.g. \code{ili})
@@ -161,9 +156,16 @@ gdpm_choropleth <- function(df, ye, mo, sel_value = "incidence", n = 6,
 
 #' Draws a spatio-temporal choropleth map
 #'
-#' @param df a data frame containing two columns : one containing the province
-#' name and another containing the value to represent
-#' @param map an object of class "SpatialPolygonsDataFrame"
+#' @details The \code{n} parameter can be overuled by the number of breaks
+#' obtain by certain style. By default, the number of intervall will be decide
+#' by the \code{n} parameter but for certain \code{style} like "pretty", this
+#' value can be overruled. Please for more information, look at the
+#' documentation of the classint package.
+#'
+#' @param df a data frame containing at least two variables : \code{province}
+#' and \code{value} representing the variable to represent.
+#' @param map an object of class "SpatialPolygonsDataFrame" containing at least
+#' the varible \code{province}
 #' @param n a numeric indicating the number of intervals to represent the data
 #' (by default, \code{n = 6})
 #' @param col a vector of colors to use for the map (by default,
@@ -174,11 +176,11 @@ gdpm_choropleth <- function(df, ye, mo, sel_value = "incidence", n = 6,
 #' (by default \code{style = "quantile"})
 #' @param col_na the color with which to represent the missing values
 #' (by default \code{col_na = "grey"})
-#' @param fixedBreaks issued from the \code{classint} package. By default
-#' \code{NULL} but if a vector value is inputed, it will be used to specifen the
-#'  breaks
+#' @param fixedBreaks By default \code{NULL} but if a vector of value is
+#' inputed, it will be used to specifen the breaks.
 #' @param distrib if TRUE, print on the map, the distribution of the values by
-#' intervals
+#' intervals. Only available when the represented variable has at least two
+#' differents value and if the breaks are not specified via fixedBreaks.
 #' @param n_round integer indicating the number of significant digits to be used
 #' @param pos_brks if TRUE, the breaks values will all be positive, the first
 #' break will be superior or equal to zero, by default (\code{TRUE}). If false,
@@ -197,7 +199,7 @@ idcm <- function(df, map,
   # graph parameters
   ofig <- par("fig")
   omar <- par("mar")
-  par <- par(mar = c(1,1,1,1))
+  par <- par(mar = c(2,2,2,2))
   on.exit(par(fig = ofig, mar = omar))
 
   # implement the incidence data in the shape file data
@@ -273,8 +275,8 @@ choropleth_v1 <- function (df, col = heat.colors(1), col_na = "grey",
 
 #' Draws a spatio-temporal choropleth map with multiple value
 #'
-#' This function draws a choropleth map when all the provinces or regions have
-#' the same value.
+#' This function draws a choropleth map with at least two differents value. Use
+#' the package \code{classInt} to specify the style and the number of breaks.
 #'
 #' @param df an object of class "SpatialPolygonsDataFrame" containing also
 #' the value to represent
@@ -335,7 +337,7 @@ choropleth_vm <- function (df, col = heat.colors(6), n = 6,
            widths = c(3, 1))
     # plots
     plot(classint, pal = pal, main = "")
-    par(mar = c(1,1,1,1), bg = "transparent")
+    par(mar = c(2,2,2,2), bg = "transparent")
     plot(df, col = classint_colors)
     par(mar = omar, bg = "white")
 
@@ -370,6 +372,11 @@ choropleth_vm <- function (df, col = heat.colors(6), n = 6,
 #' @param show_legend logical value saying whether the names of the
 #' provinces and the value breaks should be returned as an output of the
 #' function call or not. By default \code{FALSE}.
+#'
+#' @return A numeric with attributes corresponding of the breaks value and the
+#' attributes \code{colors} corresponding to the color associated with the
+#' breaks value. It can be returned invisibly or not depending on the parameter
+#' \code{show_legend}.
 #'
 #' @keywords internal
 #' @noRd
@@ -496,18 +503,22 @@ square_legend <- function(x, y, legend, col, n_round = 0, col_na = NULL,
 
 #' Draws a legend
 #'
+#' Draws a scale legend
+#'
 #' @param x a value for the x coordinate of the top-left part of the legend
 #' @param y a value for the y coordinate of the top-left part of the legend
-#' @param legend a character vector
-#' @param col a vector of colors
+#' @param legend a character or expression vector to appear in the legend.
+#' @param col a vector of colors appearing in the legend
 #' @param locate if TRUE, call the function \code{locator} to indicate the
 #' top-left point of the legend
-#' @param pos by default \code{top-left}, but can be \code{top-right,
-#' bottom-left or bottom-right} can be used to indicate the position of the data
-#' if \code{x, y} are not indicated
+#' @param pos by default \code{top-left}, but can be \code{"top-right"},
+#' \code{"bottom-left"} or \code{"bottom-right"} can be used to indicate the
+#' position of the data if \code{x, y} are not indicated
 #' @param n_round integer indicating the number of significant digits to be used
+#' , by default \code{0}.
 #' @param col_na the color with which to represent the missing values
-#' (by default \code{col_na = NULL})
+#' (by default \code{col_na = NULL}). If specified, a NA value will be add to
+#' the lefend with the color corresponding.
 #' @param postext define the side of the legend text, by default \code{left}
 #' but can be \code{right}
 #' @param h legend parameter expressing the height of one rectangle
@@ -517,6 +528,16 @@ square_legend <- function(x, y, legend, col, n_round = 0, col_na = NULL,
 #' @param s legend parameter expressing the space between the text and the
 #' tick
 #' @param ... if need to imput more text parameters for the legend
+#'
+#' @details The number of rectangle in the legend is calculate with the number
+#' of object in the vector \code{legend} - 1.\cr
+#' \cr If arguments \code{x,y}, the location may also be specified by
+#' setting the parameter \code{pos} to a keyword form the list: \code{top-left},
+#'  \code{"top-right"}, \code{"bottom-left"} or \code{"bottom-right"}. This
+#'  places the legend on the inside of the plot frame at the giver location.
+#' Note that a call to the function \code{locator(1)} can be used via setting
+#' the parameter \code{locate} to TRUE in place of the \code{x} and \code{y}
+#' arguments.
 #'
 #' @keywords internal
 #' @noRd
