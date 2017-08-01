@@ -120,36 +120,19 @@
 #' }
 #'
 #' @export
-gdpm_choropleth <- function(df, ye, mo, sel_value = "incidence", n = 6,
-  col = heat.colors(6), style = "quantile", col_na = "grey", fixedBreaks = NULL,
-  distrib = TRUE, n_round = 0, pos_brks =TRUE)
-  {
-  if (sel_value == "incidence"){off <- "mortality"}
-  if (sel_value == "mortality"){off <- "incidence"}
-
+select_map <- function(year){
   # selection of the Vietnam map with the province accordingly to the year range
   # of the dataset
-  if (min(df$year) < 1992 & max(df$year) > 2007){
-    map <- gadmVN::gadm(date = min(df$year), merge_hanoi = TRUE)
+  if (year < 1992 & year > 2007){
+    map <- gadmVN::gadm(date = year, merge_hanoi = TRUE)
     map[which(map$province == "Ha Son Binh"),] <- "Ha Noi"
-  } else if (min(df$year) > 1992 & max(df$year) > 2007){
-    map <- gadmVN::gadm(date = min(df$year), merge_hanoi = TRUE)
+  } else if (year > 1992 & year > 2007){
+    map <- gadmVN::gadm(date = year, merge_hanoi = TRUE)
     #map[which(map$province == "Ha Tay"),] <- "Ha Noi"
   } else {
-    map <- gadmVN::gadm(date = min(df$year))
+    map <- gadmVN::gadm(date = year)
   }
-
-  # prepare the table in the right format
-  #sel <- grep(sel_value, names(df))
-  #names(df)[sel] <- "value"
-  df <- dplyr::filter(df, year == ye, month == mo) %>%
-    dplyr::select(-year, -contains(off), -month)
-
-  # draw the choropleth map
-  idcm(df = df, sel = "incidence_cholera", map = map,
-       fixedBreaks = fixedBreaks, n = n, col = col, style = style,
-       col_na = col_na, distrib = distrib, n_round = n_round,
-       pos_brks = pos_brks)
+  return(map)
 }
 
 # GENERIC ----------------------------------------------------------------------
@@ -162,8 +145,8 @@ gdpm_choropleth <- function(df, ye, mo, sel_value = "incidence", n = 6,
 #' value can be overruled. Please for more information, look at the
 #' documentation of the classint package.
 #'
-#' @param df a data frame containing at least the variable: \code{province}
-#' @param sel the quoted name of the column whose values will be represented.
+#' @param df a data frame containing at two colums, one of class "character" and
+#' one of class "numeric".
 #' @param map an object of class "SpatialPolygonsDataFrame" containing at least
 #' the varible \code{province}
 #' @param n a numeric indicating the number of intervals to represent the data
@@ -185,21 +168,16 @@ gdpm_choropleth <- function(df, ye, mo, sel_value = "incidence", n = 6,
 #' @param pos_brks if TRUE, the breaks values will all be positive, the first
 #' break will be superior or equal to zero, by default (\code{TRUE}). If false,
 #' allows negative value for breaks
-#' @param show_legend logical value saying whether the names of the
-#' provinces and the value breaks should be returned as an output of the
-#' function call or not. By default \code{FALSE}.
 #'
 #' @return A numeric with attributes corresponding of the breaks value and the
 #' attributes \code{colors} corresponding to the color associated with the
-#' breaks value. It can be returned invisibly or not depending on the parameter
-#' \code{show_legend}.
+#' breaks value, returned invisibly.
 #'
 #' @keywords internal
 #' @noRd
 idcm <- function(df, sel, map,
   n = 6, col = heat.colors(6), style = "quantile",  col_na = "grey",
-  pos_brks = TRUE, fixedBreaks = NULL, distrib = TRUE, n_round = 0,
-  show_legend = FALSE) {
+  pos_brks = TRUE, fixedBreaks = NULL, distrib = TRUE, n_round = 0) {
 
   # graph parameters
   ofig <- par("fig")
@@ -217,8 +195,7 @@ idcm <- function(df, sel, map,
      length(fixedBreaks) == 0)
     {
     distrib <- NULL
-    choropleth_v1(provinces, col = col, col_na = col_na, n_round = n_round,
-                  show_legend = show_legend)
+    choropleth_v1(provinces, col = col, col_na = col_na, n_round = n_round)
 
   }
   # draw a choropleth with multiple values and no fixed breaks
@@ -226,13 +203,12 @@ idcm <- function(df, sel, map,
            length(fixedBreaks) == 0)
   {
     choropleth_vm(provinces, col = col, col_na = col_na, n = n, style = style,
-                  distrib = distrib, pos_brks = pos_brks, n_round = n_round,
-                  show_legend = show_legend)
+                  distrib = distrib, pos_brks = pos_brks, n_round = n_round)
   }
   # draw a choropleth map with a fixed breaks
   else if (length(fixedBreaks) > 0){
     choropleth_fix(provinces, col = col, col_na = col_na,
-                   fixedBreaks = fixedBreaks, show_legend = show_legend)
+                   fixedBreaks = fixedBreaks)
   }
 
 }
@@ -250,19 +226,15 @@ idcm <- function(df, sel, map,
 #' @param col_na the color with which to represent the missing values
 #' (by default \code{col_na = "grey"})
 #' @param n_round integer indicating the number of significant digits to be used
-#' @param show_legend logical value saying whether the names of the
-#' provinces and the value breaks should be returned as an output of the
-#' function call or not. By default \code{FALSE}.
 #'
 #' @return A numeric with attributes corresponding of the breaks value and the
 #' attributes \code{colors} corresponding to the color associated with the
-#' breaks value. It can be returned invisibly or not depending on the parameter
-#' \code{show_legend}.
+#' breaks value, returned invisibly.
 #'
 #' @keywords internal
 #' @noRd
 choropleth_v1 <- function (df, col = heat.colors(1), col_na = "grey",
-                           n_round = 0, show_legend = FALSE){
+                           n_round = 0){
 
   # define the color and the class intervals
   if (length(grep("#", col[1])) >= 1) {
@@ -281,7 +253,7 @@ choropleth_v1 <- function (df, col = heat.colors(1), col_na = "grey",
   # print a legend
   legend <- rep(classint,2) %>% round(n_round)
   attr(legend, "colors") <- pal
-  if (show_legend) return(legend) else invisible(legend)
+  invisible(legend)
 }
 
 #' Draws a spatio-temporal choropleth map with multiple value
@@ -307,21 +279,16 @@ choropleth_v1 <- function (df, col = heat.colors(1), col_na = "grey",
 #' break will be superior or equal to zero, by default (\code{TRUE}). If false,
 #' allows negative value for breaks
 #' @param n_round integer indicating the number of significant digits to be used
-#' @param show_legend logical value saying whether the names of the
-#' provinces and the value breaks should be returned as an output of the
-#' function call or not. By default \code{FALSE}.
 #'
 #' @return A numeric with attributes corresponding of the breaks value and the
 #' attributes \code{colors} corresponding to the color associated with the
-#' breaks value. It can be returned invisibly or not depending on the parameter
-#' \code{show_legend}.
+#' breaks value, returned invisibly.
 #'
 #' @keywords internal
 #' @noRd
 choropleth_vm <- function (df, col = heat.colors(6), n = 6,
                            style = "quantile", distrib = TRUE, col_na = "grey",
-                           pos_brks = TRUE, n_round = 0,
-                           show_legend = FALSE){
+                           pos_brks = TRUE, n_round = 0){
 
   # choose class interval and colors
     classint <- suppressWarnings(classIntervals(df$value, n = n,
@@ -369,7 +336,7 @@ choropleth_vm <- function (df, col = heat.colors(6), n = 6,
   # Print the legend if needed :
   legend <- classint$brks %>% round(n_round)
   attr(legend, "colors") <- pal
-  if (show_legend) return(legend) else invisible(legend)
+  invisible(legend)
 
 }
 
@@ -385,19 +352,15 @@ choropleth_vm <- function (df, col = heat.colors(6), n = 6,
 #' @param fixedBreaks issued from the \code{classint} package. By default
 #' \code{NULL} but if a vector value is inputed, it will be used to specifen the
 #'  breaks
-#' @param show_legend logical value saying whether the names of the
-#' provinces and the value breaks should be returned as an output of the
-#' function call or not. By default \code{FALSE}.
 #'
 #' @return A numeric with attributes corresponding of the breaks value and the
 #' attributes \code{colors} corresponding to the color associated with the
-#' breaks value. It can be returned invisibly or not depending on the parameter
-#' \code{show_legend}.
+#' breaks value, returned invisibly.
 #'
 #' @keywords internal
 #' @noRd
 choropleth_fix <- function (df, col = heat.colors(6), col_na = "grey",
-                            fixedBreaks = NULL, show_legend = FALSE){
+                            fixedBreaks = NULL){
 
   # choose class interval and colors
   if (length(grep("#", col[1])) >= 1) {
@@ -419,7 +382,7 @@ choropleth_fix <- function (df, col = heat.colors(6), col_na = "grey",
   # print the breaks for a legend
   legend <- fixedBreaks
   attr(legend, "colors") <- pal
-  if (show_legend) return(legend) else invisible(legend)
+  invisible(legend)
 }
 
 
