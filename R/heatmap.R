@@ -26,9 +26,9 @@ hm_data <- function(df,sel){
 
 #' Makes a spatio-temporal heatmap of a disease
 #'
-#' @param df A  data frame. Should contains three variables: \code{province},
-#' \code{time}, and one colums of 'numeric' class containing the value to
-#' represent.
+#' @param df A  data frame. Should contains three variables: one of class
+#' "character", one of class "Date", and one colums of 'numeric' class
+#' containing the value to represent.
 #' @param f a transforming function. By default the identity function.
 #' @param col a vector of colors to use for the heatmap.
 #' @param col_na the color with which to represent the missing values.
@@ -43,7 +43,7 @@ hm_data <- function(df,sel){
 #' @examples
 #' library(gdpm)
 #' # A heatmap of the ILI data:
-#' ili <- getid(ili, from = 2004)
+#' ili <- getid(ili, from = 2004) %>% hm_data("incidence")
 #' sthm(ili)
 #' # with some data transformations in order to reflect better the contrasts:
 #' sthm(ili, f = sqrt)
@@ -74,7 +74,56 @@ hm_data <- function(df,sel){
 #' rubella <- arrange(rubella, order)
 #' sthm(rubella, f = sqrt, col = brewer.pal(9, "YlOrRd"), col_na = "blue")
 #' @export
+#'
 sthm <- function(df,
+              f = function(x) x, col = heat.colors(12),
+              col_na = "grey", x = c(.85, .87, .92), show_legend = FALSE)
+{
+  # test entry
+  # number of colums
+  if (ncol(df) != 3){
+    stop ("Invalid number of column, 'df' should only have three columns")
+  }
+  # class
+  if (is.character(df[,1]) == FALSE & is.character(df[,2]) == FALSE &
+      is.character(df[,3]) == FALSE){
+    stop("Invalid 'df', one of the column needs to be of class 'character', one
+of class 'Date' and the last of class 'numeric'")
+  }
+  if (class(df[,1]) != "Date" & class(df[,2]) != "Date" &
+      class(df[,3])!= "Date"){
+    stop("Invalid 'df', one of the column needs to be of class 'character', one
+of class 'Date' and the last of class 'numeric'")
+  }
+  if (is.numeric(df[,1]) == FALSE & is.numeric(df[,2]) == FALSE &
+      is.numeric(df[,3]) == FALSE){
+    stop("Invalid 'df', one of the column needs to be of class 'character', one
+         of class 'Date' and the last of class 'numeric'")
+  }
+
+  draw_heatmap(df, f = f, col = col, col_na = col_na, x = x,
+               show_legend = show_legend)
+}
+
+#' Makes a spatio-temporal heatmap of a disease
+#'
+#' @param df A  data frame. Should contains three variables: one of class
+#' "character", one of class "date", and one colums of 'numeric' class
+#' containing the value to represent.
+#' @param f a transforming function. By default the identity function.
+#' @param col a vector of colors to use for the heatmap.
+#' @param col_na the color with which to represent the missing values.
+#' @param x a vector of values between 0 and 1. In proportion of the
+#' figure's range, these numbers express the location of the right end of the
+#' heatmap, and the beginning and end of the color scale that stands on the
+#' right of the heatmap.
+#' @param show_legend logical value saying whether the names of the
+#' provinces and the value breaks should be returned as an output of the
+#' function call or not. By default FALSE.
+#'
+#' @keywords internal
+#' @noRd
+draw_heatmap <- function(df,
   f = function(x) x, col = heat.colors(12),
   col_na = "grey", x = c(.85, .87, .92), show_legend = FALSE)
   {
@@ -84,8 +133,13 @@ sthm <- function(df,
   on.exit(options(warn = warn_old))
 
 # Data preparation:
-  time_vec <- unique(df$time)
-  provinces_names <- unique(df$province)
+  time_vec <- select_if(df, function(col) class(col) == "Date") %>%
+    unlist %>% as.vector %>%
+    as.Date(origin = "1970-01-01") %>%
+    unique
+  provinces_names <- select_if(df,is.character) %>%
+    unlist %>% as.vector %>%
+    unique
   values <- sapply(provinces_names,
                    function(x) filter(df, province == x) %>%
       select_if(is.numeric))
