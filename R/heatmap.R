@@ -1,19 +1,23 @@
 #' Formatting the gdpm data to create a heatmap
 #'
 #' @param df an data frame outputed from the \code{getid} function or
-#' with the same structure as an output from this funtion.
+#' with the same structure as an output from this funtion, with at least the
+#' variable \code{month}, \code{year}, \code{province} and the variable to
+#' select for representing in a heatmap.
+#' @param sel the quoted name of the colums whose values will be used for the
+#' heatmap, or a part of the name UNIQUE of this column.
 #'
 #' @examples
 #' # A heatmap of the ILI data:
 #' library(gdpm)
 #' ili <- getid(ili, from = 2004)
-#' ili <- hm_data(ili)
+#' ili <- hm_data(ili, "incidence")
 #'
 #' @export
-hm_data <- function(df){
+hm_data <- function(df,sel){
   df %>%
     mutate(time = as.Date(paste0(year, "-", as.numeric(month), "-", 15))) %>%
-    select(-year, -month) %>%
+    select(matches("province"), matches("time"), contains(sel)) %>%
     arrange(time)
 }
 
@@ -22,10 +26,9 @@ hm_data <- function(df){
 
 #' Makes a spatio-temporal heatmap of a disease
 #'
-#' @param df A  data frame. Should contains three variables
-#' \code{province} character class, \code{time} in a data class ,
-#' and the variable to be plotted in a numeric class.
-#' @param varname name of the variable
+#' @param df A  data frame. Should contains three variables: \code{province},
+#' \code{time}, and one colums of 'numeric' class containing the value to
+#' represent.
 #' @param f a transforming function. By default the identity function.
 #' @param col a vector of colors to use for the heatmap.
 #' @param col_na the color with which to represent the missing values.
