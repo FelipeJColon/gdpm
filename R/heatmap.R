@@ -1,7 +1,31 @@
-#' Makes a spatio-temporal heatmap of a disease
+#' Formatting the gdpm data to create a heatmap
 #'
 #' @param df an data frame outputed from the \code{getid} function or
 #' with the same structure as an output from this funtion.
+#'
+#' @examples
+#' # A heatmap of the ILI data:
+#' library(gdpm)
+#' ili <- getid(ili, from = 2004)
+#' ili <- hm_data(ili)
+#'
+#' @export
+hm_data <- function(df){
+  df %>%
+    mutate(time = as.Date(paste0(year, "-", as.numeric(month), "-", 15))) %>%
+    select(-year, -month) %>%
+    arrange(time)
+}
+
+
+# GENERIC ----------------------------------------------------------------------
+
+#' Makes a spatio-temporal heatmap of a disease
+#'
+#' @param df A  data frame. Should contains three variables
+#' \code{province} character class, \code{time} in a data class ,
+#' and the variable to be plotted in a numeric class.
+#' @param varname name of the variable
 #' @param f a transforming function. By default the identity function.
 #' @param col a vector of colors to use for the heatmap.
 #' @param col_na the color with which to represent the missing values.
@@ -9,11 +33,12 @@
 #' figure's range, these numbers express the location of the right end of the
 #' heatmap, and the beginning and end of the color scale that stands on the
 #' right of the heatmap.
-#' @param show_names logical value saying whether the names of the
-#' provinces should be returned as an output of the function call or not.
-#' By default FALSE.
+#' @param show_legend logical value saying whether the names of the
+#' provinces and the value breaks should be returned as an output of the
+#' function call or not. By default FALSE.
 #'
 #' @examples
+#' library(gdpm)
 #' # A heatmap of the ILI data:
 #' ili <- getid(ili, from = 2004)
 #' sthm(ili)
@@ -39,29 +64,28 @@
 #' library(dplyr)
 #' provinces <- gadm()
 #' coord <- coordinates(provinces)
+#' row.names(coord) <- unique(provinces@data$province)
 #' order <- rownames(coord[order(coord[, 2]), ])
 #' order <- data.frame(province = order, order = seq_along(order))
 #' rubella <- left_join(rubella, order, by = "province")
-#' rubella <-  arrange(rubella, order)
+#' rubella <- arrange(rubella, order)
 #' sthm(rubella, f = sqrt, col = brewer.pal(9, "YlOrRd"), col_na = "blue")
 #' @export
 sthm <- function(df,
   f = function(x) x, col = heat.colors(12),
-  col_na = "grey", x = c(.85, .87, .92), show_names = FALSE) {
+  col_na = "grey", x = c(.85, .87, .92), show_legend = FALSE)
+  {
 
   warn_old <- unlist(options("warn"))
   options(warn = -1)
   on.exit(options(warn = warn_old))
 
 # Data preparation:
-  df %<>%
-    mutate(time = as.Date(paste0(year, "-", as.numeric(month), "-", 15))) %>%
-    arrange(time)
   time_vec <- unique(df$time)
   provinces_names <- unique(df$province)
   values <- sapply(provinces_names,
                    function(x) filter(df, province == x) %>%
-      select(contains("incidence")))
+      select_if(is.numeric))
   values <- f(as.matrix(as.data.frame(values)))
 
 # Options and graphical parameters:
@@ -81,15 +105,16 @@ sthm <- function(df,
   box(bty = "o")
 
 # The legend:
-  plt[1:2] <- x[2:3]
-  par(plt = plt, new = TRUE)
-  scale <- seq(min(values, na.rm = TRUE), max(values, na.rm = TRUE), le = 512)
-  image(1, scale, matrix(scale, 1), col = col, ann = FALSE, axes = FALSE)
-  axis(4)
-  box(bty = "o")
+  labels <- levels(cut(seq(min(values, na.rm = TRUE), max(values, na.rm = TRUE),
+                         le = 512), length(col)))
+  legend <- c(0, as.numeric( sub("[^,]*,([^]]*)\\]", "\\1", labels)))
 
-# The provinces names:
-  if (show_names) return(provinces_names) else invisible(provinces_names)
+# Print the legend if needed :
+  if (show_legend) return(list(legend = legend, prov = provinces_names)) else
+    invisible(legend)
 }
+
+
+
 
 
