@@ -49,88 +49,51 @@
 #'
 #' @examples
 #' library(gdpm)
-#' ili <- getid_("ili", from = 2004, to = 2004)
+#' ili <- getid_("ili", from = 1992, to = 2015)
 #' # A choroplet map of the ILI data:
-#' gdpm_choropleth(ili, 2004, "April")
 #'
 #' # with some data transformations in order to reflect better the contrasts:
-#' gdpm_choropleth(ili, 2004, "April", x = 93, y = 18, n = 6,
-#' col = heat.colors(6), style = "jenks")
 #'
 #' # using some other color palettes, for examples the ones from the
 #' # RColorBrewer package or the one in the color Palettes of R :
 #' library(RColorBrewer)
 #' # to see the available color palettes:
 #' display.brewer.all()
-#' gdpm_choropleth(ili, 2004, "April", x = 93, y = 18, n = 6,
-#' col = heat.colors(6), style = "jenks")
-#' gdpm_choropleth(ili, 2004, "April", x = 93, y = 18, n = 6,
-#'  col = "YlOrBr", style = "jenks")
 #'
 #' # changing the color of the missing values:
-#' ili80 <- getid(ili, from = 1980, to = 1980)
-#' gdpm_choropleth(ili80, 1980, "April", col_na = "chartreuse")
 #'
 #' # changing the legend text parameters
-#' gdpm_choropleth(ili80, 1980, "April", n = 6, col = heat.colors(6),
-#' style = "jenks", cex = 0.5)
 #' # Print the numeric legend with 2 decimals
-#' gdpm_choropleth(ili80, 1980, "April", n = 6, n_round = 2)
 #'
 # # Doesn't print the distribution of the value by intervals
-#' gdpm_choropleth(ili80, 1980, "April", n = 6, distrib = FALSE,
-#'   col = heat.colors(6), style = "jenks")
 #'
 #' # By default, the legend is on the top left of the figure, but the position
 #' # can be easily change by using the parameters pos
-#'  # top left
-#' gdpm_choropleth(ili, 2004, "April", n = 6, col = heat.colors(6),
-#'   style = "jenks")
-#' gdpm_choropleth(ili, 2004, "April", n = 6, pos = "top-left",
-#'   col = heat.colors(6), style = "jenks")
+#' # top left
 #' # top right
-#' gdpm_choropleth(ili, 2004, "April", n = 6, pos = "top-right",
-#'   col = heat.colors(6), style = "jenks", distrib = FALSE)
 #' # bottom left
-#' gdpm_choropleth(ili, 2004, "April", n = 6, pos = "bottom-left",
-#'   col = heat.colors(6), style = "jenks")
 #' # bottom right
-#' gdpm_choropleth(ili, 2004, "April", n = 6, pos = "bottom-right",
-#'   col = heat.colors(6), style = "jenks", distrib = FALSE)
 #'
-#' # By default, the function print the map of the incidence value for one
-#' # month of one year, but the mortality can also be printed.
-#' gdpm_choropleth(ili, 2004, "April", n = 6, sel = "incidence",
-#'   col = heat.colors(6), style = "jenks")
-#' gdpm_choropleth(ili, 2004, "January", n = 3, sel = "mortality",
-#'   col = heat.colors(3), style = "jenks")
 #'
 #' # The intervals used to expressed the value can be input directly as
 #' # parameters in the function via the parameters fixedBreaks.
 #' # The given breaks should be of length n+1.
-#' gdpm_choropleth(ili, 2004, "April", col = heat.colors(3),
-#'   fixedBreaks = c(0, 5000, 10000, 15000))
 #'
 #' # Using the locator to choose where to print the legend
-#' \dontrun{
-#'  gdpm_choropleth(ili80, 1980, "April", n = 6, locate = TRUE,
-#'   col = heat.colors(6), style = "jenks")
-#' gdpm_choropleth(ili80, 1980, "April", n = 6, locate = TRUE, x = 95, y = 34,
-#'   col = heat.colors(6), style = "jenks")
-#' }
+#' \dontrun{}
 #'
 #' @export
-select_map <- function(year){
+select_map <- function(range){
   # selection of the Vietnam map with the province accordingly to the year range
   # of the dataset
-  if (year < 1992 & year > 2007){
-    map <- gadmVN::gadm(date = year, merge_hanoi = TRUE)
+  if (range[1] <= 1992 & range[2] > 2007){
+    map <- gadmVN::gadm(date = range[1], merge_hanoi = TRUE)
     map[which(map$province == "Ha Son Binh"),] <- "Ha Noi"
-  } else if (year > 1992 & year > 2007){
-    map <- gadmVN::gadm(date = year, merge_hanoi = TRUE)
+  } else if (range[1] > 1992 & range[2] > 2007){
+    map <- gadmVN::gadm(date = range[1], merge_hanoi = TRUE)
     #map[which(map$province == "Ha Tay"),] <- "Ha Noi"
   } else {
-    map <- gadmVN::gadm(date = year)
+    map <- gadmVN::gadm(date = range[1])
   }
   return(map)
 }
@@ -175,7 +138,7 @@ select_map <- function(year){
 #'
 #' @keywords internal
 #' @noRd
-idcm <- function(df, sel, map,
+idcm <- function(df, map,
   n = 6, col = heat.colors(6), style = "quantile",  col_na = "grey",
   pos_brks = TRUE, fixedBreaks = NULL, distrib = TRUE, n_round = 0) {
 
@@ -185,21 +148,43 @@ idcm <- function(df, sel, map,
   par <- par(mar = c(2,2,2,2))
   on.exit(par(fig = ofig, mar = omar))
 
+  # test entry
+  # number of colums
+  if (ncol(df) != 2){
+    stop ("Invalid number of column, 'df' should only have two columns")
+  }
+  # class
+  if (is.character(df[,1]) == FALSE & is.character(df[,2]) == FALSE){
+    stop("Invalid 'df', one of the column needs to be of class 'character' and
+          the other of class 'numeric'")
+  }
+  if (is.numeric(df[,1]) == FALSE & is.numeric(df[,2]) == FALSE){
+   stop("Invalid 'df', one of the column needs to be of class 'character' and
+          the other of class 'numeric'")
+  }
+  if (class(map) != "SpatialPolygonsDataFrame"){
+    stop ("Invalid 'map' format, should be 'SpatialPolygonsDataFrame'")
+  }
+
   # implement the data in the shape file data
-  df %<>% rename_("value" = sel)
   provinces <- sp::merge(map, df)
+
+  # value
+  value <- provinces@data %>%
+    select_if(is.numeric) %>%
+    unlist %>%  as.vector
 
   # draw a choropleth map when all the data contain one single data and no fixed
   # breaks
-  if(length(na.omit(unique(provinces$value))) <= 1 &
+  if(length(na.omit(unique(value))) <= 1 &
      length(fixedBreaks) == 0)
     {
-    distrib <- NULL
+    #distrib <- NULL
     choropleth_v1(provinces, col = col, col_na = col_na, n_round = n_round)
 
   }
   # draw a choropleth with multiple values and no fixed breaks
-  else if (length(na.omit(unique(provinces$value))) > 1 &
+  else if (length(na.omit(unique(value))) > 1 &
            length(fixedBreaks) == 0)
   {
     choropleth_vm(provinces, col = col, col_na = col_na, n = n, style = style,
@@ -236,6 +221,11 @@ idcm <- function(df, sel, map,
 choropleth_v1 <- function (df, col = heat.colors(1), col_na = "grey",
                            n_round = 0){
 
+  # value
+  value <- df@data %>%
+    select_if(is.numeric) %>%
+    unlist %>%  as.vector
+
   # define the color and the class intervals
   if (length(grep("#", col[1])) >= 1) {
     pal <-  col
@@ -243,9 +233,9 @@ choropleth_v1 <- function (df, col = heat.colors(1), col_na = "grey",
   } else {
     pal <- RColorBrewer::brewer.pal(3, col)[1]
   }
-  pal2 <-  rep(pal, length(df$value))
-  pal2[is.na(df$value)] <- col_na
-  classint <- na.omit(unique(df$value))
+  pal2 <-  rep(pal, length(value))
+  pal2[is.na(value)] <- col_na
+  classint <- na.omit(unique(value))
 
   # draw a choropleth map
   plot(df, col = pal2)
@@ -290,8 +280,13 @@ choropleth_vm <- function (df, col = heat.colors(6), n = 6,
                            style = "quantile", distrib = TRUE, col_na = "grey",
                            pos_brks = TRUE, n_round = 0){
 
+  # value
+  value <- df@data %>%
+    select_if(is.numeric) %>%
+    unlist %>%  as.vector
+
   # choose class interval and colors
-    classint <- suppressWarnings(classIntervals(df$value, n = n,
+    classint <- suppressWarnings(classIntervals(value, n = n,
                                                 style = style))
   if (length(grep("#", col[1])) >= 1) {
     pal <-  col[1:(length(classint$brks) - 1)]
@@ -362,6 +357,11 @@ choropleth_vm <- function (df, col = heat.colors(6), n = 6,
 choropleth_fix <- function (df, col = heat.colors(6), col_na = "grey",
                             fixedBreaks = NULL){
 
+  # value
+  value <- df@data %>%
+    select_if(is.numeric) %>%
+    unlist %>%  as.vector
+
   # choose class interval and colors
   if (length(grep("#", col[1])) >= 1) {
     pal <-  col[1:(length(fixedBreaks) - 1)]
@@ -372,7 +372,7 @@ choropleth_fix <- function (df, col = heat.colors(6), col_na = "grey",
     pal = RColorBrewer::brewer.pal(length(fixedBreaks) - 1, col)
   }
   pal2 <- colorRampPalette(pal)
-  df$col <- pal2(length(fixedBreaks) - 1)[cut(df$value, breaks = fixedBreaks,
+  df$col <- pal2(length(fixedBreaks) - 1)[cut(value, breaks = fixedBreaks,
                                               include.lowest = TRUE)]
   df$col <- replace(df$col, is.na(df$col), col_na)
 
