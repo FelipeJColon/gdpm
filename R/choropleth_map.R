@@ -140,13 +140,13 @@ gdpm_choropleth <- function(df, ye, mo, sel_value = "incidence", n = 6,
   }
 
   # prepare the table in the right format
-  sel <- grep(sel_value, names(df))
-  names(df)[sel] <- "value"
+  #sel <- grep(sel_value, names(df))
+  #names(df)[sel] <- "value"
   df <- dplyr::filter(df, year == ye, month == mo) %>%
     dplyr::select(-year, -contains(off), -month)
 
   # draw the choropleth map
-  idcm(df = df, map = map,
+  idcm(df = df, sel = "incidence_cholera", map = map,
        fixedBreaks = fixedBreaks, n = n, col = col, style = style,
        col_na = col_na, distrib = distrib, n_round = n_round,
        pos_brks = pos_brks)
@@ -162,8 +162,8 @@ gdpm_choropleth <- function(df, ye, mo, sel_value = "incidence", n = 6,
 #' value can be overruled. Please for more information, look at the
 #' documentation of the classint package.
 #'
-#' @param df a data frame containing at least two variables : \code{province}
-#' and \code{value} representing the variable to represent.
+#' @param df a data frame containing at least the variable: \code{province}
+#' @param sel the quoted name of the column whose values will be represented.
 #' @param map an object of class "SpatialPolygonsDataFrame" containing at least
 #' the varible \code{province}
 #' @param n a numeric indicating the number of intervals to represent the data
@@ -189,9 +189,14 @@ gdpm_choropleth <- function(df, ye, mo, sel_value = "incidence", n = 6,
 #' provinces and the value breaks should be returned as an output of the
 #' function call or not. By default \code{FALSE}.
 #'
+#' @return A numeric with attributes corresponding of the breaks value and the
+#' attributes \code{colors} corresponding to the color associated with the
+#' breaks value. It can be returned invisibly or not depending on the parameter
+#' \code{show_legend}.
+#'
 #' @keywords internal
 #' @noRd
-idcm <- function(df, map,
+idcm <- function(df, sel, map,
   n = 6, col = heat.colors(6), style = "quantile",  col_na = "grey",
   pos_brks = TRUE, fixedBreaks = NULL, distrib = TRUE, n_round = 0,
   show_legend = FALSE) {
@@ -202,7 +207,8 @@ idcm <- function(df, map,
   par <- par(mar = c(2,2,2,2))
   on.exit(par(fig = ofig, mar = omar))
 
-  # implement the incidence data in the shape file data
+  # implement the data in the shape file data
+  df %<>% rename_("value" = sel)
   provinces <- sp::merge(map, df)
 
   # draw a choropleth map when all the data contain one single data and no fixed
@@ -247,6 +253,11 @@ idcm <- function(df, map,
 #' @param show_legend logical value saying whether the names of the
 #' provinces and the value breaks should be returned as an output of the
 #' function call or not. By default \code{FALSE}.
+#'
+#' @return A numeric with attributes corresponding of the breaks value and the
+#' attributes \code{colors} corresponding to the color associated with the
+#' breaks value. It can be returned invisibly or not depending on the parameter
+#' \code{show_legend}.
 #'
 #' @keywords internal
 #' @noRd
@@ -299,6 +310,11 @@ choropleth_v1 <- function (df, col = heat.colors(1), col_na = "grey",
 #' @param show_legend logical value saying whether the names of the
 #' provinces and the value breaks should be returned as an output of the
 #' function call or not. By default \code{FALSE}.
+#'
+#' @return A numeric with attributes corresponding of the breaks value and the
+#' attributes \code{colors} corresponding to the color associated with the
+#' breaks value. It can be returned invisibly or not depending on the parameter
+#' \code{show_legend}.
 #'
 #' @keywords internal
 #' @noRd
