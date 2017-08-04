@@ -537,6 +537,15 @@ legend2 <- function(x, y, legend, col, locate = FALSE, pos = "top-left",
                     n_round = 0, col_na = NULL, postext = "left", h = 0.75,
                     w = 0.75, tl = .2, s = .2, ...){
 
+  # Tests
+  pos_text <- c("left", "right")
+  if(!is.element(postext, pos_text)){
+    stop("The parameters 'postext' can only contain: 'left' or 'right'")
+  }
+  if(!is.logical(locate)){
+    stop("The parameters 'locate' can only be a logical: 'TRUE' or 'FALSE'")
+  }
+
   # Graphic paramaters
   omar <- par("mar")
   par(mar = c(2,2,2,1))
@@ -547,6 +556,14 @@ legend2 <- function(x, y, legend, col, locate = FALSE, pos = "top-left",
     strwidth()
 
   if (missing(x) & missing(y) & locate == FALSE){
+
+    # Test
+    pos_legend <- c("top-left", "top-right", "bottom-left", "bottom-right")
+    if(!is.element(pos, pos_legend)){
+      stop("The parameters 'pos' can only contain: 'top-left', 'top-right',
+           'bottom-left' or 'bottom-right'")
+    }
+
     # Graphical parameters
     usr <- par("usr")
     xr <- (usr[2] - usr[1])/27
