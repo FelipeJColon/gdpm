@@ -89,7 +89,7 @@ hm_data <- function(df,sel){
 #' @param f a transforming function. By default the identity function.
 #' @param col a vector of colors to use for the heatmap.
 #' @param col_na the color with which to represent the missing values.
-#' @param x a vector of values between 0 and 1. In proportion of the
+#' @param x a numeric value between 0 and 1. In proportion of the
 #' figure's range, these numbers express the location of the right end of the
 #' heatmap, and the beginning and end of the color scale that stands on the
 #' right of the heatmap.
@@ -156,7 +156,7 @@ hm_data <- function(df,sel){
 #'
 sthm <- function(df,
               f = function(x) x, col = heat.colors(12),
-              col_na = "grey", x = c(.85, .87, .92), show_legend = FALSE)
+              col_na = "grey", x = .85, show_legend = FALSE)
 {
   # test entry
   # number of colums
@@ -192,7 +192,7 @@ of class 'Date' and the last of class 'numeric'")
 #' @param f a transforming function. By default the identity function.
 #' @param col a vector of colors to use for the heatmap.
 #' @param col_na the color with which to represent the missing values.
-#' @param x a vector of values between 0 and 1. In proportion of the
+#' @param x a numeric values between 0 and 1. In proportion of the
 #' figure's range, these numbers express the location of the right end of the
 #' heatmap, and  can be used for the beginning of a legend point
 #' @param show_legend logical value saying whether the names of the
@@ -203,7 +203,7 @@ of class 'Date' and the last of class 'numeric'")
 #' @noRd
 draw_heatmap <- function(df,
   f = function(x) x, col = heat.colors(12),
-  col_na = "grey", x = c(.85, .87, .92), show_legend = FALSE)
+  col_na = "grey", x = .85, show_legend = FALSE)
   {
 
   warn_old <- unlist(options("warn"))
@@ -226,7 +226,8 @@ draw_heatmap <- function(df,
 # Options and graphical parameters:
   opar <- par()
   owar <- getOption("warn")
-  on.exit({par(opar); options(warn = owar)})
+  on.exit({par(opar);
+    options(warn = owar)})
   plt <- par("plt")
   options(warn = -1)
 
