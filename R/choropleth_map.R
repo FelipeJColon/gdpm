@@ -388,20 +388,30 @@ choropleth_fix <- function (df, col = heat.colors(6), col_na = "grey",
 
 #' Draws a legend
 #'
-#' @param x a value for the x coordinate of the top-left part of the legend
-#' @param y a value for the y coordinate of the top-left part of the legend
-#' @param legend a character vector
-#' @param col a vector of colors
-#' @param n_round integer indicating the number of significant digits to be used
+#' @param x A numeric value for the x coordinate of the top-left part of the
+#' legend
+#' @param y A numeric value for the y coordinate of the top-left part of the
+#' legend
+#' @param legend A character or expression vector to appear in the legend.
+#' @param col A vector of colors, if there are too few elements to fill the
+#' legend, the elements in \code{col} are recycled.
+#' @param locate A logical, if TRUE, call the function \code{locator} to
+#' indicate the top-left point of the legend
+#' @param pos A character, by default \code{top-left}, but can be
+#' \code{"top-right"}, \code{"bottom-left"} or \code{"bottom-right"} can be
+#' used to indicate the position of the data if \code{x, y} are not indicated
+#' @param n_round An integer indicating the number of significant digits to be
+#' used, by default \code{0}.
 #' @param col_na the color with which to represent the missing values
-#' (by default \code{col_na = NULL})
-#' @param postext define the side of the legend text, by default \code{left}
-#' but can be \code{right}
-#' @param h legend parameter expressing the height of one rectangle
+#' (by default \code{col_na = NULL}). If specified, a NA value will be add to
+#' the lefend with the color corresponding.
+#' @param postext A character defining the side of the legend text, by default
+#' \code{left} but can be \code{right}
+#' @param h A numeric expressing the height of one rectangle
 #' in the legend
-#' @param w legend parameter expressing the width of the legend
-#' @param tl legend parameter expressing the length of the tick
-#' @param s legend parameter expressing the space between the text and the
+#' @param w A numeric expressing the width of the legend
+#' @param tl A numeric expressing the length of the tick
+#' @param s A numeric parameter expressing the space between the text and the
 #' tick
 #' @param ... if need to imput more text parameters for the legend
 #'
@@ -484,27 +494,30 @@ square_legend <- function(x, y, legend, col, n_round = 0, col_na = NULL,
 #'
 #' Draws a scale legend
 #'
-#' @param x a value for the x coordinate of the top-left part of the legend
-#' @param y a value for the y coordinate of the top-left part of the legend
-#' @param legend a character or expression vector to appear in the legend.
-#' @param col a vector of colors appearing in the legend
-#' @param locate if TRUE, call the function \code{locator} to indicate the
-#' top-left point of the legend
-#' @param pos by default \code{top-left}, but can be \code{"top-right"},
-#' \code{"bottom-left"} or \code{"bottom-right"} can be used to indicate the
-#' position of the data if \code{x, y} are not indicated
-#' @param n_round integer indicating the number of significant digits to be used
-#' , by default \code{0}.
+#' @param x A numeric value for the x coordinate of the top-left part of the
+#' legend
+#' @param y A numeric value for the y coordinate of the top-left part of the
+#' legend
+#' @param legend A character or expression vector to appear in the legend.
+#' @param col A vector of colors, if there are too few elements to fill the
+#' legend, the elements in \code{col} are recycled.
+#' @param locate A logical, if TRUE, call the function \code{locator} to
+#' indicate the top-left point of the legend
+#' @param pos A character, by default \code{top-left}, but can be
+#' \code{"top-right"}, \code{"bottom-left"} or \code{"bottom-right"} can be
+#' used to indicate the position of the data if \code{x, y} are not indicated
+#' @param n_round An integer indicating the number of significant digits to be
+#' used, by default \code{0}.
 #' @param col_na the color with which to represent the missing values
 #' (by default \code{col_na = NULL}). If specified, a NA value will be add to
 #' the lefend with the color corresponding.
-#' @param postext define the side of the legend text, by default \code{left}
-#' but can be \code{right}
-#' @param h legend parameter expressing the height of one rectangle
+#' @param postext A character defining the side of the legend text, by default
+#' \code{left} but can be \code{right}
+#' @param h A numeric expressing the height of one rectangle
 #' in the legend
-#' @param w legend parameter expressing the width of the legend
-#' @param tl legend parameter expressing the length of the tick
-#' @param s legend parameter expressing the space between the text and the
+#' @param w A numeric expressing the width of the legend
+#' @param tl A numeric expressing the length of the tick
+#' @param s A numeric parameter expressing the space between the text and the
 #' tick
 #' @param ... if need to imput more text parameters for the legend
 #'
@@ -524,6 +537,7 @@ legend2 <- function(x, y, legend, col, locate = FALSE, pos = "top-left",
                     n_round = 0, col_na = NULL, postext = "left", h = 0.75,
                     w = 0.75, tl = .2, s = .2, ...){
 
+  # Graphic paramaters
   omar <- par("mar")
   par(mar = c(2,2,2,1))
   on.exit(par(mar = omar))
@@ -533,6 +547,7 @@ legend2 <- function(x, y, legend, col, locate = FALSE, pos = "top-left",
     strwidth()
 
   if (missing(x) & missing(y) & locate == FALSE){
+    # Graphical parameters
     usr <- par("usr")
     xr <- (usr[2] - usr[1])/27
     yr <- (usr[4] - usr[3])/27
