@@ -7,68 +7,20 @@
 #' @param sel the quoted name of the colums whose values will be used for the
 #' heatmap, or a part of the name UNIQUE of this column.
 #'
+#' @return A data frame containing three columns: \code{time} in a Date format,
+#'  \code{province} in a character format and the variable to
+#' select in a numeric format to represent in a heatmap.
+#'
 #' @examples
 #' # A heatmap of the ILI data:
 #' library(gdpm)
 #' library(magrittr)
+#' library(marc)
+#'
 #' ili <- getid(ili, from = 2004) %>% hm_data("incidence")
-#' sthm(ili)
-#'
-#' # With a legend by using legend2 function:
-#' col <- rev(heat.colors(9))
-#' sthm(ili, col = col) %>%
-#' legend2(.925, 1, legend =  ., col = col, postext = "right", n_round = 2,
-#' h = 1/length(col), w = 0.04, tl = 0.01, s = 0.005)
-#'
-#' # with some data transformations in order to reflect better the contrasts:
-#' sthm(ili, f = sqrt, col = col) %>%
-#' legend2(.925, 1, legend =  ., col = col, postext = "right", n_round = 2,
-#' h = 1/length(col), w = 0.04, tl = 0.01, s = 0.005)
-#'
-#' sthm(ili, f = function(x) x^.3, col = col) %>%
-#' legend2(.925, 1, legend =  ., col = col, postext = "right", n_round = 2,
-#' h = 1/length(col), w = 0.04, tl = 0.01, s = 0.005)
-#'
-#' # using some other color palettes, for examples the ones fromt the
-#' # RColorBrewer package:
-#' library(RColorBrewer)
-#' # to see the available color palettes:
-#' display.brewer.all()
-#' sthm(ili, f = function(x) x^.3, col = brewer.pal(11, "RdYlGn")) %>%
-#' legend2(.925, 1, legend =  ., col = brewer.pal(11, "RdYlGn"),
-#'  postext = "right", n_round = 2, h = 1/length(col), w = 0.04, tl = 0.01,
-#'   s = 0.005)
-#' sthm(ili, f = function(x) x^.3, col = brewer.pal(11, "RdYlBu")) %>%
-#' legend2(.925, 1, legend =  ., col = brewer.pal(11, "RdYlBu"),
-#' postext = "right", n_round = 2, h = 1/length(col), w = 0.04, tl = 0.01,
-#' s = 0.005)
-#' sthm(ili, f = function(x) x^.3, col = brewer.pal(11, "PRGn"))
-#' sthm(ili, f = function(x) x^.3, col = brewer.pal(9, "YlOrRd"))
-#' sthm(ili, f = function(x) x^.3, col = brewer.pal(9, "YlOrBr"))
-#'
-#' # changing the color of the missing values:
-#' rubella <- getid(rubella) %>% hm_data("incidence")
-#' col = brewer.pal(9, "YlOrRd")
-#' sthm(rubella, f = sqrt, col = col) %>%
-#' legend2(.925, 1, legend =  ., col = col, postext = "right", n_round = 2,
-#' h = 1/length(col), w = 0.04, tl = 0.01, s = 0.005)
-#' sthm(rubella, f = sqrt, col = col, col_na = "blue") %>%
-#' legend2(.925, 1, legend =  ., col = col, col_na = "blue", postext = "right",
-#'  n_round = 2, h = 1/length(col), w = 0.04, tl = 0.01, s = 0.005)
-#'
-#' # to order the provinces by latitude:
-#' library(gadmVN)
-#' library(dplyr)
-#' provinces <- gadm()
-#' coord <- coordinates(provinces)
-#' row.names(coord) <- unique(provinces@data$province)
-#' order <- rownames(coord[order(coord[, 2]), ])
-#' order <- data.frame(province = order, order = seq_along(order))
-#' rubella <- left_join(rubella, order, by = "province")
-#' rubella <- arrange(rubella, order)
-#' sthm(rubella, f = sqrt, col = col, col_na = "blue") %>%
-#' legend2(.925, 1, legend =  ., col = col, col_na = "blue", postext = "right",
-#'  n_round = 2, h = 1/length(col), w = 0.04, tl = 0.01, s = 0.005)
+#' a <- sthm(ili)
+#' legend2(.925, 1, legend =  a, col = col, postext = "right", n_round = 2,
+#'         h = 1/length(col), w = 0.04, tl = 0.01, s = 0.005)
 #'
 #' @export
 hm_data <- function(df,sel){
@@ -97,49 +49,66 @@ hm_data <- function(df,sel){
 #' provinces and the value breaks should be returned as an output of the
 #' function call or not. By default FALSE.
 #'
+#' @return A numeric vector corresponding to the value of the legend, returned
+#' invisibly. \cr
+#' If \code{show_legend = TRUE}, return a list
+#' containing a numeric vector called \code{legend} corresponding to the value
+#' of the legend, and a character vector called \code{province} containing the
+#' name of the province in the order of the figure.
+#'
 #' @examples
 #' library(gdpm)
-#' library(magrittr)
 #' # A heatmap of the ILI data:
-#' ili <- getid(ili, from = 2004) %>% hm_data("incidence")
+#' ili <- getid(ili, from = 2004)
+#' ili <-  hm_data(ili, "incidence")
 #' sthm(ili)
 #'
 #' # With a legend by using legend2 function:
 #' col <- rev(heat.colors(9))
-#' sthm(ili, col = col) %>%
-#' legend2(.925, 1, legend =  ., col = col, postext = "right", n_round = 2,
-#' h = 1/length(col), w = 0.04, tl = 0.01, s = 0.005)
+#' a <- sthm(ili, col = col)
+#' legend2(.925, 1, legend =  a, col = col, postext = "right", n_round = 2,
+#'         h = 1/length(col), w = 0.04, tl = 0.01, s = 0.005)
 #'
 #' # with some data transformations in order to reflect better the contrasts:
-#' sthm(ili, f = sqrt, col = col) %>%
-#' legend2(.925, 1, legend =  ., col = col, postext = "right", n_round = 2,
-#' h = 1/length(col), w = 0.04, tl = 0.01, s = 0.005)
+#' a <- sthm(ili, f = sqrt, col = col)
+#' legend2(.925, 1, legend =  a, col = col, postext = "right", n_round = 1,
+#'         h = 1/length(col), w = 0.035, tl = 0.01, s = 0.005, cex = 0.8)
 #'
-#' sthm(ili, f = function(x) x^.3, col = col) %>%
-#' legend2(.925, 1, legend =  ., col = col, postext = "right", n_round = 2,
-#' h = 1/length(col), w = 0.04, tl = 0.01, s = 0.005)
+#' a <- sthm(ili, f = function(x) x^.3, col = col)
+#' legend2(.925, 1, legend =  a, col = col, postext = "right", n_round = 2,
+#'         h = 1/length(col), w = 0.04, tl = 0.01, s = 0.005, cex = 0.8)
 #'
 #' # using some other color palettes, for examples the ones fromt the
 #' # RColorBrewer package:
 #' library(RColorBrewer)
-#' # to see the available color palettes:
-#' display.brewer.all()
-#' sthm(ili, f = function(x) x^.3, col = brewer.pal(11, "RdYlGn")) %>%
-#' legend2(.925, 1, legend =  ., col = brewer.pal(11, "RdYlGn"),
-#'  postext = "right", n_round = 2, h = 1/length(col), w = 0.04, tl = 0.01,
-#'   s = 0.005)
-#' sthm(ili, f = function(x) x^.3, col = brewer.pal(11, "RdYlBu")) %>%
-#' legend2(.925, 1, legend =  ., col = brewer.pal(11, "RdYlBu"),
-#' postext = "right", n_round = 2, h = 1/length(col), w = 0.04, tl = 0.01,
-#' s = 0.005)
+#'
+#' a <- sthm(ili, f = function(x) x^.3, col = brewer.pal(11, "RdYlGn"))
+#' legend2(.925, 1, legend =  a, col = brewer.pal(11, "RdYlGn"),
+#'         postext = "right", n_round = 2,
+#'         h = 1/length(brewer.pal(11, "RdYlGn")), w = 0.04, tl = 0.01,
+#'         s = 0.005)
+#'
+#' a <- sthm(ili, f = function(x) x^.3, col = brewer.pal(11, "RdYlBu"))
+#' legend2(.925, 1, legend =  a, col = brewer.pal(11, "RdYlBu"),
+#'         postext = "right", n_round = 2, h = 1/(length(a) - 1), w = 0.04,
+#'         tl = 0.01,  s = 0.005)
+#'
 #' sthm(ili, f = function(x) x^.3, col = brewer.pal(11, "PRGn"))
 #' sthm(ili, f = function(x) x^.3, col = brewer.pal(9, "YlOrRd"))
 #' sthm(ili, f = function(x) x^.3, col = brewer.pal(9, "YlOrBr"))
 #'
 #' # changing the color of the missing values:
-#' rubella <- getid(rubella) %>% hm_data("incidence")
-#' sthm(rubella, f = sqrt, col = brewer.pal(9, "YlOrRd"))
-#' sthm(rubella, f = sqrt, col = brewer.pal(9, "YlOrRd"), col_na = "blue")
+#' rubella <- getid(rubella)
+#' rubella <- hm_data("incidence")
+#' a <- sthm(rubella, f = sqrt, col = col)
+#' legend2(.925, 1, legend =  a, col = col, postext = "right", n_round = 2,
+#'         col_na = "grey", h = 1/(length(a) - 1), w = 0.04, tl = 0.01,
+#'           s = 0.005)
+#'
+#' a <- sthm(rubella, f = sqrt, col = brewer.pal(9, "YlOrRd"), col_na = "blue")
+#' legend2(.925, 1, legend =  a, col = col, postext = "right", n_round = 2,
+#'         col_na = "blue", h = 1/(length(a) - 1), w = 0.04, tl = 0.01,
+#'           s = 0.005)
 #'
 #' # to order the provinces by latitude:
 #' library(gadmVN)
@@ -149,16 +118,37 @@ hm_data <- function(df,sel){
 #' row.names(coord) <- unique(provinces@data$province)
 #' order <- rownames(coord[order(coord[, 2]), ])
 #' order <- data.frame(province = order, order = seq_along(order))
-#' rubella <- left_join(rubella, order, by = "province")
-#' rubella <- arrange(rubella, order)
-#' sthm(rubella, f = sqrt, col = brewer.pal(9, "YlOrRd"), col_na = "blue")
-#' @export
+#' rubella_order <- left_join(rubella, order, by = "province")
+#' rubella_order <- arrange(rubella_order, order)
+#' rubella_order <- select(rubella_order, -order)
+#' a <- sthm(rubella_order, f = sqrt, col = brewer.pal(9, "YlOrRd"),
+#'          col_na = "blue")
+#' legend2(.925, 1, legend =  a, col = col, postext = "right", n_round = 2,
+#'         col_na = "blue", h = 1/length(col), w = 0.04, tl = 0.01,
+#'           s = 0.005)
 #'
+#' # to print the province in the order of the figure:
+#' a <- sthm(rubella_order, f = sqrt, col = brewer.pal(9, "YlOrRd"),
+#'           col_na = "blue", show_legend = TRUE)
+#' legend2(.925, 1, legend =  a$legend, col = col, postext = "right",
+#'         n_round = 2, col_na = "blue", h = 1/length(col), w = 0.04, tl = 0.01,
+#'           s = 0.005)
+#'a
+#'# list containing the legend vector and the province vector which correspond
+#'# to the name of the province in the order of the figure.
+#'
+#'
+#' @importFrom dplyr select_if
+#' @importFrom dplyr filter
+#' @importFrom magrittr %>%
+#' @importFrom magrittr %<>%
+#'
+#' @export
 sthm <- function(df,
               f = function(x) x, col = heat.colors(12),
               col_na = "grey", x = .85, show_legend = FALSE)
 {
-  # test entry
+  # Tests input
   # number of colums
   if (ncol(df) != 3){
     stop ("Invalid number of column, 'df' should only have three columns")
@@ -206,11 +196,12 @@ draw_heatmap <- function(df,
   col_na = "grey", x = .85, show_legend = FALSE)
   {
 
+  # Graphic parameters
   warn_old <- unlist(options("warn"))
   options(warn = -1)
   on.exit(options(warn = warn_old))
 
-# Data preparation:
+  # Data preparation:
   time_vec <- select_if(df, function(col) class(col) == "Date") %>%
     unlist %>% as.vector %>%
     as.Date(origin = "1970-01-01") %>%
@@ -223,7 +214,7 @@ draw_heatmap <- function(df,
       select_if(is.numeric))
   values <- f(as.matrix(as.data.frame(values)))
 
-# Options and graphical parameters:
+  # Options and graphical parameters:
   opar <- par()
   owar <- getOption("warn")
   on.exit({par(opar);
@@ -231,7 +222,7 @@ draw_heatmap <- function(df,
   plt <- par("plt")
   options(warn = -1)
 
-# The heatmap:
+  # The heatmap:
   plt[2] <- x[1]
   par(plt = plt)
   image(time_vec, seq_len(ncol(values)), values, ann = FALSE)
@@ -240,12 +231,12 @@ draw_heatmap <- function(df,
   image(time_vec, seq_len(ncol(values)), values, col = col, add = TRUE)
   box(bty = "o")
 
-# The legend:
+  # The legend:
   labels <- levels(cut(seq(min(values, na.rm = TRUE), max(values, na.rm = TRUE),
                          le = 512), length(col)))
   legend <- c(0, as.numeric( sub("[^,]*,([^]]*)\\]", "\\1", labels)))
 
-# Print the legend if needed :
+  # Print the legend if needed :
   if (show_legend) return(list(legend = legend, prov = provinces_names)) else
     invisible(legend)
 }
