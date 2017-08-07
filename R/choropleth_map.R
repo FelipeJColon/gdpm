@@ -49,37 +49,6 @@
 #'
 #' @examples
 #' library(gdpm)
-#' ili <- getid_("ili", from = 1992, to = 2015)
-#' # A choroplet map of the ILI data:
-#'
-#' # with some data transformations in order to reflect better the contrasts:
-#'
-#' # using some other color palettes, for examples the ones from the
-#' # RColorBrewer package or the one in the color Palettes of R :
-#' library(RColorBrewer)
-#' # to see the available color palettes:
-#' display.brewer.all()
-#'
-#' # changing the color of the missing values:
-#'
-#' # changing the legend text parameters
-#' # Print the numeric legend with 2 decimals
-#'
-# # Doesn't print the distribution of the value by intervals
-#'
-#' # By default, the legend is on the top left of the figure, but the position
-#' # can be easily change by using the parameters pos
-#' # top left
-#' # top right
-#' # bottom left
-#' # bottom right
-#'
-#'
-#' # The intervals used to expressed the value can be input directly as
-#' # parameters in the function via the parameters fixedBreaks.
-#' # The given breaks should be of length n+1.
-#'
-#' # Using the locator to choose where to print the legend
 #' \dontrun{}
 #'
 #' @export
@@ -99,104 +68,6 @@ select_map <- function(range){
 }
 
 # GENERIC ----------------------------------------------------------------------
-
-#' Draws a spatio-temporal choropleth map
-#'
-#' @details The \code{n} parameter can be overuled by the number of breaks
-#' obtain by certain style. By default, the number of intervall will be decide
-#' by the \code{n} parameter but for certain \code{style} like "pretty", this
-#' value can be overruled. Please for more information, look at the
-#' documentation of the classint package.
-#'
-#' @param df a data frame containing at two colums, one of class "character" and
-#' one of class "numeric".
-#' @param map an object of class "SpatialPolygonsDataFrame" containing at least
-#' the varible \code{province}
-#' @param n a numeric indicating the number of intervals to represent the data
-#' (by default, \code{n = 6})
-#' @param col a vector of colors to use for the map (by default,
-#' \code{col = heat.colors(6)}).The colors from the package RColorBrewer can
-#' also be used.
-#' @param style a character value issued from the \code{classint} package, and
-#' used to select a method for the different way of calculating the intervals
-#' (by default \code{style = "quantile"})
-#' @param col_na the color with which to represent the missing values
-#' (by default \code{col_na = "grey"})
-#' @param fixedBreaks By default \code{NULL} but if a vector of value is
-#' inputed, it will be used to specifen the breaks.
-#' @param distrib if TRUE, print on the map, the distribution of the values by
-#' intervals. Only available when the represented variable has at least two
-#' differents value and if the breaks are not specified via fixedBreaks.
-#' @param n_round integer indicating the number of significant digits to be used
-#' @param pos_brks if TRUE, the breaks values will all be positive, the first
-#' break will be superior or equal to zero, by default (\code{TRUE}). If false,
-#' allows negative value for breaks
-#'
-#' @return A numeric with attributes corresponding of the breaks value and the
-#' attributes \code{colors} corresponding to the color associated with the
-#' breaks value, returned invisibly.
-#'
-#' @keywords internal
-#' @noRd
-idcm <- function(df, map,
-  n = 6, col = heat.colors(6), style = "quantile",  col_na = "grey",
-  pos_brks = TRUE, fixedBreaks = NULL, distrib = TRUE, n_round = 0) {
-
-  # graph parameters
-  ofig <- par("fig")
-  omar <- par("mar")
-  par <- par(mar = c(2,2,2,2))
-  on.exit(par(fig = ofig, mar = omar))
-
-  # test entry
-  # number of colums
-  if (ncol(df) != 2){
-    stop ("Invalid number of column, 'df' should only have two columns")
-  }
-  # class
-  if (is.character(df[,1]) == FALSE & is.character(df[,2]) == FALSE){
-    stop("Invalid 'df', one of the column needs to be of class 'character' and
-          the other of class 'numeric'")
-  }
-  if (is.numeric(df[,1]) == FALSE & is.numeric(df[,2]) == FALSE){
-   stop("Invalid 'df', one of the column needs to be of class 'character' and
-          the other of class 'numeric'")
-  }
-  if (class(map) != "SpatialPolygonsDataFrame"){
-    stop ("Invalid 'map' format, should be 'SpatialPolygonsDataFrame'")
-  }
-
-  # implement the data in the shape file data
-  provinces <- sp::merge(map, df)
-
-  # value
-  value <- provinces@data %>%
-    select_if(is.numeric) %>%
-    unlist %>%  as.vector
-
-  # draw a choropleth map when all the data contain one single data and no fixed
-  # breaks
-  if(length(na.omit(unique(value))) <= 1 &
-     length(fixedBreaks) == 0)
-    {
-    #distrib <- NULL
-    choropleth_v1(provinces, col = col, col_na = col_na, n_round = n_round)
-
-  }
-  # draw a choropleth with multiple values and no fixed breaks
-  else if (length(na.omit(unique(value))) > 1 &
-           length(fixedBreaks) == 0)
-  {
-    choropleth_vm(provinces, col = col, col_na = col_na, n = n, style = style,
-                  distrib = distrib, pos_brks = pos_brks, n_round = n_round)
-  }
-  # draw a choropleth map with a fixed breaks
-  else if (length(fixedBreaks) > 0){
-    choropleth_fix(provinces, col = col, col_na = col_na,
-                   fixedBreaks = fixedBreaks)
-  }
-
-}
 
 #' Draws a spatio-temporal choropleth map with one unique value
 #'
@@ -227,12 +98,12 @@ choropleth_v1 <- function (df, col = heat.colors(1), col_na = "grey",
     unlist %>%  as.vector
 
   # define the color and the class intervals
-  if (length(grep("#", col[1])) >= 1) {
+  #if (length(grep("#", col[1])) >= 1) {
     pal <-  col
     pal <- pal[1]
-  } else {
-    pal <- RColorBrewer::brewer.pal(3, col)[1]
-  }
+  #} else {
+   # pal <- RColorBrewer::brewer.pal(3, col)[1]
+  #}
   pal2 <-  rep(pal, length(value))
   pal2[is.na(value)] <- col_na
   classint <- na.omit(unique(value))
@@ -246,6 +117,7 @@ choropleth_v1 <- function (df, col = heat.colors(1), col_na = "grey",
   invisible(legend)
 }
 
+################################################################################
 #' Draws a spatio-temporal choropleth map with multiple value
 #'
 #' This function draws a choropleth map with at least two differents value. Use
@@ -288,14 +160,14 @@ choropleth_vm <- function (df, col = heat.colors(6), n = 6,
   # choose class interval and colors
     classint <- suppressWarnings(classIntervals(value, n = n,
                                                 style = style))
-  if (length(grep("#", col[1])) >= 1) {
+  #if (length(grep("#", col[1])) >= 1) {
     pal <-  col[1:(length(classint$brks) - 1)]
-  } else if (length(classint$brks) <= 3 & length(grep("#", col[1])) == 0) {
-    pal <-  RColorBrewer::brewer.pal(length(classint$brks), col)
-    pal <- pal[1:(length(classint$brks) - 1)]
-  } else {
-    pal <-  RColorBrewer::brewer.pal(length(classint$brks) - 1, col)
-  }
+  #} else if (length(classint$brks) <= 3 & length(grep("#", col[1])) == 0) {
+    #pal <-  RColorBrewer::brewer.pal(length(classint$brks), col)
+   # pal <- pal[1:(length(classint$brks) - 1)]
+  #} else {
+   # pal <-  RColorBrewer::brewer.pal(length(classint$brks) - 1, col)
+  #}
 
   # replace the value of brks below zero by zero
   if (pos_brks == TRUE){
@@ -335,6 +207,7 @@ choropleth_vm <- function (df, col = heat.colors(6), n = 6,
 
 }
 
+################################################################################
 #' Draws a spatio-temporal choropleth map with fixed breaks
 #'
 #' @param df a data frame containing two columns : one containing the province
@@ -363,14 +236,14 @@ choropleth_fix <- function (df, col = heat.colors(6), col_na = "grey",
     unlist %>%  as.vector
 
   # choose class interval and colors
-  if (length(grep("#", col[1])) >= 1) {
+  #if (length(grep("#", col[1])) >= 1) {
     pal <-  col[1:(length(fixedBreaks) - 1)]
-  } else if (length(fixedBreaks) <= 3 & length(grep("#", col[1])) == 0) {
-    pal <-  RColorBrewer::brewer.pal(length(fixedBreaks) -1, col)
-    pal <- pal[1:(length(fixedBreaks) - 1)]
-  } else {
-    pal = RColorBrewer::brewer.pal(length(fixedBreaks) - 1, col)
-  }
+  #} else if (length(fixedBreaks) <= 3 & length(grep("#", col[1])) == 0) {
+   # pal <-  RColorBrewer::brewer.pal(length(fixedBreaks) -1, col)
+  #  pal <- pal[1:(length(fixedBreaks) - 1)]
+  #} else {
+   # pal = RColorBrewer::brewer.pal(length(fixedBreaks) - 1, col)
+  #}
   pal2 <- colorRampPalette(pal)
   df$col <- pal2(length(fixedBreaks) - 1)[cut(value, breaks = fixedBreaks,
                                               include.lowest = TRUE)]
@@ -385,220 +258,198 @@ choropleth_fix <- function (df, col = heat.colors(6), col_na = "grey",
   invisible(legend)
 }
 
-
-#' Draws a legend
+################################################################################
+#' Draws a spatio-temporal choropleth map
 #'
-#' @param x A numeric value for the x coordinate of the top-left part of the
-#' legend
-#' @param y A numeric value for the y coordinate of the top-left part of the
-#' legend
-#' @param legend A character or expression vector to appear in the legend.
-#' @param col A vector of colors, if there are too few elements to fill the
-#' legend, the elements in \code{col} are recycled.
-#' @param locate A logical, if TRUE, call the function \code{locator} to
-#' indicate the top-left point of the legend
-#' @param pos A character, by default \code{top-left}, but can be
-#' \code{"top-right"}, \code{"bottom-left"} or \code{"bottom-right"} can be
-#' used to indicate the position of the data if \code{x, y} are not indicated
-#' @param n_round An integer indicating the number of significant digits to be
-#' used, by default \code{0}.
+#' @details The \code{n} parameter can be overuled by the number of breaks
+#' obtain by certain style. By default, the number of intervall will be decide
+#' by the \code{n} parameter but for certain \code{style} like "pretty", this
+#' value can be overruled. Please for more information, look at the
+#' documentation of the classint package. \cr
+#' \cr
+#' If the \code{fixedBreaks} parameter is filled, the \code{n} and \code{style}
+#' parameters will be automatically overuled as \code{style = "fixed"} and
+#' \code{n} will be equal to the length of the fixedBreaks vector - 1.
+#'
+#' @param df a data frame containing at two colums, one of class "character" and
+#' one of class "numeric".
+#' @param map an object of class "SpatialPolygonsDataFrame" containing at least
+#' the varible \code{province}
+#' @param n a numeric indicating the number of intervals to represent the data
+#' (by default, \code{n = 6})
+#' @param col a vector of colors to use for the map (by default,
+#' \code{col = heat.colors(6)}).The colors from the package RColorBrewer can
+#' also be used.
+#' @param style a character value issued from the \code{classint} package, and
+#' used to select a method for the different way of calculating the intervals
+#' (by default \code{style = "quantile"})
 #' @param col_na the color with which to represent the missing values
-#' (by default \code{col_na = NULL}). If specified, a NA value will be add to
-#' the lefend with the color corresponding.
-#' @param postext A character defining the side of the legend text, by default
-#' \code{left} but can be \code{right}
-#' @param h A numeric expressing the height of one rectangle
-#' in the legend
-#' @param w A numeric expressing the width of the legend
-#' @param tl A numeric expressing the length of the tick
-#' @param s A numeric parameter expressing the space between the text and the
-#' tick
-#' @param ... if need to imput more text parameters for the legend
+#' (by default \code{col_na = "grey"})
+#' @param fixedBreaks By default \code{NULL} but if a vector of value is
+#' inputed, it will be used to specifen the breaks.
+#' @param distrib if TRUE, print on the map, the distribution of the values by
+#' intervals. Only available when the represented variable has at least two
+#' differents value and if the breaks are not specified via fixedBreaks.
+#' @param n_round integer indicating the number of significant digits to be used
+#' @param pos_brks if TRUE, the breaks values will all be positive, the first
+#' break will be superior or equal to zero, by default (\code{TRUE}). If false,
+#' allows negative value for breaks
+#'
+#' @return A numeric vector with attributes corresponding of the breaks value
+#' and the attributes \code{colors} corresponding to the color associated with
+#' the breaks value, returned invisibly.
+#'
+#' @examples
+#' library(gdpm)
+#' library(magrittr)
+#' library(gadmVN)
+#'
+#' # dengue data
+#' dengue <- getid(dengue, from = 1992, to = 2010)
+#' # geographic data
+#' map <- gadmVN::gadm(date = 1992, merge_hanoi = TRUE)
+#' map[which(map$province == "Ha Son Binh"),] <- "Ha Noi"
+#'
+#' # A choroplet map of the dengue data:
+#' # The first step is to select only the month and the year that we want to
+#' # represent, here the incidence value of dengue in September 1993. We keep
+#' # only the 'province' and 'incidence_dengue' column as the 'idcm'
+#' # function accept only dataframe of the two columns in entry.
+#' # The second step is to print the map.
+#' # The last step is to print a legend, here we use legend2 of the 'marc'
+#' # package but other function can be used.
+#' dengue_sel  <- filter(dengue, year == 1993, month == "September")
+#' dengue_sel <- select(dengue_sel, province, contains("incidence"))
+#' a <- idcm(dengue_sel, map) # return invisibly the information for the legend
+#' legend2(legend = a, col = attr(a, "colors"), col_na = "grey")
+#'
+#' # You can also use the '%>%' operator:
+#' dengue %>%
+#'   filter(year == 1993, month == "September") %>%
+#'   select(province, contains("incidence")) %>%
+#'   idcm(map) %>%
+#'   legend2(legend = ., col = attr(., "colors"), col_na = "grey")
+#'
+#' # A choroplet map of the dengue data with some data transformations in order
+#' # to reflect better the contrasts:
+#' dengue  %>%
+#'  filter(year == 1993, month == "September") %>%
+#'  select(province, contains("incidence")) %>%
+#'  idcm(map, n = 9, style = "jenks", col = heat.colors(9)) %>%
+#'  legend2(legend = ., col = attr(., "colors"), col_na = "grey")
+#'
+#' # Using some other color palettes, for examples the ones from the
+#' # RColorBrewer package or the one in the color Palettes of R :
+#' library(RColorBrewer)
+#' # to see the available color palettes:
+#' display.brewer.all()
+#' dengue  %>%
+#'  filter(year == 1993, month == "September") %>%
+#'  select(province, contains("incidence")) %>%
+#'  idcm(map, n = 9, style = "jenks",
+#'       col = brewer.pal(9, "YlOrRd")) %>%
+#'  legend2(legend = ., col = attr(., "colors"), col_na = "grey")
+#'
+#' # changing the color of the missing values:
+#' dengue  %>%
+#'  filter(year == 1993, month == "September") %>%
+#'  select(province, contains("incidence")) %>%
+#'  idcm(map, n = 9, style = "jenks",
+#'       col = brewer.pal(9, "YlOrRd"), col_na = "blue") %>%
+#'  legend2(legend = ., col = attr(., "colors"), col_na = "blue")
+#'
+#'
+#' # Print the distribution of the value by intervals:
+#' dengue  %>%
+#'  filter(year == 1993, month == "September") %>%
+#'  select(province, contains("incidence")) %>%
+#'  idcm(map, n = 9, style = "jenks",
+#'       col = brewer.pal(9, "YlOrRd"), col_na = "blue",
+#'       distrib = TRUE) %>%
+#'  legend2(legend = ., col = attr(., "colors"), col_na = "blue")
+#'
+#' # Use the fixedBreaks parameters to define your own intervals of value:
+#' dengue  %>%
+#'  filter(year == 1993, month == "September") %>%
+#'  select(province, contains("incidence")) %>%
+#'  idcm(map, fixedBreaks = c(0, 20, 100, 200, 400, 800, 1200, 1500),
+#'       col = brewer.pal(7, "YlOrRd"), col_na = "blue") %>%
+#'  legend2(legend = ., col = attr(., "colors"), col_na = "blue")
+#'
+#' @importFrom dplyr select_if
+#' @importFrom sp merge
+#' @importFrom magrittr %>%
+#' @importFrom magrittr %<>%
+#' @importFrom classInt classIntervals
+#' @importFrom classInt findColours
 #'
 #' @keywords internal
 #' @noRd
-square_legend <- function(x, y, legend, col, n_round = 0, col_na = NULL,
-                          postext = "left",
-                          h = 0.75, w = 0.75, tl = .2, s = .2, ...) {
+idcm <- function(df, map,
+                 n = 6, col = heat.colors(6), style = "quantile",
+                 col_na = "grey", pos_brks = TRUE, fixedBreaks = NULL,
+                 distrib = FALSE, n_round = 0) {
 
-  # size of the top character (width height)
-  size_legend <- legend %>% as.character %>% tail(1) %>%
-    strwidth()
-
-  # define point of the legend
-  if (postext == "left") {
-    xleft <- x + size_legend + tl + s
-  }
-  if (postext == "right") {
-    xleft <- x
-  }
-  xright <- xleft + w
-
-   # define the y for rectangle legend
-  col %<>% rev
-  y1 <- y - (0:length(col)) * h
-
-  # built the legend rectangles
-  for(i in seq_along(col))
-    rect(xleft, y1[i + 1], xright, y1[i], col = col[i], border = NA)
-  rect(xleft, tail(y1, 1), xright, y1[1])
-
-  # If want NA, add a rectangle of the color NA
-  if(length(col_na) != 0) {
-    rect(xleft, tail(y1, 1) - h , xright, tail(y1, 1) - h - h, col = col_na)
-  }
-
-  # Define if segments should be on the left or the right
-  if (postext == "left") {
-    segments(xleft, y1, xleft - tl, y1)
-  }
-  if (postext == "right"){
-    segments(xright, y1, xright + tl, y1)
-  }
-
-  # legend text
-  if (length(col_na) > 0){
-    # define the y  with NA for the text
-    ntcol <- length(col) + 2
-    y2 <- y - (0: ntcol) * h
-    y2[length(y2)] <- y2[length(y2)] + 0.5 * h
-
-    # legend with NA on the left or right side
-    if (postext == "left") {
-      text(x + size_legend, y2,
-           c(format(round(rev(legend),n_round), nsmall = n_round), "", "NA"),
-           adj = 1, ...)
-    }
-    if (postext == "right") {
-      text(xright + tl + s , y2,
-           c(format(round(rev(legend),n_round), nsmall = n_round), "", "NA"),
-           adj = 0, ...)
-    }
-
-  } else {
-     y2 <- y - (0: length(col)) * h
-    if (postext == "left") {
-       text(x + size_legend, y2,
-           format(round(rev(legend),n_round), nsmall = n_round),
-           adj = 1, ...)
-      }
-    if (postext == "right") {
-      text(xright + tl + s , y2,
-           format(round(rev(legend),n_round), nsmall = n_round),
-           adj = 0, ...)
-    }
-  }
-}
-
-#' Draws a legend
-#'
-#' Draws a scale legend
-#'
-#' @param x A numeric value for the x coordinate of the top-left part of the
-#' legend
-#' @param y A numeric value for the y coordinate of the top-left part of the
-#' legend
-#' @param legend A character or expression vector to appear in the legend.
-#' @param col A vector of colors, if there are too few elements to fill the
-#' legend, the elements in \code{col} are recycled.
-#' @param locate A logical, if TRUE, call the function \code{locator} to
-#' indicate the top-left point of the legend
-#' @param pos A character, by default \code{top-left}, but can be
-#' \code{"top-right"}, \code{"bottom-left"} or \code{"bottom-right"} can be
-#' used to indicate the position of the data if \code{x, y} are not indicated
-#' @param n_round An integer indicating the number of significant digits to be
-#' used, by default \code{0}.
-#' @param col_na the color with which to represent the missing values
-#' (by default \code{col_na = NULL}). If specified, a NA value will be add to
-#' the lefend with the color corresponding.
-#' @param postext A character defining the side of the legend text, by default
-#' \code{left} but can be \code{right}
-#' @param h A numeric expressing the height of one rectangle
-#' in the legend
-#' @param w A numeric expressing the width of the legend
-#' @param tl A numeric expressing the length of the tick
-#' @param s A numeric parameter expressing the space between the text and the
-#' tick
-#' @param ... if need to imput more text parameters for the legend
-#'
-#' @details The number of rectangle in the legend is calculate with the number
-#' of object in the vector \code{legend} - 1.\cr
-#' \cr If arguments \code{x,y}, the location may also be specified by
-#' setting the parameter \code{pos} to a keyword form the list: \code{top-left},
-#'  \code{"top-right"}, \code{"bottom-left"} or \code{"bottom-right"}. This
-#'  places the legend on the inside of the plot frame at the giver location.
-#' Note that a call to the function \code{locator(1)} can be used via setting
-#' the parameter \code{locate} to TRUE in place of the \code{x} and \code{y}
-#' arguments.
-#'
-#' @keywords internal
-#' @noRd
-legend2 <- function(x, y, legend, col, locate = FALSE, pos = "top-left",
-                    n_round = 0, col_na = NULL, postext = "left", h = 0.75,
-                    w = 0.75, tl = .2, s = .2, ...){
-
-  # Tests
-  pos_text <- c("left", "right")
-  if(!is.element(postext, pos_text)){
-    stop("The parameters 'postext' can only contain: 'left' or 'right'")
-  }
-  if(!is.logical(locate)){
-    stop("The parameters 'locate' can only be a logical: 'TRUE' or 'FALSE'")
-  }
-
-  # Graphic paramaters
+  # graph parameters
+  ofig <- par("fig")
   omar <- par("mar")
-  par(mar = c(2,2,2,1))
-  on.exit(par(mar = omar))
+  par <- par(mar = c(2,2,2,2))
+  on.exit(par(fig = ofig, mar = omar))
 
-  # size of the top character (width height)
-  size_legend <- legend %>% as.character %>% tail(1) %>%
-    strwidth()
-
-  if (missing(x) & missing(y) & locate == FALSE){
-
-    # Test
-    pos_legend <- c("top-left", "top-right", "bottom-left", "bottom-right")
-    if(!is.element(pos, pos_legend)){
-      stop("The parameters 'pos' can only contain: 'top-left', 'top-right',
-           'bottom-left' or 'bottom-right'")
+  # test entry
+  # number of colums
+  if (ncol(df) != 2){
+    stop ("Invalid number of column, 'df' should only have two columns")
+  }
+  # class
+  if (is.character(df[,1]) == FALSE & is.character(df[,2]) == FALSE){
+    stop("Invalid 'df', one of the column needs to be of class 'character' and
+         the other of class 'numeric'")
+  }
+  if (is.numeric(df[,1]) == FALSE & is.numeric(df[,2]) == FALSE){
+    stop("Invalid 'df', one of the column needs to be of class 'character' and
+         the other of class 'numeric'")
+  }
+  if (class(map) != "SpatialPolygonsDataFrame"){
+    stop ("Invalid 'map' format, should be 'SpatialPolygonsDataFrame'")
+  }
+  # style input
+  style_entry <- c("fixed", "sd", "equal", "pretty", "quantile", "kmeans",
+                   "hclust", "bclust", "fisher", "jenks")
+  if(!is.element(style, style_entry)){
+    stop("The parameters 'style' can only contain: one of 'fixed', 'sd',
+'equal', 'pretty', 'quantile', 'kmeans', 'hclust', 'blust', 'fisher' or 'jenks'.
+For more information, please look at the package 'classInt'.")
     }
 
-    # Graphical parameters
-    usr <- par("usr")
-    xr <- (usr[2] - usr[1])/27
-    yr <- (usr[4] - usr[3])/27
-    xlim <- c(usr[1] + xr, usr[2] - xr)
-    ylim <- c(usr[3] + yr, usr[4] - yr)
+  # implement the data in the shape file data
+  provinces <- sp::merge(map, df)
 
-    if (pos == "top-left"){
-      x <- xlim[1]
-      y <- ylim[2]
-    }
-    if (pos == "top-right"){
-      x <- xlim[2] - w - size_legend - tl -s
-      y <- ylim[2]
-    }
-    if (pos == "bottom-left"){
-      x <- xlim[1]
-      y <- ylim[1] + ((length(legend)-1)* h + 2 * h)
-    }
-    if (pos == "bottom-right"){
-      x <- xlim[2] - w - size_legend -tl - s
-      y <- ylim[1] + ((length(legend)-1)* h + 2 * h)
-    }
+  # value
+  value <- provinces@data %>%
+    select_if(is.numeric) %>%
+    unlist %>%  as.vector
+
+  # draw a choropleth map when all the data contain one single data and no fixed
+  # breaks
+  if(length(na.omit(unique(value))) <= 1 &
+     length(fixedBreaks) == 0)
+  {
+    #distrib <- NULL
+    choropleth_v1(provinces, col = col, col_na = col_na, n_round = n_round)
 
   }
-
-  if (locate == TRUE){
-    coordinates <- locator(1)
-    x = coordinates$x
-    y = coordinates$y
+  # draw a choropleth with multiple values and no fixed breaks
+  else if (length(na.omit(unique(value))) > 1 &
+           length(fixedBreaks) == 0)
+  {
+    choropleth_vm(provinces, col = col, col_na = col_na, n = n, style = style,
+                  distrib = distrib, pos_brks = pos_brks, n_round = n_round)
+  }
+  # draw a choropleth map with a fixed breaks
+  else if (length(fixedBreaks) > 0){
+    choropleth_fix(provinces, col = col, col_na = col_na,
+                   fixedBreaks = fixedBreaks)
   }
 
-  square_legend(x, y, legend = legend, col = col, n_round = n_round,
-                col_na = col_na, postext = postext, h = h, w = w, tl = tl,
-                s = s, ...)
 }
-
-
