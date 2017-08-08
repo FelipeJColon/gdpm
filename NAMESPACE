@@ -3,7 +3,6 @@
 export(getid)
 export(getid_)
 export(hm_data)
-export(select_map)
 importFrom(dplyr,arrange)
 importFrom(dplyr,bind_rows)
 importFrom(dplyr,contains)
