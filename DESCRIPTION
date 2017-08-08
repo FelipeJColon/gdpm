@@ -14,7 +14,8 @@ Suggests:
     knitr,
     rmarkdown,
     testthat,
-    RColorBrewer
+    RColorBrewer,
+    poseid
 VignetteBuilder: knitr
 Imports:
     dplyr,
