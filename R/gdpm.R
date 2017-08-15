@@ -25,7 +25,4 @@
 #' @importFrom tidyr gather
 #' @importFrom tidyr spread
 #' @importFrom tidyr separate
-#' @importFrom classInt findColours
-#' @importFrom classInt classIntervals
-#' @importFrom sp merge
 NULL

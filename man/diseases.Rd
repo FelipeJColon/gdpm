@@ -31,4 +31,3 @@ data. This table can be used as a resume of all the other data frame contain
 in this package and may be useful for computing on the various files.
 }
 \keyword{datasets}
-
