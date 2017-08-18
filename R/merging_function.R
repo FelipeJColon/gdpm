@@ -342,7 +342,6 @@ multiple_disease <- function(lst, splits_list, from, to){
 #' @return An object of the same class as \code{df} in which all the provinces
 #' that needed to be merged (according to the time range provided) are merged.
 #' @examples
-#' library(gdpm)
 #'
 #' # Loads a resume table of all the epidemiological data frame contains in the
 #' # package.
