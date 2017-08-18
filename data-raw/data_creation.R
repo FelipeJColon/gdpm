@@ -2,6 +2,7 @@
 library(magrittr) # for the " %>% " pipe
 library(dplyr) # for "bind_rows", "rename", "mutate", "select"
 library(tidyr) # for "gather", "separate", "spread"
+library(dictionary) # for the province dictionary
 
 # Prerequisites  ---------------------------------------------------------------
 
@@ -173,7 +174,7 @@ names_col <- matrix(c(
 names_col <- setNames(names_col[, 2], names_col[, 1])
 
 # Provinces tables for translation
-province <- readRDS("data-raw/province.RDS")
+province <- dictionary::provinces
 
 # Lists of splits events in the province history in Vietnam (necessary for the
 # merging function)
@@ -186,7 +187,10 @@ ah_splits <- readRDS(file = "data-raw/ah_splits.RDS")
 
 # Translates from Vietnamese to English (by default: province's name).
 translate <- function(df, col_names = "province", hash = province) {
-  df[, col_names] <- hash[unlist(df[, col_names])]
+  df[, col_names] <- df[, col_names] %>%
+    unlist %>%  as.vector %>%
+    sub("^\\d+\\.", "", .) %>% trimws
+  df[, col_names] <-   hash[unlist(df[, col_names])]
   df
 }
 

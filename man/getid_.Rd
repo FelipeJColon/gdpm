@@ -55,7 +55,6 @@ diseases and if one or the two of them are selected (together with other
 diseases), this story will be applied to all the disease selected.
 }
 \examples{
-library(gdpm)
 
 # Loads a resume table of all the epidemiological data frame contains in the
 # package.
