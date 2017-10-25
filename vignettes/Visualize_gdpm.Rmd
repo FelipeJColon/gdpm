@@ -1,0 +1,320 @@
+---
+title: "Visualising the gdpm package"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+csl: the-american-naturalist.csl
+vignette: >
+  %\VignetteIndexEntry{Visualising the gdpm package}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r include=F}
+knitr::knit_hooks$set(margin = function(before,options,envir) {
+if(before) par(mgp=c(1,0.35,0),bty="n",plt=c(0,.99,.13,.99), mar = c(2,2,3,2), xpd = TRUE) else NULL })
+
+knitr::opts_chunk$set(margin=T,prompt=T,comment="",collapse=T,cache=F, bty="n",
+dev.args=list(pointsize=11),fig.height= 4,
+fig.width=6.24725,fig.retina=2,fig.align="center")
+```
+
+The `gdpm` package contains the monthly surveillance data aggregated by province by the Vietnamese General Department of Preventive Medicine (GDPM). 
+
+The package contains thirty epidemiological data frames (`adenovirus`, `amoebiasis`, `chickenpox`, `cholera`, `dengue`, `diarrhea`, `diphteria`, `dysenteria`, `encephalitis`, `hepatitis`, `ili`, `measles`, `meningitis`, `mumps`, `pertussis`, `plague`, `polio`, `rabies`, `shigella`, `tetanus`, `typhoid`, `leptospiriosis`, `anthrax`, `nntetanus`, `malaria`, `h5n1`, `rubella`, `vhf`, `enterovirus`, `ssuis`), one summmary data frame (`diseases`), one handling functions (`getid`) and one visualising function (`sthm`). We here give a quick overview of the data sets and some idea to visualise the data.
+
+Installing the `gdpm` package:
+
+```{r eval=F}
+devtools::install_github("choisy/gdpm")
+```
+
+Loading and attaching the `gdpm` package:
+
+```{r}
+library(gdpm)
+```
+
+The data can be dowload by using the `getid` function (see "Using gdpm package Vignette" for more information).
+```{r}
+dengue <- getid(dengue, from = 2000)
+head(dengue)
+```
+
+Different functions of visualisation can be used for the gdpm data set, and they can be find in the `poseid` package
+
+```{r eval=F}
+devtools::install_github("choisy/poseid")
+```
+
+```{r}
+library(poseid)
+```
+
+## Heatmap
+
+### Draw heatmap
+
+A heatmap is a graphical representation of data where the individual values contained in a matrix are represented as colors (Wikipedia). The function `sthm` contains in the package `poseid`, permits to draw a heatmap of the incidence per month and per province for each disease. Each pixel represent the value of incidence for one province for one month. By default, the province are in alphabetical order and the time range is the one of the data frame inputed. Futhermore, the data scale is cut in twelwe class intervals (by default), each one link to a specific colours (from red to white, by default). 
+
+More information on this function can be find: 
+
+```{r, eval = FALSE}
+?poseid::sthm
+```
+
+Prior to use this function, the data need to be prepare, because as you can see in the documentation, the input of the function sthm is a data frame of three columns, one of class `character`, one `Date` and one `numeric`. 
+
+```{r}
+str(dengue)
+# dengue need to be transform a little bit and we need the `dplyr` package for that
+```
+
+```{r, message=FALSE}
+library(dplyr)
+```
+
+To prepare the data, we use three steps. First step, to mutate the `month` and `year` columns in a column `time` in a Date format. Then, we select only the three columns necessary: here, we wanted to represent the incidence of dengue through time and space in Vietnam. And finally, we order the data contain in the data frame by time, to be sure to have a representation continous in time. 
+
+```{r}
+dengue <- mutate(dengue, time = as.Date(paste0(year, "-", as.numeric(month), "-", 15)))
+dengue <- select(dengue, matches("province"), matches("time"), contains("incidence"))
+dengue <- arrange(dengue, time)
+
+# We can check now that dengue is in a good format.
+str(dengue)
+```
+
+And print a heatmap:
+```{r, }
+sthm(dengue)
+```
+
+As we can see, there is no legend in the sthm function. But the function return invisibly, the text of the legend and the package `poseid` provides a function called `legend2` which can be used in this case. 
+To see more information about the function `legend2`
+```{r, eval=FALSE}
+?legend2
+```
+
+```{r}
+a <- sthm(dengue)
+# we used the parameter of sthm to complete the legend2 parameters, by default col = heat.colors(12), x = 0.85
+legend2(.9, 1, legend =  a, col = heat.colors(12), postext = "right", h = 1/length(heat.colors(12)), w = 0.04, tl = 0.01, s = 0.005)
+```
+
+A high number of color can be used to reveal more contrast. When the number of color is higher than 12 colors, the legend text is transform in a vector of 12 equally spaces "round" values.
+
+```{r}
+col <- rev(heat.colors(200))
+a <- sthm(dengue, col = col)
+# we used the parameter of sthm to complete the legend2 parameters
+legend2(.9, 1, legend =  a, col = col, postext = "right", h = 1/(length(a) -1), w = 0.04, tl = 0.01, s = 0.005)
+```
+
+
+The matrix value can be transform (by using the square root matrix, ...), in order to reflect better the contrasts :
+
+```{r, }
+a <- sthm(dengue, f = sqrt, col = col)
+legend2(.9, 1, legend =  a, col = col, postext = "right", h = 1/(length(a) -1), w = 0.04, tl = 0.01, s = 0.005)
+a <- sthm(dengue, f = function(x) x^.3, col = col)
+legend2(.9, 1, legend =  a, col = col, postext = "right", h = 1/(length(a) -1), w = 0.04, tl = 0.01, s = 0.005)
+```
+
+### Missing value
+
+By default, the missing value are colored in grey but the parameters can be changer by using `col_na`. This can permit a better contrast between the data and the missing values. For a better visualisation, we use the all `dengue` data containing some missing values.
+
+```{r}
+dengue <- getid(dengue)
+# data preparation
+dengue <- mutate(dengue, time = as.Date(paste0(year, "-", as.numeric(month), "-", 15)))
+dengue <- select(dengue, matches("province"), matches("time"), contains("incidence"))
+dengue <- arrange(dengue, time)
+
+str(dengue)
+
+```
+
+By default, the missing value are in grey.
+
+```{r}
+# changing the color and size of the missing values:
+a <- sthm(dengue, f = function(x) x^.3, col = col)
+legend2(.9, 1, legend =  a, col =  col, postext = "right", col_na = "grey", size_na = 0.08, h = 1/(length(a) -1), w = 0.04, tl = 0.01, s = 0.005)
+a <- sthm(dengue, f = function(x) x^.3, col = col, col_na = "black")
+legend2(.9, 1, legend =  a, col =  col, postext = "right", col_na = "black", size_na = 0.05, h = 1/(length(a) -1), w = 0.04, tl = 0.01, s = 0.005)
+```
+
+### Order the provinces
+
+By default, the provinces are in an alphabetical order, but, by using the coordinates contained in the gadmVN package, we can ordered them by latitude :
+
+```{r , message = FALSE}
+library(gadmVN)
+```
+
+First, you can extract the coordinates information by provinces and ordered them by latitudes (by creating an index).
+```{r}
+# extract the coordinates of each province
+provinces <- gadm(date = "1980-01-01", merge_hanoi = TRUE)
+coord <- sp::coordinates(provinces)
+row.names(coord) <- unique(provinces@data$province)
+head(coord)
+# ordered the provinces by latitude and create an index called "order"
+order <- rownames(coord[order(coord[, 2]), ])
+head(order)
+order <- data.frame(province = order, order = seq_along(order))
+head(order)
+```
+
+Second, you can link the data frame containing the index of the ordered province to the infectious diseases data frame by provinces and ordered them by latitudes:
+```{r}
+dengue <- left_join(dengue, order, by = "province")
+dengue <-  arrange(dengue, order)
+head(dengue)
+```
+
+Finally, you can visualise the data ordered by latitudes by using the `sthm` function who will create a heatmap by keeping the province in the same ordered as the output. You can even print the province name (ordered) by using the `show_legend` parameters. When this parameters is filled as `TRUE`, a list is printed containing both the `legend` and the `province`. Here, the output show the provinces from the South (bottom of the figure) to the North (top of the figure) of Vietnam.
+
+```{r}
+dengue <- select(dengue, -order)
+str(dengue)
+a <- sthm(dengue, f = function(x) x^.3, col = col, show_legend = TRUE)
+# a is a list containing both the legend and the province. To print the scale legend with legend2, it is important to specify 'a$legend'
+legend2(.9, 1, legend =  a$legend, col = col, postext = "right", h = 1/(length(a$legend) -1), w = 0.04, tl = 0.01, s = 0.005)
+str(a)
+```
+
+### In a pipe
+
+```{r}
+library(magrittr)
+```
+
+
+```{r}
+# geographic data
+map <- gadmVN::gadm(date = 1980, merge_hanoi = TRUE)
+# color vector
+col <- rev(heat.colors(100))
+
+getid(dengue) %>%
+  dplyr::mutate(time = as.Date(
+    paste0(year, "-", as.numeric(month), "-", 15))) %>%
+  dplyr::select(province, time, contains("incidence")) %>%
+  dplyr::arrange(time) %>%
+  sthm(f = function(x) x^.3, col = col) %>%
+  legend2(.9, 1, legend =  ., col = col, postext = "right",
+          h = 1/(length(.)-1), w = 0.04, tl = 0.01, s = 0.005)
+```
+
+
+## Choropeth map
+
+```{r, message = FALSE}
+library(dplyr) # for "filter" and "select"
+```
+
+A choropeth map is a thematic map in which areas are shaded or patterned in proportion to the measurement of the statistical variable being displayed on the map, such as population density or mortality rate... [wikipedia].
+The function 'choromap' is also contain in the package `poseid`. For more information: 
+
+```{r, eval = FALSE}
+?choromap
+```
+
+### Choice of the map
+
+One specificity of Vietnam is the splits of administrative provinces during its history, starting from 40 provinces in 1980 and ending with 63 provinces today, as illustrated below:
+
+<center>![](splits.png)</center>
+
+We can see that most of events are splits event of one province into two or three provinces. There is only one merging event of provinces: Ha Noi and Ha Tay in 2008, which merged together to create a new spatial definition of Ha Noi.
+The spatial definition of the provinces is changing over time. The epidemiological data sets contains provinces that are thus defined over various time durations and different spatial units in time.
+
+In order to analyse correctly the data, it is useful to work on time series that cover the same time range and with the same spatial definition through time. 
+The function `getid` takes care of this by back-merging all the provinces together and return the data in the same spatial conformation through time.
+For example, if you want the time series of the chickenpox for 1990 until 2000, all the data will be expressed per year and month and per the 44 provinces of 1990.  If the time range starts before 1992 and ends after 2008, the provinces : "Ha Son Binh", "Ha Noi", "Ha Tay" and "Hoa Binh" are all merged together and named "Ha Noi".
+
+
+For the geographic data, we need to choose a map corresponding in number and name of province to our epidemiologic data, here : a map of vietnam with the province in 1992 and with "Ha Son Binh" and "Ha Noi" merge together. 
+
+
+
+(See vignettes gdpm for more information on the merging process and output of the function `getid`)
+
+```{r}
+# geographic data
+map <- gadmVN::gadm(date = 1992, merge_hanoi = TRUE)
+```
+
+
+### Data preparation
+
+Like the `sthm` function, the data need also preparation.
+For the epidemiologic data, the first step is to select only the month and the year that we want to represent, here the incidence value of dengue in September 1993. We keep  only the 'province' and 'incidence_dengue' column as the 'choromap' function accept only dataframe of the two columns in entry.
+
+We used again the `legend2` function for the legend.
+
+```{r}
+# Preparation data spatial and epidemiologic
+# dengue data
+dengue <- getid(dengue, from = 1992, to = 2010)
+dengue_0993  <- filter(dengue, year == 1993, month == "September")
+dengue_0993 <- select(dengue_0993, province, contains("incidence"))
+
+```
+
+
+### Select class intervals and colors
+
+An important part in the visualisation of data set is the choice of class intervals. Many differents methods of selection of intervals are implemented in the function and you can try different method just by changing the `style` parameters. Here, we show the example of the "quantile" or the "Fisher-fisher". The function `choromap` has a parameter `distrib`, which permits to print the distribution of the value by breaks. It allows you to see the difference of distribution between different `style`. 
+
+```{r}
+# plot Quantile
+breaks(dengue_0993, "incidence_dengue", pal = rev(heat.colors(6)), distribution = TRUE)
+```
+
+Here, the distribution of the data is very different by class, each class as the same number of data. However, we can see that a lot of value will be expressed in the dark brown value. Let's see now with the Fisher-Jenkins way. 
+
+```{r}
+# plot Fisher - Jenkins
+breaks(dengue_0993, "incidence_dengue", style = "fisher" ,pal = rev(heat.colors(6)), distribution = TRUE)
+```
+
+The Fisher-Jenking way seems to be more equilibrate. The two different ways show very different distribution. Depending of the question or of what we want to show, it can be interesting to look at the distribution of the data by the class intervals to select the best way to cut it. 
+
+### Draw a choropleth map
+
+```{r}
+a <- choromap(dengue_0993, map, fixedBreaks = c(0, 2, 35, 120, 200, 400, 1300), col = rev(heat.colors(6)), col_na = "grey")
+# return invisibly the information for the legend (the value and the colors associated in a vector with attribut)
+legend2(legend = a, col = attr(a, "colors"), col_na = "grey")
+# By default, the legend is on the top-left part of the figure, for more information: `?legend2`
+```
+
+### Pipe
+
+```{r}
+getid(dengue, from = 1990, to = 2010) %>%
+  filter(year == 1993, month == "September") %>%
+  select(province, contains("incidence")) %>%
+  breaks("incidence_dengue",n = 6, style = "fisher",
+         pal = rev(heat.colors(6)), distribution = TRUE) %>%
+  choromap(., map, fixedBreaks = attr(., "breaks"),
+           col = rev(heat.colors(6)), col_na = "blue") %>%
+  legend2(legend = ., col = attr(., "colors"), col_na = "blue")
+```
+
+
+```{r}
+getid(dengue, from = 1990, to = 2010) %>%
+  filter(year == 1993, month == "September") %>%
+  select(province, contains("incidence")) %>%
+  breaks("incidence_dengue",n = 6, style = "fisher",
+         pal = rev(heat.colors(6)), distribution = TRUE) %>%
+  choromap(., map, fixedBreaks = attr(., "breaks"),
+           col = rev(heat.colors(6)), col_na = "blue") %>%
+  legend2(legend = ., col = attr(., "colors"), col_na = "blue")
+```
+
+
