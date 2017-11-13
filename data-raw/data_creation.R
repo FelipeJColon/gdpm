@@ -28,7 +28,7 @@ diseases <- matrix(c(
   "V.nao"                         , "encephalitis",
   "VNaoVR"                        , "encephalitis",
   "VNAO"                          , "encephalitis",
-  "SXH"                           , "vhf",            # viral hemorrhagic fever
+  "SXH"                           , "dengue",            # viral hemorrhagic fever
   "Sot ret"                       , "malaria",
   "sot ret"                       , "malaria",
   "V.Gan"                         , "hepatitis",
@@ -74,7 +74,7 @@ diseases <- matrix(c(
   "Xoắc khuẩn vàng da"            , "leptospiriosis",
   "Leptospira"                    , "leptospiriosis",
   "Lepto"                         , "leptospiriosis",
-  "TCM"                           , "enterovirus",
+  "TCM"                           , "hfmd",           # hand-foot-and-mouth disease
   "Lien cau lon"                  , "ssuis",          # streptococcus suis
   "dengue"                        , "dengue",
   "SotDengue"                     , "dengue",
@@ -373,9 +373,10 @@ read_YB_file <- function (filename)  {
       year             = YR,
       disease          = DISEASE,
       province         = PROVINCE,
-      popsize          = as.numeric(POP),
+      popsize          = POP,
       month_incidence_ = starts_with("CASE"),
       month_mortality_ = starts_with("DEATH")) %>%
+    mutate(popsize = as.numeric(popsize)) %>%
     translate %>%
     translate("disease", diseases) %>%
     gather(key, value, contains("month")) %>%
@@ -481,8 +482,8 @@ list2env(total$epidemiology, environment())
 
 devtools::use_data(diseases, overwrite = TRUE, internal = FALSE)
 devtools::use_data(cholera, typhoid, shigella, amoebiasis, diarrhea,
-  encephalitis, vhf, malaria, hepatitis, rabies, meningitis, chickenpox,
+  hfmd, malaria, hepatitis, rabies, meningitis, chickenpox,
   diphteria, pertussis, nntetanus, tetanus, polio, measles, mumps, rubella, ili,
-  h5n1, adenovirus, plague, anthrax, leptospiriosis, enterovirus, ssuis, dengue,
+  h5n1, adenovirus, plague, anthrax, leptospiriosis, ssuis, dengue,
   dysenteria, splits, ah_splits, internal = TRUE, overwrite = TRUE)
 
