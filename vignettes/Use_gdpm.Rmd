@@ -1,6 +1,5 @@
 ---
 title: "Use gdpm"
-csl: the-american-naturalist.csl
 vignette: >
   %\VignetteIndexEntry{Using the gdpm package}
   %\VignetteEngine{knitr::rmarkdown}
@@ -12,7 +11,6 @@ output:
   pdf_document:
     toc: yes
 date: "`r Sys.Date()`"
-<!-- bibliography: references.bib -->
 ---
 
 ```{r include=F}
@@ -134,17 +132,17 @@ unique(merged_chickenpox$province)
 This function also support the implementation of multiple diseases at the same time. By default, the time range is selected to contain all the data from all the diseases implemented.
 For example, if we selected: 
 
- --  | Dengue | Malaria | Rubella
-:--: | :----: | :-----: | :------:
-From |  1980  |   2003  |  2006
-To   |  2010  |   2015  |  2015
+ --  | Dysenteria | Malaria | Rubella
+:--: | :--------: | :-----: | :------:
+From |    1980    |   2003  |  2006
+To   |    2010    |   2015  |  2015
 
 The time range will be `from = "1980", to = "2015"`.
 
 ```{r}
-range(getid(dengue, malaria, rubella)$year)
+range(getid(dysenteria, malaria, rubella)$year)
 # equivalent to :
-#range(getid_("dengue", "malaria", "rubella")$year)
+#range(getid_("dysenteria", "malaria", "rubella")$year)
 ```
 
 There is different way to select the time range:
@@ -155,23 +153,23 @@ There is different way to select the time range:
 
 ```{r}
 # if shortest = FALSE
-# equivalent : getid(dengue, malaria, rubella)$year
-range(getid(malaria, dengue, rubella, shortest = FALSE)$year)
+# equivalent : getid(dysenteria, malaria, rubella)$year
+range(getid(malaria, dysenteria, rubella, shortest = FALSE)$year)
 # if shortest = TRUE
-range(getid(malaria, dengue, rubella, shortest = TRUE)$year)
+range(getid(malaria, dysenteria, rubella, shortest = TRUE)$year)
 
 ```
 
 2. by using the parameters `from` and `to`,it can be used in `Date`, `character` or `numeric` format. 
 
 ```{r}
-merged_diseases <- getid(malaria, dengue, rubella, from = "1980-01-01", to = "2006-12-31") 
+merged_diseases <- getid(malaria, dysenteria, rubella, from = "1980-01-01", to = "2006-12-31") 
 # equivalent to :
-#merged_diseases <- getid_("malaria", "dengue", "rubella", from = "1980-01-01", to = "2006-12-31")
-#merged_diseases <- getid_("malaria", "dengue", "rubella", from = "1980", to = "2006")
-#merged_diseases <- getid_("malaria", "dengue", "rubella", from = 1980, to = 2006)
-#merged_diseases <- getid(malaria, dengue, rubella, from = "1980", to = "2006")
-#merged_diseases <- getid(malaria, dengue, rubella, from = 1980, to = 2006)
+#merged_diseases <- getid_("malaria", "dysenteria", "rubella", from = "1980-01-01", to = "2006-12-31")
+#merged_diseases <- getid_("malaria", "dysenteria", "rubella", from = "1980", to = "2006")
+#merged_diseases <- getid_("malaria", "dysenteria", "rubella", from = 1980, to = 2006)
+#merged_diseases <- getid(malaria, dysenteria, rubella, from = "1980", to = "2006")
+#merged_diseases <- getid(malaria, dysenteria, rubella, from = 1980, to = 2006)
 # time range of the output
 range(merged_diseases$year)
 # Visualisation
@@ -181,8 +179,8 @@ tail(merged_diseases)
 
 If you used both parameters at the same time, the parameters `from` and `to` will be preferably selected.
 ```{r}
-range(getid(malaria, dengue, rubella, from = 2004, shortest = TRUE)$year)
-range(getid(malaria, dengue, rubella, to = 2006, shortest = FALSE)$year)
+range(getid(malaria, dysenteria, rubella, from = 2004, shortest = TRUE)$year)
+range(getid(malaria, dysenteria, rubella, to = 2006, shortest = FALSE)$year)
 ```
 
 #### Provinces
@@ -190,7 +188,8 @@ range(getid(malaria, dengue, rubella, to = 2006, shortest = FALSE)$year)
 For two diseases: "hepatitis" and "amoebiasis", the story of splits/combined provinces is different, the events of 1990 take place in 1991. If one or both of them are inputed in the `getid` function, the merging event of 1990 are reported in 1991 for all the diseases selectioned at the same time. 
 
 ```{r}
-unique(getid(dengue, malaria, rubella, from = 1990)$province)
-unique(getid(dengue, hepatitis, malaria, rubella, from = 1990)$province)
-unique(getid(dengue, amoebiasis, malaria, rubella, from = 1990)$province)
+df1 <- getid(dysenteria, malaria, rubella, from = 1990)
+length(unique(df1$province))
+df2 <- getid(dysenteria, hepatitis, malaria, rubella, from = 1990)
+length(unique(df2$province))
 ```

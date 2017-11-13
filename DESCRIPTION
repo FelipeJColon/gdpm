@@ -15,7 +15,9 @@ Suggests:
     rmarkdown,
     testthat,
     RColorBrewer,
-    poseid
+    poseid,
+    gadmVN,
+    sp
 VignetteBuilder: knitr
 Imports:
     dplyr,
