@@ -19,12 +19,12 @@
 #' of the data. This table can be used as a resume of all the other data frame
 #' contained in this package and may be useful for computing on the various
 #' files. \cr
-#' \cr \code{amoebiasis} : amoebic dysentery \cr
-#' \cr \code{dysenteria} : dysenteria syndrome coming from unknown sources \cr
-#' \cr \code{hfmd} : hand-foot-and-mouth disease \cr
-#' \cr \code{nntetanus} : neonatal tetanus \cr
-#' \cr \code{shigella} : dysenteria by Shigella \cr
-#' \cr \code{vhf} : viral hemorrhagic fever \cr
+#' \cr \code{amoebiasis} : amoebic dysentery
+#' \cr \code{dysenteria} : dysenteria syndrome coming from unknown sources
+#' \cr \code{hfmd} : hand-foot-and-mouth disease
+#' \cr \code{nntetanus} : neonatal tetanus
+#' \cr \code{shigella} : dysenteria by Shigella
+#' \cr \code{vhf} : viral hemorrhagic fever
 #'
 #'
 #' @source Data provide by the Vietnamese General Department of Preventive
