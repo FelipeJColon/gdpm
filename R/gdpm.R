@@ -22,6 +22,7 @@
 #' @importFrom dplyr group_by
 #' @importFrom dplyr ungroup
 #' @importFrom dplyr summarise
+#' @importFrom stats setNames
 #' @importFrom tidyr gather
 #' @importFrom tidyr spread
 #' @importFrom tidyr separate
