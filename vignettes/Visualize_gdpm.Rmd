@@ -81,10 +81,15 @@ library(dplyr)
 To prepare the data, we use three steps. First step, to mutate the `month` and `year` columns in a column `time` in a Date format. Then, we select only the three columns necessary: here, we wanted to represent the incidence of dengue through time and space in Vietnam. And finally, we order the data contained in the data frame by time, to be sure to have a representation continous in time. 
 
 ```{r}
-dengue <- mutate(dengue, time = as.Date(paste0(year, "-", as.numeric(month), "-", 15)))
-dengue <- select(dengue, matches("province"), matches("time"), contains("incidence"))
+# Need to have the time expressed in one column in a Data format
+dengue <- mutate(dengue, 
+                 time = as.Date(paste0(year, "-", as.numeric(month), "-", 15)))
 dengue <- arrange(dengue, time)
+```
 
+The function 'sthm' takes a data frame of three columns: one containing the province name, one containing the time and one containing the valu we want to visualize :
+```{r}
+dengue <- select(dengue, province, time, contains("incidence"))
 # We can check now that dengue is in a good format.
 str(dengue)
 ```
@@ -112,16 +117,21 @@ A high number of color can be used to reveal more contrast. When the number of c
 
 ```{r}
 col <- rev(heat.colors(200))
+```
+
+```{r}
 a <- sthm(dengue, col = col)
 # we used the parameter of sthm to complete the legend2 parameters
 legend2(.9, 1, legend =  a, col = col, postext = "right", h = 1/(length(a) -1), w = 0.04, tl = 0.01, s = 0.005)
 ```
 
 The inputed value can be transform (by using the square root matrix, ...), in order to reflect better the contrasts :
-
-```{r, }
+```{r}
 a <- sthm(dengue, f = sqrt, col = col)
 legend2(.9, 1, legend =  a, col = col, postext = "right", h = 1/(length(a) -1), w = 0.04, tl = 0.01, s = 0.005)
+```
+
+```{r, }
 a <- sthm(dengue, f = function(x) x^.3, col = col)
 legend2(.9, 1, legend =  a, col = col, postext = "right", h = 1/(length(a) -1), w = 0.04, tl = 0.01, s = 0.005)
 ```
@@ -138,17 +148,18 @@ dengue <- select(dengue, matches("province"), matches("time"), contains("inciden
 dengue <- arrange(dengue, time)
 
 str(dengue)
-
 ```
 
 By default, the missing value are in grey.
-
 ```{r}
-# changing the color and size of the missing values:
 a <- sthm(dengue, f = function(x) x^.3, col = col)
 legend2(.9, 1, legend =  a, col =  col, postext = "right", col_na = "grey", size_na = 0.05, h = 1/(length(a) -1), w = 0.04, tl = 0.01, s = 0.005)
+```
+
+But you can change it to black and also change the size of the NA square legend :
+```{r}
 a <- sthm(dengue, f = function(x) x^.3, col = col, col_na = "black")
-legend2(.9, 1, legend =  a, col =  col, postext = "right", col_na = "black", size_na = 0.05, h = 1/(length(a) -1), w = 0.04, tl = 0.01, s = 0.005)
+legend2(.9, 1, legend =  a, col =  col, postext = "right", col_na = "black", size_na = 0.03, h = 1/(length(a) -1), w = 0.04, tl = 0.01, s = 0.005)
 ```
 
 ### Order the provinces
@@ -182,12 +193,15 @@ dengue <-  arrange(dengue, order)
 head(dengue)
 ```
 
+```{r}
+dengue_or <- select(dengue, -order)
+str(dengue_or)
+```
+
 Finally, you can visualise the data ordered by latitudes by using the `sthm` function who will create a heatmap by keeping the province in the same ordered as the output. You can even print the province name (ordered) by using the `show_legend` parameters. When this parameters is filled as `TRUE`, a list is printed containing both the `legend` and the `province`. Here, the output show the provinces from the South (bottom of the figure) to the North (top of the figure) of Vietnam.
 
 ```{r}
-dengue <- select(dengue, -order)
-str(dengue)
-a <- sthm(dengue, f = function(x) x^.3, col = col, show_legend = TRUE)
+a <- sthm(dengue_or, f = function(x) x^.3, col = col, show_legend = TRUE)
 # a is a list containing both the legend and the province. To print the scale legend with legend2, it is important to specify 'a$legend'
 legend2(.9, 1, legend =  a$legend, col = col, postext = "right", h = 1/(length(a$legend) -1), w = 0.04, tl = 0.01, s = 0.005)
 str(a)
@@ -196,7 +210,7 @@ str(a)
 A map of the province can be print on the left of the heatmap with the parameters `map` and `xm`. And the province will be automaticaly linked between the map and the heatmap. 
 
 ```{r}
-a <- sthm(dengue, f = function(x) x^.3, col = col, map = provinces, xm = 0.25, show_legend = TRUE)
+a <- sthm(dengue_or, f = function(x) x^.3, col = col, map = provinces, xm = 0.25, show_legend = TRUE)
 # a is a list containing both the legend and the province. To print the scale legend with legend2, it is important to specify 'a$legend'
 legend2(.9, 1, legend =  a$legend, col = col, postext = "right", h = 1/(length(a$legend) -1), w = 0.04, tl = 0.01, s = 0.005)
 str(a)
@@ -214,21 +228,30 @@ library(magrittr)
 
 
 ```{r}
-# geographic data
-map <- gadmVN::gadm(date = 1980, merge_hanoi = TRUE)
-# color vector
+# Geographic data
+provinces <- gadmVN::gadm(date = "1980-01-01", merge_hanoi = TRUE)
+coord <- sp::coordinates(provinces)
+row.names(coord) <- unique(provinces@data$province)
+# Ordered the provinces by latitude and create an index called "order"
+order <- rownames(coord[order(coord[, 2]), ])
+order <- data.frame(province = order, order = seq_along(order))
+
+# Color vector
 col <- rev(heat.colors(100))
 
+# Pipe
 getid(dengue) %>%
   dplyr::mutate(time = as.Date(
     paste0(year, "-", as.numeric(month), "-", 15))) %>%
-  dplyr::select(province, time, contains("incidence")) %>%
+  dplyr::select(province, time, contains("incidence")) %>% 
+  left_join(order, by = "province") %>% 
+  arrange(order) %>%
+  select(-order) %>% 
   dplyr::arrange(time) %>%
-  sthm(f = function(x) x^.3, col = col, xm = 0.25) %>%
+  sthm(f = function(x) x^.3, col = col, map = provinces, xm = 0.25) %>%
   legend2(.9, 1, legend =  ., col = col, postext = "right",
           h = 1/(length(.)-1), w = 0.04, tl = 0.01, s = 0.005)
 ```
-
 
 ## Choropeth map
 
@@ -236,7 +259,7 @@ getid(dengue) %>%
 library(dplyr) # for "filter" and "select"
 ```
 
-A choropeth map is a thematic map in which areas are shaded or patterned in proportion to the measurement of the statistical variable being displayed on the map, such as population density or mortality rate... [wikipedia].
+A choropeth map is a thematic map in which areas are shaded or patterned in proportion to the measurement of the statistical variable being displayed on the map, such as population density or mortality rate... (Wikipedia).
 The function 'choromap' is also contain in the package `poseid`. For more information: 
 
 ```{r, eval = FALSE}
