@@ -34,10 +34,13 @@ str(dengue)
 library(dplyr)
 
 ## ------------------------------------------------------------------------
-dengue <- mutate(dengue, time = as.Date(paste0(year, "-", as.numeric(month), "-", 15)))
-dengue <- select(dengue, matches("province"), matches("time"), contains("incidence"))
+# Need to have the time expressed in one column in a Data format
+dengue <- mutate(dengue, 
+                 time = as.Date(paste0(year, "-", as.numeric(month), "-", 15)))
 dengue <- arrange(dengue, time)
 
+## ------------------------------------------------------------------------
+dengue <- select(dengue, province, time, contains("incidence"))
 # We can check now that dengue is in a good format.
 str(dengue)
 
@@ -54,6 +57,8 @@ legend2(.9, 1, legend =  a, col = heat.colors(12), postext = "right", h = 1/leng
 
 ## ------------------------------------------------------------------------
 col <- rev(heat.colors(200))
+
+## ------------------------------------------------------------------------
 a <- sthm(dengue, col = col)
 # we used the parameter of sthm to complete the legend2 parameters
 legend2(.9, 1, legend =  a, col = col, postext = "right", h = 1/(length(a) -1), w = 0.04, tl = 0.01, s = 0.005)
@@ -61,6 +66,8 @@ legend2(.9, 1, legend =  a, col = col, postext = "right", h = 1/(length(a) -1), 
 ## ------------------------------------------------------------------------
 a <- sthm(dengue, f = sqrt, col = col)
 legend2(.9, 1, legend =  a, col = col, postext = "right", h = 1/(length(a) -1), w = 0.04, tl = 0.01, s = 0.005)
+
+## ------------------------------------------------------------------------
 a <- sthm(dengue, f = function(x) x^.3, col = col)
 legend2(.9, 1, legend =  a, col = col, postext = "right", h = 1/(length(a) -1), w = 0.04, tl = 0.01, s = 0.005)
 
@@ -73,13 +80,13 @@ dengue <- arrange(dengue, time)
 
 str(dengue)
 
-
 ## ------------------------------------------------------------------------
-# changing the color and size of the missing values:
 a <- sthm(dengue, f = function(x) x^.3, col = col)
 legend2(.9, 1, legend =  a, col =  col, postext = "right", col_na = "grey", size_na = 0.05, h = 1/(length(a) -1), w = 0.04, tl = 0.01, s = 0.005)
+
+## ------------------------------------------------------------------------
 a <- sthm(dengue, f = function(x) x^.3, col = col, col_na = "black")
-legend2(.9, 1, legend =  a, col =  col, postext = "right", col_na = "black", size_na = 0.05, h = 1/(length(a) -1), w = 0.04, tl = 0.01, s = 0.005)
+legend2(.9, 1, legend =  a, col =  col, postext = "right", col_na = "black", size_na = 0.03, h = 1/(length(a) -1), w = 0.04, tl = 0.01, s = 0.005)
 
 ## ---- message = FALSE----------------------------------------------------
 library(gadmVN)
@@ -103,15 +110,17 @@ dengue <-  arrange(dengue, order)
 head(dengue)
 
 ## ------------------------------------------------------------------------
-dengue <- select(dengue, -order)
-str(dengue)
-a <- sthm(dengue, f = function(x) x^.3, col = col, show_legend = TRUE)
+dengue_or <- select(dengue, -order)
+str(dengue_or)
+
+## ------------------------------------------------------------------------
+a <- sthm(dengue_or, f = function(x) x^.3, col = col, show_legend = TRUE)
 # a is a list containing both the legend and the province. To print the scale legend with legend2, it is important to specify 'a$legend'
 legend2(.9, 1, legend =  a$legend, col = col, postext = "right", h = 1/(length(a$legend) -1), w = 0.04, tl = 0.01, s = 0.005)
 str(a)
 
 ## ------------------------------------------------------------------------
-a <- sthm(dengue, f = function(x) x^.3, col = col, map = provinces, xm = 0.25, show_legend = TRUE)
+a <- sthm(dengue_or, f = function(x) x^.3, col = col, map = provinces, xm = 0.25, show_legend = TRUE)
 # a is a list containing both the legend and the province. To print the scale legend with legend2, it is important to specify 'a$legend'
 legend2(.9, 1, legend =  a$legend, col = col, postext = "right", h = 1/(length(a$legend) -1), w = 0.04, tl = 0.01, s = 0.005)
 str(a)
@@ -121,17 +130,27 @@ str(a)
 library(magrittr)
 
 ## ------------------------------------------------------------------------
-# geographic data
-map <- gadmVN::gadm(date = 1980, merge_hanoi = TRUE)
-# color vector
+# Geographic data
+provinces <- gadmVN::gadm(date = "1980-01-01", merge_hanoi = TRUE)
+coord <- sp::coordinates(provinces)
+row.names(coord) <- unique(provinces@data$province)
+# Ordered the provinces by latitude and create an index called "order"
+order <- rownames(coord[order(coord[, 2]), ])
+order <- data.frame(province = order, order = seq_along(order))
+
+# Color vector
 col <- rev(heat.colors(100))
 
+# Pipe
 getid(dengue) %>%
   dplyr::mutate(time = as.Date(
     paste0(year, "-", as.numeric(month), "-", 15))) %>%
-  dplyr::select(province, time, contains("incidence")) %>%
+  dplyr::select(province, time, contains("incidence")) %>% 
+  left_join(order, by = "province") %>% 
+  arrange(order) %>%
+  select(-order) %>% 
   dplyr::arrange(time) %>%
-  sthm(f = function(x) x^.3, col = col, xm = 0.25) %>%
+  sthm(f = function(x) x^.3, col = col, map = provinces, xm = 0.25) %>%
   legend2(.9, 1, legend =  ., col = col, postext = "right",
           h = 1/(length(.)-1), w = 0.04, tl = 0.01, s = 0.005)
 
