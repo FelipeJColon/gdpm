@@ -10,12 +10,9 @@ getid_(disease, ..., from, to, shortest = FALSE)
 getid(disease, ..., from, to, shortest = FALSE)
 }
 \arguments{
-\item{disease}{An epidemiological data frame (e.g. \code{ili},
-\code{dengue} ...). Should contains at least the variables \code{province},
-\code{year}, \code{month} and the variables \code{incidence} and
-\code{mortality}.}
+\item{disease}{Name of one disease (e.g. \code{ili}, \code{dengue} ...).}
 
-\item{...}{Other(s) epidemiological data frame(s).}
+\item{...}{Other(s) disease(s) name.}
 
 \item{from}{Initial date of the time range, can be an object of class
 \code{Date}, \code{character} or \code{numeric}.}
@@ -29,12 +26,14 @@ If \code{TRUE}: starts when all the diseases have data and ends as soon
  as one disease as no more available data. (selects the overlaps year)}
 }
 \value{
-An object of the same class as \code{df} in which all the provinces
-that needed to be merged (according to the time range provided) are merged.
+An object of the class \code{data frame} in which all the provinces
+that needed to be merged (according to the time range provided) are merged
+together and contains also the variables \code{year}, \code{month} and
+\code{incidence} and \code{mortality} for each \code{disease} asked.
 }
 \description{
 Merges epidemiological data accordingly to a time range and
-merges the provinces concern by a split/combined event if necessary and
+merges the provinces concerned by a split/combined event if necessary and
 returns a data frame for the time range imputed.
 }
 \details{
@@ -56,8 +55,8 @@ diseases), this story will be applied to all the disease selected.
 }
 \examples{
 
-# Loads a resume table of all the epidemiological data frame contains in the
-# package.
+# Loads the resume table of all the epidemiological data frame contains in
+# the package.
 diseases
 
 # Returns a data frame in which all the provinces that needed to be merged
