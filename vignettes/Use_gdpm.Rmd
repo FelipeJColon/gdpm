@@ -1,5 +1,5 @@
 ---
-title: "Use gdpm"
+title: "Using the gdpm package"
 vignette: >
   %\VignetteIndexEntry{Using the gdpm package}
   %\VignetteEngine{knitr::rmarkdown}
@@ -22,9 +22,9 @@ dev.args = list(pointsize = 11), fig.height = 3.5,
 fig.width = 4.24725, fig.retina = 2, fig.align = "center")
 ```
 
-The `gdpm` package contains the monthly surveillance data aggregated by province by the Vietnamese General Department of Preventive Medicine (GDPM). 
+The `gdpm` package contains the monthly surveillance data aggregated by province, by the Vietnamese General Department of Preventive Medicine (GDPM). 
 
-In more details, this package contains the monthly syndromic data incidence and mortality data for 30 diseases since 1980 in Vietnam in the form of 30 data frames (`adenovirus`, `amoebiasis`, `chickenpox`, `cholera`, `dengue`, `diarrhea`, `diphteria`, `dysenteria`, `encephalitis`, `hepatitis`, `ili`, `measles`, `meningitis`, `mumps`, `pertussis`, `plague`, `polio`, `rabies`, `shigella`, `tetanus`, `typhoid`, `leptospiriosis`, `anthrax`, `nntetanus`, `malaria`, `h5n1`, `rubella`, `vhf`, `enterovirus`, `ssuis`), one summmary data frame (`diseases`), one handling functions (`getid`). We here give a quick overview of the data sets and their handling.
+In more details, this package contains the monthly syndromic data incidence and mortality data for 30 diseases since 1980 in Vietnam in the form of 30 data frames (`adenovirus`, `amoebiasis`, `chickenpox`, `cholera`, `dengue`, `diarrhea`, `diphteria`, `dysenteria`, `encephalitis`, `hepatitis`, `ili`, `measles`, `meningitis`, `mumps`, `pertussis`, `plague`, `polio`, `rabies`, `shigella`, `tetanus`, `typhoid`, `leptospiriosis`, `anthrax`, `nntetanus`, `malaria`, `h5n1`, `rubella`, `vhf`, `enterovirus`, `ssuis`), one summary data frame (`diseases`), one handling functions (`getid`). We here give a quick overview of the data sets and their handling.
 
 Installing the `gdpm` package:
 
@@ -45,19 +45,19 @@ write.table(gdpm::getid(ili), "ili.csv", quote = F, sep = ",", row.names = F)
 write.table(gdpm::diseases, "diseases.csv", quote = F, sep = ",", row.names = F)
 ```
 
-If you want to use R for data analysis, the rest of the document, presents in more details the data and the tools to use it.
+If you want to use R for data analysis, the rest of the document presents in more details the data and the tools to use it.
 
 ## Epidemiological data
 
-The epidemiological data are contained in the 30 epidemiological data frame, each data frame corresponding to one syndromic disease. For example, `chickenpox`:
+The epidemiological data are contained in the 30 epidemiological data frames, each data frame corresponding to one syndromic disease. For example, `chickenpox`:
 
 ```{r}
 chickenpox <-  getid(chickenpox)
 head(chickenpox)
 ```
 
-The data are expressed by the `incidence` or number of cases and `mortality` or number of death per `province`, `month` and `year`.
-See below, the section on the `getid` function, for an illustration on the specificity of this function.
+The data are expressed by the `incidence` or number of cases and `mortality` or the number of death per `province`, `month` and `year`.
+See below, the section on the `getid` function, for an illustration of the specificity of this function.
 
 The structure of the data frame is:
 
@@ -86,7 +86,7 @@ The package contains also a summary data frame called `diseases`:
 diseases
 ```
 
-The dataset contains, the names of each epidemiological data frame (`disease`) and the time range (`from - to`) of the data. This table can be used as a resume of all the other data frame contains in this package and may be useful for computing on the various files.
+The dataset contains the names of each epidemiological data frame (`disease`) and the time range (`from - to`) of the data. This table can be used as a resume of all the other data frame contains in this package and may be useful for computing on the various files.
 
 ```{r}
 str(diseases)
@@ -94,7 +94,7 @@ str(diseases)
 
 ## Utility function
 
-The package `gdpm` also contains a utility function that ease the handling of the data: `getid`.
+The package `gdpm` also contains a utility function that eases the handling of the data: `getid`.
 
 ### Getid
 
@@ -102,12 +102,12 @@ The first utility of this function is to generate appropriate time series. One s
 
 <center>![](splits.png)</center>
 
-We can see that most of events are splits event of one province into two or three provinces. There is only one merging event of provinces: Ha Noi and Ha Tay in 2008, which merged together to create a new spatial definition of Ha Noi.
-The spatial definition of the provinces is changing over time. The epidemiological data sets contains provinces that are thus defined over various time durations and different spatial units in time.
+We can see that most of the events are splits event of one province into two or three provinces. There is only one merging event of provinces: Ha Noi and Ha Tay in 2008, which merged together to create a new spatial definition of Ha Noi.
+The spatial definition of the provinces is changing over time. The epidemiological datasets contain provinces that are thus defined over various time durations and different spatial units in time.
 
-In order to analyse correctly the data, it is useful to work on time series that cover the same time range and with the same spatial definition through time. 
+In order to analyze the data correctly, it is useful to work on time series that cover the same time range and with the same spatial definition through time. 
 The function `getid` takes care of this by back-merging all the provinces together and returns the data in the same spatial conformation through time.
-For example, if you want the time series of the chickenpox for 1990 until 2000, all the data will be expressed per year and month and per the 44 provinces of 1990.  If the time range starts before 1992 and ends after 2008, the provinces : "Ha Son Binh", "Ha Noi", "Ha Tay" and "Hoa Binh" are all merged together and named "Ha Noi".
+For example, if you want the time series of the chickenpox for 1990 until 2000, all the data will be expressed per year and month and per the 44 provinces of 1990.  If the time range starts before 1992 and ends after 2008, the provinces: "Ha Son Binh", "Ha Noi", "Ha Tay" and "Hoa Binh" are all merged together and named "Ha Noi".
 
 
 More information on this function can be find: 
@@ -116,7 +116,7 @@ More information on this function can be find:
 ?getid
 ```
 
-By default, the function will choose the time range of the disease implemented, for example, from 1980 until 2015 for the chickenpox, from 1980 until 2010 for the dengue. It means that the all the province that splits during the time range selected will be merged together accordingly to the history of Vietnam (cf. see pictures)) and the data set will be return ordered by `province`, `year`, `month`. 
+By default, the function will choose the time range of the disease implemented, for example, from 1980 until 2015 for the chickenpox, from 1980 until 2010 for the dysenteria. It means that the all the province that splits during the time range selected will be merged together accordingly to the history of Vietnam (cf. see pictures)) and the data set will be return ordered by `province`, `year`, `month`. 
 
 ```{r}
 merged_chickenpox <- getid(chickenpox) 
@@ -129,7 +129,7 @@ unique(merged_chickenpox$province)
 
 #### Time Range
 
-This function also support the implementation of multiple diseases at the same time. By default, the time range is selected to contain all the data from all the diseases implemented.
+This function also supports the implementation of multiple diseases at the same time. By default, the time range is selected to contain all the data from all the diseases implemented.
 For example, if we selected: 
 
  --  | Dysenteria | Malaria | Rubella
@@ -145,11 +145,11 @@ range(getid(dysenteria, malaria, rubella)$year)
 #range(getid_("dysenteria", "malaria", "rubella")$year)
 ```
 
-There is different way to select the time range:
+There is differents way to select the time range:
 
-1. by using the `shortest` parameters: 
-  + by default, the value of this parameters is `FALSE`, which mean that the time range selected is the widest possible. So, if we keep the last example: the time range will : "1980-2015".
-  + by selecting `shortest = TRUE`, the time range selected contains only the year in commons for all the diseases. In the example, the time range will be : "2006-2010".
+1. by using the `shortest` parameter: 
+  + by default, the value of this parameter is `FALSE`, which mean that the time range selected is the widest possible. So, if we keep the last example: the time range will: "1980-2015".
+  + by selecting `shortest = TRUE`, the time range selected contains only the year in commons for all the diseases. In the example, the time range will be: "2006-2010".
 
 ```{r}
 # if shortest = FALSE
@@ -160,7 +160,7 @@ range(getid(malaria, dysenteria, rubella, shortest = TRUE)$year)
 
 ```
 
-2. by using the parameters `from` and `to`,it can be used in `Date`, `character` or `numeric` format. 
+2. by using the parameters `from` and `to`, it can be used in `Date`, `character` or `numeric` format. 
 
 ```{r}
 merged_diseases <- getid(malaria, dysenteria, rubella, from = "1980-01-01", to = "2006-12-31") 
@@ -185,7 +185,7 @@ range(getid(malaria, dysenteria, rubella, to = 2006, shortest = FALSE)$year)
 
 #### Provinces
 
-For two diseases: "hepatitis" and "amoebiasis", the story of splits/combined provinces is different, the events of 1990 take place in 1991. If one or both of them are inputed in the `getid` function, the merging event of 1990 are reported in 1991 for all the diseases selectioned at the same time. 
+For two diseases: "hepatitis" and "amoebiasis", the story of splits/combined provinces are different, the events of 1990 take place in 1991. If one or both of them are inputed in the `getid` function, the merging events of 1990 are reported in 1991 for all the diseases selected at the same time. 
 
 ```{r}
 df1 <- getid(dysenteria, malaria, rubella, from = 1990)

@@ -38,8 +38,6 @@ library(dplyr)
 dengue <- mutate(dengue, 
                  time = as.Date(paste0(year, "-", as.numeric(month), "-", 15)))
 dengue <- arrange(dengue, time)
-
-## ------------------------------------------------------------------------
 dengue <- select(dengue, province, time, contains("incidence"))
 # We can check now that dengue is in a good format.
 str(dengue)
@@ -52,15 +50,15 @@ sthm(dengue)
 
 ## ------------------------------------------------------------------------
 a <- sthm(dengue)
-# we used the parameter of sthm to complete the legend2 parameters, by default col = heat.colors(12), x = 0.85
-legend2(.9, 1, legend =  a, col = heat.colors(12), postext = "right", h = 1/length(heat.colors(12)), w = 0.04, tl = 0.01, s = 0.005)
+# we use the parameter of sthm to complete the legend2 parameters, by default col = heat.colors(12), x = 0.85
+legend2(.9, 1, legend =  a, col = heat.colors(12), postext = "right", h = 1/(length(a) - 1), w = 0.04, tl = 0.01, s = 0.005)
 
 ## ------------------------------------------------------------------------
 col <- rev(heat.colors(200))
 
 ## ------------------------------------------------------------------------
 a <- sthm(dengue, col = col)
-# we used the parameter of sthm to complete the legend2 parameters
+# we use the parameter of sthm to complete the legend2 parameters
 legend2(.9, 1, legend =  a, col = col, postext = "right", h = 1/(length(a) -1), w = 0.04, tl = 0.01, s = 0.005)
 
 ## ------------------------------------------------------------------------
@@ -98,9 +96,8 @@ provinces <- gadmVN::gadm(date = "1980-01-01", merge_hanoi = TRUE)
 coord <- sp::coordinates(provinces)
 row.names(coord) <- unique(provinces@data$province)
 head(coord)
-# ordered the provinces by latitude and create an index called "order"
+# order the provinces by latitude and create an index called "order"
 order <- rownames(coord[order(coord[, 2]), ])
-head(order)
 order <- data.frame(province = order, order = seq_along(order))
 head(order)
 
@@ -121,7 +118,6 @@ str(a)
 
 ## ------------------------------------------------------------------------
 a <- sthm(dengue_or, f = function(x) x^.3, col = col, map = provinces, xm = 0.25, show_legend = TRUE)
-# a is a list containing both the legend and the province. To print the scale legend with legend2, it is important to specify 'a$legend'
 legend2(.9, 1, legend =  a$legend, col = col, postext = "right", h = 1/(length(a$legend) -1), w = 0.04, tl = 0.01, s = 0.005)
 str(a)
 
@@ -134,7 +130,7 @@ library(magrittr)
 provinces <- gadmVN::gadm(date = "1980-01-01", merge_hanoi = TRUE)
 coord <- sp::coordinates(provinces)
 row.names(coord) <- unique(provinces@data$province)
-# Ordered the provinces by latitude and create an index called "order"
+# Order the provinces by latitude and create an index called "order"
 order <- rownames(coord[order(coord[, 2]), ])
 order <- data.frame(province = order, order = seq_along(order))
 
@@ -143,37 +139,32 @@ col <- rev(heat.colors(100))
 
 # Pipe
 getid(dengue) %>%
-  dplyr::mutate(time = as.Date(
-    paste0(year, "-", as.numeric(month), "-", 15))) %>%
-  dplyr::select(province, time, contains("incidence")) %>% 
+  mutate(time = as.Date(paste0(year, "-", as.numeric(month), "-", 15))) %>%
+  select(province, time, contains("incidence")) %>% 
   left_join(order, by = "province") %>% 
   arrange(order) %>%
   select(-order) %>% 
-  dplyr::arrange(time) %>%
+  arrange(time) %>%
   sthm(f = function(x) x^.3, col = col, map = provinces, xm = 0.25) %>%
   legend2(.9, 1, legend =  ., col = col, postext = "right",
           h = 1/(length(.)-1), w = 0.04, tl = 0.01, s = 0.005)
-
-## ---- message = FALSE----------------------------------------------------
-library(dplyr) # for "filter" and "select"
 
 ## ---- eval = FALSE-------------------------------------------------------
 #  ?choromap
 
 ## ------------------------------------------------------------------------
-# geographic data
-map <- gadmVN::gadm(date = 1992, merge_hanoi = TRUE)
-
-## ------------------------------------------------------------------------
 # Preparation data spatial and epidemiologic
 # dengue data
-dengue <- getid(dengue, from = 1992, to = 2010)
+dengue <- getid(dengue, from = 1993, to = 1993)
 dengue_0993  <- filter(dengue, year == 1993, month == "September")
 dengue_0993 <- select(dengue_0993, province, contains("incidence"))
 
 
 ## ------------------------------------------------------------------------
-# ?poseid::breaks
+?poseid::breaks
+
+## ---- eval = FALSE-------------------------------------------------------
+#  ?classInt::classIntervals
 
 ## ------------------------------------------------------------------------
 # plot Quantile
@@ -186,13 +177,20 @@ f_breaks <- poseid::breaks(dengue_0993, "incidence_dengue", style = "fisher" ,pa
 attr(f_breaks, "breaks")
 
 ## ------------------------------------------------------------------------
-a <- choromap(dengue_0993, map, fixedBreaks = c(0, 75, 200, 490, 720, 1100, 1300), col = rev(heat.colors(6)), col_na = "grey")
-# return invisibly the information for the legend (the value and the colors associated in a vector with attribut)
-legend2(legend = a, col = attr(a, "colors"), col_na = "grey")
-# By default, the legend is on the top-left part of the figure, for more information: `?legend2`
+# geographic data
+map <- gadmVN::gadm(date = 1992)
 
 ## ------------------------------------------------------------------------
-getid(dengue, from = 1990, to = 2010) %>%
+a <- choromap(dengue_0993, map, fixedBreaks = c(0, 75, 200, 490, 720, 1100, 1300), col = rev(heat.colors(6)), col_na = "grey")
+# By default, the legend is on the top-left part of the figure, for more information: `?legend2`
+legend2(legend = a, col = attr(a, "colors"), col_na = "grey")
+
+## ------------------------------------------------------------------------
+# Geographical information
+map <- gadmVN::gadm(date = 1992)
+
+# Pipe
+getid(dengue, from = 1992, to = 1993) %>%
   filter(year == 1993, month == "September") %>%
   select(province, contains("incidence")) %>%
   breaks("incidence_dengue",n = 6, style = "fisher",
@@ -202,7 +200,7 @@ getid(dengue, from = 1990, to = 2010) %>%
   legend2(legend = ., col = attr(., "colors"), col_na = "gray")
 
 ## ------------------------------------------------------------------------
-getid(dengue, from = 1990, to = 2010) %>%
+getid(dengue, from = 1992, to = 1993) %>%
   filter(year == 1993, month == "September") %>%
   select(province, contains("incidence")) %>%
   breaks("incidence_dengue",n = 6, style = "fisher",
