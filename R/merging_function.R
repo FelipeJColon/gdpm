@@ -310,7 +310,7 @@ multiple_disease <- function(lst, splits_list, from, to){
 #' Gets Infectious Diseases
 #'
 #' @description Merges epidemiological data accordingly to a time range and
-#' merges the provinces concern by a split/combined event if necessary and
+#' merges the provinces concerned by a split/combined event if necessary and
 #' returns a data frame for the time range imputed.
 #'
 #' @details One dataset called \code{diseases} contains the description of all
@@ -329,11 +329,8 @@ multiple_disease <- function(lst, splits_list, from, to){
 #' diseases and if one or the two of them are selected (together with other
 #' diseases), this story will be applied to all the disease selected.
 #'
-#' @param disease An epidemiological data frame (e.g. \code{ili},
-#' \code{dengue} ...). Should contains at least the variables \code{province},
-#' \code{year}, \code{month} and the variables \code{incidence} and
-#' \code{mortality}.
-#' @param ... Other(s) epidemiological data frame(s).
+#' @param disease Name of one disease (e.g. \code{ili}, \code{dengue} ...).
+#' @param ... Other(s) disease(s) name.
 #' @param from Initial date of the time range, can be an object of class
 #' \code{Date}, \code{character} or \code{numeric}.
 #' @param to Final date of the data, of the class \code{Date}, \code{character}
@@ -342,12 +339,15 @@ multiple_disease <- function(lst, splits_list, from, to){
 #' data from all the diseases (by default).
 #' If \code{TRUE}: starts when all the diseases have data and ends as soon
 #'  as one disease as no more available data. (selects the overlaps year)
-#' @return An object of the same class as \code{df} in which all the provinces
-#' that needed to be merged (according to the time range provided) are merged.
+#'
+#' @return An object of the class \code{data frame} in which all the provinces
+#' that needed to be merged (according to the time range provided) are merged
+#' together and contains also the variables \code{year}, \code{month} and
+#' \code{incidence} and \code{mortality} for each \code{disease} asked.
 #' @examples
 #'
-#' # Loads a resume table of all the epidemiological data frame contains in the
-#' # package.
+#' # Loads the resume table of all the epidemiological data frame contains in
+#' # the package.
 #' diseases
 #'
 #' # Returns a data frame in which all the provinces that needed to be merged
