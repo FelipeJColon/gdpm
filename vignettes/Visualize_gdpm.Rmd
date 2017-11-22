@@ -1,5 +1,5 @@
 ---
-title: "Vizualising the gdpm package"
+title: "Vizualizing the gdpm package"
 date: "`r Sys.Date()`"
 output:
   html_document:
