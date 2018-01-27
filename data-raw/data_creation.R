@@ -482,7 +482,7 @@ list2env(total$epidemiology, environment())
 
 devtools::use_data(diseases, overwrite = TRUE, internal = FALSE)
 devtools::use_data(cholera, typhoid, shigella, amoebiasis, diarrhea,
-  hfmd, malaria, hepatitis, rabies, meningitis, chickenpox,
+  hfmd, malaria, hepatitis, rabies, meningitis, chickenpox, encephalitis,
   diphteria, pertussis, nntetanus, tetanus, polio, measles, mumps, rubella, ili,
   h5n1, adenovirus, plague, anthrax, leptospiriosis, ssuis, dengue,
   dysenteria, splits, ah_splits, internal = TRUE, overwrite = TRUE)
