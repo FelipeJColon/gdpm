@@ -24,7 +24,7 @@ fig.width = 4.24725, fig.retina = 2, fig.align = "center")
 
 The `gdpm` package contains the monthly surveillance data aggregated by province, by the Vietnamese General Department of Preventive Medicine (GDPM). 
 
-In more details, this package contains the monthly syndromic data incidence and mortality data for 30 diseases since 1980 in Vietnam in the form of 30 data frames (`adenovirus`, `amoebiasis`, `chickenpox`, `cholera`, `dengue`, `diarrhea`, `diphteria`, `dysenteria`, `encephalitis`, `hepatitis`, `ili`, `measles`, `meningitis`, `mumps`, `pertussis`, `plague`, `polio`, `rabies`, `shigella`, `tetanus`, `typhoid`, `leptospiriosis`, `anthrax`, `nntetanus`, `malaria`, `h5n1`, `rubella`, `vhf`, `enterovirus`, `ssuis`), one summary data frame (`diseases`), one handling functions (`getid`). We here give a quick overview of the data sets and their handling.
+In more details, this package contains the monthly syndromic data incidence and mortality data for 29 diseases since 1980 in Vietnam in the form of 29 data frames (`adenovirus`, `amoebiasis`, `anthrax`, `chickenpox`, `cholera`, `dengue`, `diarrhea`, `diphteria`, `dysenteria`, `encephalitis`, `h5n1`, `hepatitis`, `hfmd`,`ili`,`leptospiriosis`, `malaria`, `measles`, `meningitis`, `mumps`, `nntetanus`, `pertussis`, `plague`, `polio`, `rabies`, `rubella`, `shigella`, `ssuis`,  `tetanus`, `typhoid`), one summary data frame (`diseases`), one handling functions (`getid`). We here give a quick overview of the data sets and their handling.
 
 Installing the `gdpm` package:
 
@@ -49,7 +49,7 @@ If you want to use R for data analysis, the rest of the document presents in mor
 
 ## Epidemiological data
 
-The epidemiological data are contained in the 30 epidemiological data frames, each data frame corresponding to one syndromic disease. For example, `chickenpox`:
+The epidemiological data are contained in the 29 epidemiological data frames, each data frame corresponding to one syndromic disease. For example, `chickenpox`:
 
 ```{r}
 chickenpox <-  getid(chickenpox)

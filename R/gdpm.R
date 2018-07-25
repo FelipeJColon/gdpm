@@ -27,3 +27,12 @@
 #' @importFrom tidyr spread
 #' @importFrom tidyr separate
 NULL
+
+## quiets concerns of R CMD check for the values that appear in pipelines
+if(getRversion() >= "2.15.1")  utils::globalVariables(c(".", "incidence", "year"
+                                                        , "mortality", "month",
+                                                        "name", "province",
+                                                        "value"))
+
+
+

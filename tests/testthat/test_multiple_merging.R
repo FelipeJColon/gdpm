@@ -3,7 +3,7 @@ library(dplyr) # for "bind_rows", "rename", "mutate", "select"
 library(tidyr) # for "gather", "separate", "spread"
 library(dictionary) # for "provinces_year"
 
-context("`getid` return the good the time range and provinces when provide
+context("`getid` return the good time range and provinces names when provide
   multiple diseases at the same time")
 
 test_that("`getid` returns the correct time range", {
