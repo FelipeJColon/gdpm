@@ -25,7 +25,8 @@ Suggests:
     RColorBrewer,
     poseid,
     gadmVN,
-    sp
+    sp,
+    stringi
 VignetteBuilder: knitr
 Imports:
     dplyr,
