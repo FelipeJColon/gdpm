@@ -110,9 +110,11 @@ head(pop)
 After joining the `pop` and the `dengue` data frames by province and by year, we can now calculate the incidence rate per month, year and province : $$Incidence\ rate = \frac{number\ of\ case}{population\ total\ \times\ 10000\ persons}$$
 
 ```{r, warning=FALSE, message=FALSE}
-# join the population dataframe to the dengue dataset and calculate the incidence rate
+# join the population dataframe to the dengue dataset and calculate the 
+# incidence rate
 dengue <- left_join(dengue, pop, by = c("province", "year"))
-dengue <- mutate(dengue, incidence_rate =  (incidence_dengue / population)*10000)
+dengue <- mutate(dengue, incidence_rate =  
+                   (incidence_dengue / population)*10000)
 head(dengue)
 ```
 
@@ -137,7 +139,8 @@ Here, we show the example of the `quantile` and the `fisher` methods. The functi
 First, the `quantile` method which provides quantile breaks on the incidence rate: 
 
 ```{r}
-quant <- breaks(sample_dengue, "incidence_rate", n = 6, style = "quantile", pal = rev(heat.colors(6)), distribution = TRUE)
+quant <- breaks(sample_dengue, "incidence_rate", n = 6, style = "quantile", 
+                pal = rev(heat.colors(6)), distribution = TRUE)
 ```
 
 We can print the intervals:
@@ -148,7 +151,8 @@ attr(quant, "breaks")
 Second, the `fisher` method which use the algorithm proposed by W. D. Fisher (1958) and discussed by Slocum et al. (2005) as the Fisher-Jenks algorithm:
 
 ```{r}
-fisher <- breaks(sample_dengue, "incidence_rate", n = 6, style = "fisher", pal = rev(heat.colors(6)), distribution = TRUE)
+fisher <- breaks(sample_dengue, "incidence_rate", n = 6, style = "fisher", 
+                 pal = rev(heat.colors(6)), distribution = TRUE)
 ```
 
 We can print the intervals:
@@ -164,7 +168,9 @@ We can create a consensus vector of intervals to represent our data.
 # Create a consensus:
 breaks_den <- c(0, 0.1, 1, 4, 8, 22, max(na.omit(dengue$incidence_rate)))
 # Look at the distribution of the data:
-dengue_breaks <- breaks(dengue, "incidence_rate", n = 6, style = "fixed", fixedBreaks = breaks_den, pal = rev(heat.colors(6)), distribution = TRUE) 
+dengue_breaks <- breaks(dengue, "incidence_rate", n = 6, style = "fixed", 
+                        fixedBreaks = breaks_den, pal = rev(heat.colors(6)), 
+                        distribution = TRUE) 
 ```
 
 To print the distribution of the value with the intervals printed with different colors:
@@ -175,7 +181,8 @@ pal <- colorRampPalette(rev(heat.colors(6)))
 pal_breaks <- pal(6)[cut(na.omit(dengue_breaks$incidence_rate), 
                          breaks = attr(dengue_breaks, "breaks"))]
 # Plot the distribution of the value
-plot(na.omit(dengue_breaks$incidence_rate), xlab = "time", pch = 20, col = pal_breaks)
+plot(na.omit(dengue_breaks$incidence_rate), xlab = "time", pch = 20, 
+     col = pal_breaks)
 ```
 
 ## Visualization
@@ -215,32 +222,42 @@ For more details, you can look at the webpage of the `animation` package: https:
 months <- month.name # vector of month name
 
 saveGIF({
-    monthly_loop <- for(i in seq(months)){ # loop printing a map for each months
+  # loop printing a map for each months
+    monthly_loop <- for(i in seq(months)){
     filter(dengue, year == 2009, month == months[i]) %>% 
       select(province, contains("rate")) %>% 
       choromap(map, col = rev(heat.colors(6)), fixedBreaks = breaks_den) %>% 
       legend2(legend = ., col = attr(., "colors"), col_na = "grey", n_round = 1)
-    text(x = par("usr")[2], y = par("usr")[4], labels = paste0(months[i], " ", 2009), adj = c(1, 1))
+    # time label  
+    text(x = par("usr")[2], y = par("usr")[4], labels = 
+           paste0(months[i], " ", 2009), adj = c(1, 1))
     }
-}, movie.name = "animation_monthly.gif", interval = 0.5, ani.width = 580)
+}, movie.name = "animation_monthly.gif", interval = 0.5, ani.width = 580, 
+  clean = TRUE)
 ```
 
 <img src = "animation_monthly.gif">
 
-With the same principle, we can create another loop which prints a choropleth map for each month for each year: 
+With the same principle, we can create another loop which prints a choropleth map for each month for multiple year: 
 
-```{r, message=FALSE}
+```{r, message=FALSE, eval = FALSE}
 saveGIF({
-  yearly_loop <- for(j in seq(range(dengue$year)[1], range(dengue$year)[2])){ # loop for each year
-    monthly_loop <- for(i in seq(months)){ # monthly loop
+  # loop for each year
+  yearly_loop <- for(j in seq(range(dengue$year)[1], range(dengue$year)[2])){
+    # monthly loop
+    monthly_loop <- for(i in seq(months)){
+    # creation of the map  
     filter(dengue, year == j, month == months[i]) %>% 
       select(province, contains("rate")) %>% 
       choromap(map, col = rev(heat.colors(6)), fixedBreaks = breaks_den) %>% 
       legend2(legend = ., col = attr(., "colors"), col_na = "grey", n_round = 2)
-    text(x = par("usr")[2], y = par("usr")[4], labels = paste0(months[i], " ", j), adj = c(1, 1))
+    # include time label  
+    text(x = par("usr")[2], y = par("usr")[4], labels = 
+           paste0(months[i], " ", j), adj = c(1, 1))
     }
   }
-}, movie.name = "animation_dengue.gif", interval = 0.1, ani.width = 580)
+}, movie.name = "animation_dengue.gif", interval = 0.1, ani.width = 580, 
+  clean = TRUE)
 ```
 
 <img src = "animation_dengue.gif">

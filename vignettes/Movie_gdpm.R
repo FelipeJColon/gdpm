@@ -53,9 +53,11 @@ pop <- mutate(pop, population = population * 1000)
 head(pop)
 
 ## ---- warning=FALSE, message=FALSE---------------------------------------
-# join the population dataframe to the dengue dataset and calculate the incidence rate
+# join the population dataframe to the dengue dataset and calculate the 
+# incidence rate
 dengue <- left_join(dengue, pop, by = c("province", "year"))
-dengue <- mutate(dengue, incidence_rate =  (incidence_dengue / population)*10000)
+dengue <- mutate(dengue, incidence_rate =  
+                   (incidence_dengue / population)*10000)
 head(dengue)
 
 ## ---- eval = FALSE-------------------------------------------------------
@@ -66,13 +68,15 @@ head(dengue)
 sample_dengue <- sample_frac(dengue, 0.5)
 
 ## ------------------------------------------------------------------------
-quant <- breaks(sample_dengue, "incidence_rate", n = 6, style = "quantile", pal = rev(heat.colors(6)), distribution = TRUE)
+quant <- breaks(sample_dengue, "incidence_rate", n = 6, style = "quantile", 
+                pal = rev(heat.colors(6)), distribution = TRUE)
 
 ## ------------------------------------------------------------------------
 attr(quant, "breaks")
 
 ## ------------------------------------------------------------------------
-fisher <- breaks(sample_dengue, "incidence_rate", n = 6, style = "fisher", pal = rev(heat.colors(6)), distribution = TRUE)
+fisher <- breaks(sample_dengue, "incidence_rate", n = 6, style = "fisher", 
+                 pal = rev(heat.colors(6)), distribution = TRUE)
 
 ## ------------------------------------------------------------------------
 attr(fisher, "breaks")
@@ -81,7 +85,9 @@ attr(fisher, "breaks")
 # Create a consensus:
 breaks_den <- c(0, 0.1, 1, 4, 8, 22, max(na.omit(dengue$incidence_rate)))
 # Look at the distribution of the data:
-dengue_breaks <- breaks(dengue, "incidence_rate", n = 6, style = "fixed", fixedBreaks = breaks_den, pal = rev(heat.colors(6)), distribution = TRUE) 
+dengue_breaks <- breaks(dengue, "incidence_rate", n = 6, style = "fixed", 
+                        fixedBreaks = breaks_den, pal = rev(heat.colors(6)), 
+                        distribution = TRUE) 
 
 ## ------------------------------------------------------------------------
 # Create a palette
@@ -89,7 +95,8 @@ pal <- colorRampPalette(rev(heat.colors(6)))
 pal_breaks <- pal(6)[cut(na.omit(dengue_breaks$incidence_rate), 
                          breaks = attr(dengue_breaks, "breaks"))]
 # Plot the distribution of the value
-plot(na.omit(dengue_breaks$incidence_rate), xlab = "time", pch = 20, col = pal_breaks)
+plot(na.omit(dengue_breaks$incidence_rate), xlab = "time", pch = 20, 
+     col = pal_breaks)
 
 ## ---- message=FALSE------------------------------------------------------
 library(magrittr) # `%>%` 
@@ -112,25 +119,35 @@ filter(dengue, year == 2009, month == "January") %>%
 months <- month.name # vector of month name
 
 saveGIF({
-    monthly_loop <- for(i in seq(months)){ # loop printing a map for each months
+  # loop printing a map for each months
+    monthly_loop <- for(i in seq(months)){
     filter(dengue, year == 2009, month == months[i]) %>% 
       select(province, contains("rate")) %>% 
       choromap(map, col = rev(heat.colors(6)), fixedBreaks = breaks_den) %>% 
       legend2(legend = ., col = attr(., "colors"), col_na = "grey", n_round = 1)
-    text(x = par("usr")[2], y = par("usr")[4], labels = paste0(months[i], " ", 2009), adj = c(1, 1))
+    # time label  
+    text(x = par("usr")[2], y = par("usr")[4], labels = 
+           paste0(months[i], " ", 2009), adj = c(1, 1))
     }
-}, movie.name = "animation_monthly.gif", interval = 0.5, ani.width = 580)
+}, movie.name = "animation_monthly.gif", interval = 0.5, ani.width = 580, 
+  clean = TRUE)
 
-## ---- message=FALSE------------------------------------------------------
-saveGIF({
-  yearly_loop <- for(j in seq(range(dengue$year)[1], range(dengue$year)[2])){ # loop for each year
-    monthly_loop <- for(i in seq(months)){ # monthly loop
-    filter(dengue, year == j, month == months[i]) %>% 
-      select(province, contains("rate")) %>% 
-      choromap(map, col = rev(heat.colors(6)), fixedBreaks = breaks_den) %>% 
-      legend2(legend = ., col = attr(., "colors"), col_na = "grey", n_round = 2)
-    text(x = par("usr")[2], y = par("usr")[4], labels = paste0(months[i], " ", j), adj = c(1, 1))
-    }
-  }
-}, movie.name = "animation_dengue.gif", interval = 0.1, ani.width = 580)
+## ---- message=FALSE, eval = FALSE----------------------------------------
+#  saveGIF({
+#    # loop for each year
+#    yearly_loop <- for(j in seq(range(dengue$year)[1], range(dengue$year)[2])){
+#      # monthly loop
+#      monthly_loop <- for(i in seq(months)){
+#      # creation of the map
+#      filter(dengue, year == j, month == months[i]) %>%
+#        select(province, contains("rate")) %>%
+#        choromap(map, col = rev(heat.colors(6)), fixedBreaks = breaks_den) %>%
+#        legend2(legend = ., col = attr(., "colors"), col_na = "grey", n_round = 2)
+#      # include time label
+#      text(x = par("usr")[2], y = par("usr")[4], labels =
+#             paste0(months[i], " ", j), adj = c(1, 1))
+#      }
+#    }
+#  }, movie.name = "animation_dengue.gif", interval = 0.1, ani.width = 580,
+#    clean = TRUE)
 
