@@ -190,7 +190,8 @@ translate <- function(df, col_names = "province", hash = province) {
   df[, col_names] <- df[, col_names] %>%
     unlist %>%  as.vector %>%
     sub("^\\d+\\.", "", .) %>% trimws
-  df[, col_names] <-   hash[unlist(df[, col_names])]
+  df[, col_names] <-   hash[
+    stringi::stri_escape_unicode(unlist(df[, col_names]))]
   df
 }
 
@@ -470,7 +471,7 @@ make_summary_table <- function(lst) {
 
 # Read data-raw and made data --------------------------------------------------
 
-filename <- "data-raw/YB 1980-2010.xls"
+filename <- "data-raw/YB 1980-2010.xlsx"
 vector <- c(
   "data-raw/Nien giam 2011r.xls", "data-raw/Nien giam 2012r.xls",
   "data-raw/Nien giam 2013r.xls", "data-raw/Nien giam 2014r.xls",
