@@ -78,7 +78,7 @@ For more informations:
 Load the `pop_size` data frame from the `gso` package:
 
 ```{r}
-pop <-  gso::pop_size
+pop <- gso::content %>% filter(data_name == "demography_5") %>% .$data %>% .[[1]]
 head(pop)
 ```
 
@@ -192,7 +192,7 @@ For the visualization, we will need the package `gadmVN` for the map of the prov
 ```{r, message=FALSE}
 library(magrittr) # `%>%` 
 library(gadmVN)   # for 'gadm'
-map <- gadmVN::gadm(date = 1995, merge_hanoi = TRUE)
+map <- gadmVN::gadm(date = 1995, merge_hanoi = TRUE) %>% sf::as_Spatial()
 ```
 
 To print a choropleth map for the dengue dataset for January 2009, we can use a pipe to prepare the data and draw a choropleth map with a legend:
