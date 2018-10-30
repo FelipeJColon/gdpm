@@ -48,34 +48,34 @@ test_that("`getid` returns the correct province name", {
   expect_equal(
     unique(getid(chickenpox, hepatitis, ili, dengue)$province) %>%
       c("Ha Son Binh") %>% sort,
-    dictionary::province_year$`1979`)
+    dictionary::vn_province_year$`1979-1990`)
 
   expect_equal(
     unique(getid_("chickenpox", "hepatitis", "ili", "dengue")$province) %>%
       c("Ha Son Binh") %>% sort,
-    dictionary::province_year$`1979`)
+    dictionary::vn_province_year$`1979-1990`)
 
   expect_equal(
     unique(getid(chickenpox, hepatitis, ili, dengue,
       shortest = TRUE)$province) %>%
         c("Ha Son Binh") %>% sort,
-      dictionary::province_year$`1979`)
+      dictionary::vn_province_year$`1979-1990`)
 
   expect_equal(
     unique(getid_("chickenpox", "hepatitis", "malaria", "dengue",
       shortest = TRUE)$province) %>%
       c("Ha Tay") %>% sort,
-    dictionary::province_year$`1997`)
+    dictionary::vn_province_year$`1997-2004`)
 
   expect_equal(
     unique(getid(chickenpox, ili, dengue, shigella,
       from = "1990", to = "2002")$province),
-    dictionary::province_year$`1990`)
+    dictionary::vn_province_year$`1990-1991`)
 
   expect_equal(
     unique(getid_("chickenpox", "hepatitis", "ili", "dengue",
       from = 1990, to = 2002)$province),
-    dictionary::province_year$`1979`)
+    dictionary::vn_province_year$`1979-1990`)
 
 })
 
@@ -85,6 +85,9 @@ test_that("`getid` returns an error", {
 
   expect_warning(getid(chickenpox, ili, dengue, malaria, from = 1980,
     to = 2002))
+
+  expect_warning(getid(chickenpox, ili, dengue, malaria, from = 1960,
+                       to = 2002))
 
   expect_error(getid(chickenpox, ili, dengue, malaria, from = 2028))
 

@@ -174,7 +174,7 @@ names_col <- matrix(c(
 names_col <- setNames(names_col[, 2], names_col[, 1])
 
 # Provinces tables for translation
-province <- dictionary::provinces
+province <- dictionary::vn_province
 
 # Lists of splits events in the province history in Vietnam (necessary for the
 # merging function)
