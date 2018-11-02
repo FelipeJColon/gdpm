@@ -329,8 +329,8 @@ multiple_disease <- function(lst, splits_list, from, to){
 #' diseases and if one or the two of them are selected (together with other
 #' diseases), this story will be applied to all the disease selected.
 #'
-#' @param disease Name of one disease (e.g. \code{ili}, \code{dengue} ...).
-#' @param ... Other(s) disease(s) name.
+#' @param ... Name of one or multople disease (e.g. \code{ili},
+#' \code{dengue} ...).
 #' @param from Initial date of the time range, can be an object of class
 #' \code{Date}, \code{character} or \code{numeric}.
 #' @param to Final date of the data, of the class \code{Date}, \code{character}
@@ -376,9 +376,9 @@ multiple_disease <- function(lst, splits_list, from, to){
 #' getid_("dengue", "ili", "cholera", from = "1990-01-01", to = "2004-12-31")
 #' getid(chickenpox, anthrax, from = "1980-01-01" , to = "2009-12-31")
 #' @export
-getid_ <- function(disease, ..., from, to, shortest = FALSE) {
+getid_ <- function(..., from, to, shortest = FALSE) {
   # create a character vector of all the diseases names
-  vect <- c(disease, list(...)) %>%
+  vect <-  list(...) %>%
     unlist %>% as.vector() %>%
     as.character()
 
@@ -454,15 +454,14 @@ paste(test[name_error], collapse = ", "), '. NAs
 
 #' @rdname getid_
 #' @export
-getid <- function(disease, ..., from, to, shortest = FALSE){
-  disease <- deparse(substitute(disease))
+getid <- function(..., from, to, shortest = FALSE){
   vect <- as.character(substitute(list(...))) %>%
     grep("list", ., invert = T, value = T)
 
   if (shortest == TRUE){
-    diseases <- getid_(disease, vect, from = from, to = to, shortest = TRUE)
+    diseases <- getid_(vect, from = from, to = to, shortest = TRUE)
   } else {
-    diseases <- getid_(disease, vect, from = from, to = to)
+    diseases <- getid_(vect, from = from, to = to)
   }
 
   return(diseases)

@@ -5,14 +5,13 @@
 \alias{getid}
 \title{Gets Infectious Diseases}
 \usage{
-getid_(disease, ..., from, to, shortest = FALSE)
+getid_(..., from, to, shortest = FALSE)
 
-getid(disease, ..., from, to, shortest = FALSE)
+getid(..., from, to, shortest = FALSE)
 }
 \arguments{
-\item{disease}{Name of one disease (e.g. \code{ili}, \code{dengue} ...).}
-
-\item{...}{Other(s) disease(s) name.}
+\item{...}{Name of one or multople disease (e.g. \code{ili},
+\code{dengue} ...).}
 
 \item{from}{Initial date of the time range, can be an object of class
 \code{Date}, \code{character} or \code{numeric}.}
