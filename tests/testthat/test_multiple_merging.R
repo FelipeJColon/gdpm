@@ -10,11 +10,11 @@ test_that("`getid` returns the correct time range", {
 
   expect_equal(
     range(getid(chickenpox, hepatitis, ili, dengue)$year),
-    c(1980, 2015))
+    c(1980, 2017))
 
   expect_equal(
     range(getid_("chickenpox", "hepatitis", "ili", "dengue")$year),
-    c(1980, 2015))
+    c(1980, 2017))
 
   expect_equal(
     range(getid(chickenpox, hepatitis, ili, dysenteria, shortest = TRUE)$year),
@@ -34,7 +34,7 @@ test_that("`getid` returns the correct time range", {
   expect_equal(
     range(getid_("chickenpox", "hepatitis", "ili", "dengue",
       from = 2000)$year),
-    c(2000, 2015))
+    c(2000, 2017))
 
   expect_equal(
     range(getid_("chickenpox", "hepatitis", "ili", "dengue",

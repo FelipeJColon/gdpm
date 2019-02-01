@@ -213,6 +213,7 @@ make_colnames_NG <- function(df) {
     collapse = " ") %>%
     gsub("NA NA", "popsize", .) %>%
     gsub(".NA", "", .)
+  if (all(!grepl("popsize", names(df)))) df$popsize <- NA
   df <- df[-1, ] %>% filter(!is.na(`province`))
 }
 
@@ -258,7 +259,8 @@ read_one_table_NG <- function(df, filename) {
       month.name, ordered=TRUE),
       incidence  = as.integer(incidence),
       mortality  = as.integer(mortality),
-      popsize    = as.numeric(popsize)) %>%
+      popsize    = as.numeric(popsize)
+      ) %>%
     (function(x) lapply(
       list(epidemiology = names(x)[-which(names(x) == "popsize")],
         demography = c("province", "year", "popsize")),
@@ -475,14 +477,15 @@ filename <- "data-raw/YB 1980-2010.xlsx"
 vector <- c(
   "data-raw/Nien giam 2011r.xls", "data-raw/Nien giam 2012r.xls",
   "data-raw/Nien giam 2013r.xls", "data-raw/Nien giam 2014r.xls",
-  "data-raw/Nien giam 2015r.xls")
+  "data-raw/Nien giam 2015r.xls", "data-raw/Nien giam 2016r.xls",
+  "data-raw/Nien giam 2017r.xls")
 
 total <- make_demography_epidemiology_total(vector, filename)
 diseases <- make_summary_table(total$epidemiology)
 list2env(total$epidemiology, environment())
 
-devtools::use_data(diseases, overwrite = TRUE, internal = FALSE)
-devtools::use_data(cholera, typhoid, shigella, amoebiasis, diarrhea,
+usethis::use_data(diseases, overwrite = TRUE, internal = FALSE)
+usethis::use_data(cholera, typhoid, shigella, amoebiasis, diarrhea,
   hfmd, malaria, hepatitis, rabies, meningitis, chickenpox, encephalitis,
   diphteria, pertussis, nntetanus, tetanus, polio, measles, mumps, rubella, ili,
   h5n1, adenovirus, plague, anthrax, leptospiriosis, ssuis, dengue,
