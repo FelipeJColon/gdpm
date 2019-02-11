@@ -435,14 +435,14 @@ paste(test[name_error], collapse = ", "), '. NAs
       were introducted.'))
   }
 
-   # warnings message if error on the time range
+   # warnings message if error on the year time range
   if( !missing (from) || !missing(to)){
-    if(from < select_min(lst_disease, 1)) {
+    if(as.numeric(substr(from, 1, 4)) < select_min(lst_disease, 1)) {
       warning(paste0('The argument "from" is out of the time range for this
         (these) disease(s): ', paste0(select_min(lst_disease, 1), "-",
           select_max(lst_disease, 2) ), '. The closest time range was selected:
         ', range(diseases$year) %>% paste(collapse = "-"),'.'))
-    } else if (to > select_max(lst_disease, 2)) {
+    } else if (as.numeric(substr(to, 1, 4)) > select_max(lst_disease, 2)) {
       warning(paste0('The argument "to" is out of the time range for this
         (these) disease(s): ', paste0(select_min(lst_disease, 1), "-",
           select_max(lst_disease, 2) ), '. The closest time range was selected:
