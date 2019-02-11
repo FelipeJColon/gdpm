@@ -81,10 +81,12 @@ test_that("`getid` returns the correct province name", {
 
 
 
-test_that("`getid` returns an error", {
+test_that("`getid` returns an error or a warning", {
 
   expect_warning(getid(chickenpox, ili, dengue, malaria, from = 1980,
     to = 2002))
+
+  expect_warning(getid(malaria, from = 2015, to = 2022))
 
   expect_warning(getid(chickenpox, ili, dengue, malaria, from = 1960,
                        to = 2002))
