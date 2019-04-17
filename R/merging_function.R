@@ -149,8 +149,8 @@ sum_incidence_mortality <- function(df) {
 hanoi_function <- function(df) {
   tab <- split(df, df$province %in% c("Ha Noi", "Ha Son Binh"))
   tab$`TRUE` %<>%
-    prepare_data %>%
-    sum_incidence_mortality %>%
+    prepare_data() %>%
+    sum_incidence_mortality() %>%
     mutate(province = "Ha Noi")
   bind_rows(tab$`TRUE`, tab$`FALSE`)
 }
@@ -188,8 +188,8 @@ merge_time_serie <- function(splits_lst, df, from, to) {
       province_lst <- province_splits(lst_events[i])
       tmp <- split(df, df$province %in% province_lst[[1]])
       tmp$`TRUE` %<>%
-        prepare_data %>%
-        sum_incidence_mortality %>%
+        prepare_data() %>%
+        sum_incidence_mortality() %>%
         mutate(province = names(province_lst[1]))
       df <- bind_rows(tmp$`TRUE`, tmp$`FALSE`)
     }
@@ -236,7 +236,7 @@ merge_province <- function(splits_list, disease, from, to) {
   to %<>% paste0("-12-31") %>% as.Date
 
   df <- suppressWarnings(merge_time_serie(splits_list, disease, from, to)) %>%
-    ungroup %>%
+    ungroup() %>%
     mutate(year = as.integer(year)) %>%
     arrange(province, year, month) %>%
     as.data.frame() %>%
@@ -261,7 +261,7 @@ merge_province <- function(splits_list, disease, from, to) {
 select_min <- function(lst, sel, col = "year"){
   year <- purrr::map(lst, select, contains(col)) %>%
     purrr::map(range)  %>%
-    purrr::map(sel)  %>% unlist  %>% min
+    purrr::map(sel)  %>% unlist()  %>% min()
   year
 }
 
@@ -271,7 +271,7 @@ select_min <- function(lst, sel, col = "year"){
 select_max <- function(lst, sel, col = "year"){
   year <- purrr::map(lst, select, contains(col)) %>%
     purrr::map(range)  %>%
-    purrr::map(sel)  %>% unlist  %>% max
+    purrr::map(sel)  %>% unlist() %>% max()
   year
 }
 
@@ -404,7 +404,7 @@ getid_ <- function(..., from, to, shortest = FALSE) {
     purrr::map(range)
   if( mean(to < test  %>%
       purrr::map(1) %>%
-      unlist %>%
+      unlist() %>%
       as.vector()) > 0){
     name_error <- names(which(purrr::map(test, 1) > to))
     sel <- grep(paste(name_error, collapse = "|"),
@@ -422,7 +422,7 @@ getid_ <- function(..., from, to, shortest = FALSE) {
   # if one disease or two diseases are out of range
   if( mean(to < test  %>%
       purrr::map(1) %>%
-      unlist %>%
+      unlist() %>%
       as.vector()) > 0){
     diseases <- suppressMessages(lapply(seq_along(name_error), function(x){
       diseases[,paste0("incidence","_",name_error[x])] <- NA
