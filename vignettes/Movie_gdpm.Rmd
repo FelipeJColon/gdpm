@@ -39,12 +39,11 @@ library(poseid)
 library(animation)
 ```
 
-We also need other packages for the preparation of the data, for the geographical data and for the population size information.   
+We also need other packages for the geographical data and for the population size information.   
 
-```{r, warning=FALSE, message=FALSE}
+```{r}
 # Important packages
-library(dplyr) # for 'select', 'filter', 'mutate'....
-library(gso) # for pop_size
+library(gso) 
 ```
 
 ## Load the data
@@ -72,13 +71,13 @@ We can obtain the population size information from the `gso` package. The data n
 For more informations:
 ```{r}
 ?merge_prov
-?pop_size
 ```
 
-Load the `pop_size` data frame from the `gso` package:
+Load the population size data frame from the `gso` package:
 
 ```{r}
-pop <- gso::content %>% filter(data_name == "demography_5") %>% .$data %>% .[[1]]
+pop <- subset(gso::content, data_name == "demography_5", data)
+pop <- pop$data[[1]]
 head(pop)
 ```
 
@@ -95,25 +94,25 @@ identical(unique(pop$province), unique(dengue$province))
 Only the population total is selected and the column `value` is renamed `population`:
 
 ```{r}
-pop <- filter(pop, key == "total")
-pop <- select(pop, province, year, population = value)
+pop <- subset(pop, key == "total", c(province, year, value))
+colnames(pop)[which(names(pop) == "value")] <- "population"
 head(pop)
 ```
 
-The `pop_size` contains the population sizes expressed in thousand people, so we multiply the data by 1000 to have the data expressed in people. 
+The `pop` data frame contains the population sizes expressed in thousand people, so we multiply the data by 1000 to have the data expressed in people. 
 
 ```{r}
-pop <- mutate(pop, population = population * 1000)
+pop <- transform(pop, population = population * 1000)
 head(pop)
 ```
 
 After joining the `pop` and the `dengue` data frames by province and by year, we can now calculate the incidence rate per month, year and province : $$Incidence\ rate = \frac{number\ of\ case}{population\ total\ \times\ 10000\ persons}$$
 
-```{r, warning=FALSE, message=FALSE}
+```{r}
 # join the population dataframe to the dengue dataset and calculate the 
 # incidence rate
-dengue <- left_join(dengue, pop, by = c("province", "year"))
-dengue <- mutate(dengue, incidence_rate =  
+dengue <- merge(dengue, pop, by = c("province", "year"))
+dengue <- transform(dengue, incidence_rate =  
                    (incidence_dengue / population)*10000)
 head(dengue)
 ```
@@ -131,7 +130,7 @@ For more information, see the `Vizualizing the gdpm package` vignettes in the gd
 As the data contain `r nrow(dengue)` rows, some methods can take a long time to calculate the intervals. So 50% of the data are randomly selected and the methods of selection for the intervals can be used on this sample to save time and calculation.
 
 ```{r}
-sample_dengue <- sample_frac(dengue, 0.5)
+sample_dengue <- dengue[sample(nrow(dengue), round(0.2 * nrow(dengue))), ]
 ```
 
 Here, we show the example of the `quantile` and the `fisher` methods. The function `breaks` has a parameter `distrib`, which permits to print the distribution of the value by breaks. It allows you to see the difference in distribution between different `style`. 
@@ -192,7 +191,8 @@ For the visualization, we will need the package `gadmVN` for the map of the prov
 ```{r, message=FALSE}
 library(magrittr) # `%>%` 
 library(gadmVN)   # for 'gadm'
-map <- gadmVN::gadm(date = 1995, merge_hanoi = TRUE) %>% sf::as_Spatial()
+map <- gadmVN::gadm(date = 1995, merge_hanoi = TRUE)
+map <- sf::as_Spatial(map)
 ```
 
 To print a choropleth map for the dengue dataset for January 2009, we can use a pipe to prepare the data and draw a choropleth map with a legend:
@@ -202,13 +202,13 @@ For more detail, please see the vignette: `Vizualizing the gdpm package` and/or:
 ```
 
 ```{r}
-filter(dengue, year == 2009, month == "January") %>% 
-  select(province, contains("rate")) %>%             
+subset(dengue, c(year == 2009 & month == "January"), 
+       c(province, grep("rate", names(dengue)))) %>%             
   choromap(map, col = rev(heat.colors(6)), fixedBreaks = breaks_den) %>% 
   legend2(legend = ., col = attr(., "colors"), col_na = "grey", n_round = 2)
 ```
 
-To draw a choropleth map of another month or another year, we just have to change the first line of the pipe: `filter(dengue, year == 2009, month == "January")`. 
+To draw a choropleth map of another month or another year, we just have to change the first line of the pipe: `subset(dengue, c(year == 2009 & month == "January"), c(province, grep("rate", names(dengue))))`. 
 So, to make a movie of one year, we just have to create a loop printing a map for each month.
 
 For more details, you can look at the webpage of the `animation` package: https://yihui.name/animation/ and:
@@ -224,8 +224,8 @@ months <- month.name # vector of month name
 saveGIF({
   # loop printing a map for each months
     monthly_loop <- for(i in seq(months)){
-    filter(dengue, year == 2009, month == months[i]) %>% 
-      select(province, contains("rate")) %>% 
+      subset(dengue, c(year == 2009 & month == months[i]),
+             c(province, grep("rate", names(dengue)))) %>% 
       choromap(map, col = rev(heat.colors(6)), fixedBreaks = breaks_den) %>% 
       legend2(legend = ., col = attr(., "colors"), col_na = "grey", n_round = 1)
     # time label  
@@ -247,10 +247,11 @@ saveGIF({
     # monthly loop
     monthly_loop <- for(i in seq(months)){
     # creation of the map  
-    filter(dengue, year == j, month == months[i]) %>% 
-      select(province, contains("rate")) %>% 
-      choromap(map, col = rev(heat.colors(6)), fixedBreaks = breaks_den) %>% 
-      legend2(legend = ., col = attr(., "colors"), col_na = "grey", n_round = 2)
+    subset(dengue, c(year == j & month == months[i]),
+           c(province, grep("rate", names(dengue)))) %>%
+        choromap(map, col = rev(heat.colors(6)), fixedBreaks = breaks_den) %>%
+        legend2(legend = ., col = attr(., "colors"), col_na = "grey",
+                n_round = 2)
     # include time label  
     text(x = par("usr")[2], y = par("usr")[4], labels = 
            paste0(months[i], " ", j), adj = c(1, 1))

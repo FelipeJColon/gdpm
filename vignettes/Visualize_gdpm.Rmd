@@ -72,20 +72,14 @@ Prior to use this function, the data need to be prepared, because as you can see
 str(dengue)
 ```
 
-```{r, message=FALSE}
-# the dengue dataframe need to be transform before visualization and we need the `dplyr` package for that.
-#install.package("dplyr")
-library(dplyr)
-```
-
-To prepare the data, we use three steps. The first step is to mutate the `month` and `year` columns in a column `time` in a Date format. Then, we select only the three columns necessary: here, we wanted to represent the incidence of dengue through time and space in Vietnam. And finally, we order the data contained in the data frame by time, to be sure to have a continuous representation in time. 
+To prepare the data, we use three steps. The first step is to transform the `month` and `year` columns in a column `time` in a Date format. Then, we select only the three columns necessary: here, we wanted to represent the incidence of dengue through time and space in Vietnam. And finally, we order the data contained in the data frame by time, to be sure to have a continuous representation in time. 
 
 ```{r}
 # Need to have the time expressed in one column in a Data format
-dengue <- mutate(dengue, 
+dengue <- transform(dengue, 
                  time = as.Date(paste0(year, "-", as.numeric(month), "-", 15)))
-dengue <- arrange(dengue, time)
-dengue <- select(dengue, province, time, contains("incidence"))
+dengue <- dengue[order(dengue$time), ]
+dengue <- subset(dengue, select = c(province, time, grep("incidence", names(dengue))))
 # We can check now that dengue is in a good format.
 str(dengue)
 ```
@@ -144,10 +138,11 @@ By default, the missing value is colored in grey but the parameter can be change
 ```{r}
 dengue <- getid(dengue)
 # data preparation
-dengue <- mutate(dengue, time = as.Date(paste0(year, "-", as.numeric(month), "-", 15)))
-dengue <- select(dengue, matches("province"), matches("time"), contains("incidence"))
-dengue <- arrange(dengue, time)
-
+dengue <- transform(dengue, 
+                 time = as.Date(paste0(year, "-", as.numeric(month), "-", 15)))
+dengue <- dengue[order(dengue$time), ]
+dengue <- subset(dengue, select = c(province, time, grep("incidence", names(dengue))))
+# We can check now that dengue is in a good format.
 str(dengue)
 ```
 
@@ -178,7 +173,8 @@ First, you can extract the coordinates information by provinces and ordered them
 
 ```{r}
 # extract the coordinates of each province
-provinces <- gadmVN::gadm(date = "1980-01-01", merge_hanoi = TRUE) %>% sf::as_Spatial()
+provinces <- gadmVN::gadm(date = "1980-01-01", merge_hanoi = TRUE)
+provinces <- sf::as_Spatial(provinces)
 coord <- sp::coordinates(provinces)
 row.names(coord) <- unique(provinces@data$province)
 head(coord)
@@ -191,13 +187,13 @@ head(order)
 Second, you can link the data frame containing the index of the ordered province to the infectious diseases data frame by provinces and ordered them by latitudes:
 
 ```{r}
-dengue <- left_join(dengue, order, by = "province")
-dengue <-  arrange(dengue, order)
+dengue <- merge(dengue, order)
+dengue <-  dengue[order(dengue$time, dengue$order), ]
 head(dengue)
 ```
 
 ```{r}
-dengue_or <- select(dengue, -order)
+dengue_or <- dengue[,-which(names(dengue) %in% "order")]
 str(dengue_or)
 ```
 
@@ -229,7 +225,7 @@ library(magrittr)
 
 ```{r}
 # Geographic data
-provinces <- gadmVN::gadm(date = "1980-01-01", merge_hanoi = TRUE) %>% sf::as_Spatial()
+provinces <- gadmVN::gadm(date = "1980-01-01", merge_hanoi = TRUE) %>%  sf::as_Spatial()
 coord <- sp::coordinates(provinces)
 row.names(coord) <- unique(provinces@data$province)
 # Order the provinces by latitude and create an index called "order"
@@ -241,12 +237,11 @@ col <- rev(heat.colors(100))
 
 # Pipe
 getid(dengue) %>%
-  mutate(time = as.Date(paste0(year, "-", as.numeric(month), "-", 15))) %>%
-  select(province, time, contains("incidence")) %>% 
-  left_join(order, by = "province") %>% 
-  arrange(order) %>%
-  select(-order) %>% 
-  arrange(time) %>%
+  transform(time = as.Date(paste0(year, "-", as.numeric(month), "-", 15))) %>%
+  subset(select = c(province, time, grep("incidence", names(.)))) %>% 
+  merge(order, by = "province") %>% 
+  .[order(.$time, .$order), ] %>%
+  .[,-which(names(.) %in% "order")] %>% 
   sthm(f = function(x) x^.3, col = col, map = provinces, xm = 0.25) %>%
   legend2(.9, 1, legend =  ., col = col, postext = "right",
           h = 1/(length(.)-1), w = 0.04, tl = 0.01, s = 0.005)
@@ -270,9 +265,8 @@ For the epidemiologic data, the first step is to select only the month and the y
 # Preparation data spatial and epidemiologic
 # dengue data
 dengue <- getid(dengue, from = 1993, to = 1993)
-dengue_0993  <- filter(dengue, year == 1993, month == "September")
-dengue_0993 <- select(dengue_0993, province, contains("incidence"))
-
+dengue_0993  <- subset(dengue, month == "September",
+                       select = c(province, grep("incidence", names(dengue))))
 ```
 
 ### Select class intervals and colors
@@ -297,7 +291,8 @@ Here, we show the example of the `quantile` and the `fisher` methods. The functi
 
 ```{r}
 # plot Quantile
-q_breaks <- poseid::breaks(dengue_0993, "incidence_dengue", pal = rev(heat.colors(6)), distribution = TRUE)
+q_breaks <- poseid::breaks(dengue_0993, "incidence_dengue", 
+                           pal = rev(heat.colors(6)), distribution = TRUE)
 attr(q_breaks, "breaks")
 ```
 
@@ -305,7 +300,8 @@ Here, the distribution of the data is very different from class, each class as t
 
 ```{r}
 # plot Fisher - Jenkins
-f_breaks <- poseid::breaks(dengue_0993, "incidence_dengue", style = "fisher" ,pal = rev(heat.colors(6)), distribution = TRUE)
+f_breaks <- poseid::breaks(dengue_0993, "incidence_dengue", style = "fisher", 
+                           pal = rev(heat.colors(6)), distribution = TRUE)
 attr(f_breaks, "breaks")
 ```
 
@@ -327,7 +323,8 @@ Here, we want to represent the incidence value of dengue in September 1993, so w
 
 ```{r}
 # geographic data
-map <- gadmVN::gadm(date = 1992) %>% sf::as_Spatial()
+map <- gadmVN::gadm(date = 1992)
+map <- sf::as_Spatial(map)
 ```
 
 ### Draw a choropleth map
@@ -336,7 +333,9 @@ Now that we have identified the class intervals, we can print a choropleth map w
 The `choromap` function returns invisibly the information for the legend: the breaks and the colors associated, in a vector with attributes.
 
 ```{r}
-a <- choromap(dengue_0993, map, fixedBreaks = c(0, 75, 200, 490, 720, 1100, 1300), col = rev(heat.colors(6)), col_na = "grey")
+a <- choromap(dengue_0993, map, 
+              fixedBreaks = c(0, 75, 200, 490, 720, 1100, 1300),
+              col = rev(heat.colors(6)), col_na = "grey")
 # By default, the legend is on the top-left part of the figure, for more information: `?legend2`
 legend2(legend = a, col = attr(a, "colors"), col_na = "grey")
 ```
@@ -349,12 +348,12 @@ The entire process can be made in a pipe by using the `magrittr` package
 
 ```{r}
 # Geographical information
-map <- gadmVN::gadm(date = 1992) %>% sf::as_Spatial()
+map <- gadmVN::gadm(date = 1993) %>% sf::as_Spatial()
 
 # Pipe
-getid(dengue, from = 1992, to = 1993) %>%
-  filter(year == 1993, month == "September") %>%
-  select(province, contains("incidence")) %>%
+getid(dengue, from = 1993, to = 1993) %>%
+  subset(month == "September",
+         select = c(province, grep("incidence", names(.)))) %>%
   breaks("incidence_dengue",n = 6, style = "fisher",
          pal = rev(heat.colors(6))) %>%
   choromap(., map, fixedBreaks = attr(., "breaks"),
@@ -365,10 +364,10 @@ getid(dengue, from = 1992, to = 1993) %>%
 You can also print the distribution of the value by class intervals in the pipe, it will print two different plots. 
 
 ```{r}
-getid(dengue, from = 1992, to = 1993) %>%
-  filter(year == 1993, month == "September") %>%
-  select(province, contains("incidence")) %>%
-  breaks("incidence_dengue",n = 6, style = "fisher",
+getid(dengue, from = 1993, to = 1993) %>%
+  subset(month == "September",
+         select = c(province, grep("incidence", names(.)))) %>%
+  breaks("incidence_dengue", n = 6, style = "fisher",
          pal = rev(heat.colors(6)), distribution = TRUE) %>%
   choromap(., map, fixedBreaks = attr(., "breaks"),
            col = rev(heat.colors(6)), col_na = "gray") %>%
