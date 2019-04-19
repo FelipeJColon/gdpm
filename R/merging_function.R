@@ -41,7 +41,7 @@ select_events <- function(splits_lst, from, to) {
   splits_lst <- splits_lst[sel0]
   sel <- lapply(splits_lst, "[[", "date")
   sel <- lapply(sel, function(x) x > as.Date(from) & x <= as.Date(to))
-  lst <- splits_lst[unlist(sel)]
+  splits_lst[unlist(sel)]
 }
 
 ################################################################################
@@ -66,7 +66,7 @@ province_splits <- function(lst_split) {
     combined <- as.vector(combined)
     elements <- unlist(lapply(lst_split[x], "[[", "elements"))
     elements <- as.vector(elements)
-    province <- c(combined, elements)
+    c(combined, elements)
   })
   provinces <- setNames(provinces, names(lst_split))
 }
@@ -112,9 +112,9 @@ gather_sum <- function(df, x) {
   tmp <- df[, c(x, "month", "year")]
   colnames(tmp)[which(names(tmp) == x)] <- "value"
   tmp <- aggregate(value ~ ., data = tmp,
-                   FUN = function(y) {ifelse(mean(is.na(y)) == 1,
-                                             sum(y), sum(y, na.rm = TRUE))
-                   },
+                   FUN = function(y) {
+                     ifelse(mean(is.na(y)) == 1, sum(y), sum(y, na.rm = TRUE))
+                     },
                    na.action = na.pass)
   colnames(tmp)[which(names(tmp) == "value")] <- x
   tmp
@@ -137,7 +137,7 @@ gather_sum <- function(df, x) {
 #' @keywords internal
 #' @noRd
 sum_incidence_mortality <- function(df) {
-  dft <- lapply(c("incidence","mortality"), function(x) {
+  dft <- lapply(c("incidence", "mortality"), function(x) {
     gather_sum(df, x)
   })
   df <- merge(dft[[1]], dft[[2]], by = c("year", "month"))
@@ -201,7 +201,9 @@ merge_time_serie <- function(splits_lst, df, from, to) {
       tmp$`TRUE` <- transform(tmp$`TRUE`, province = names(province_lst[1]))
       df <- rbind(tmp$`TRUE`, tmp$`FALSE`)
     }
-  } else { df }
+  } else {
+    df
+    }
   if (from <= splits$`Ha Son Binh`$date & to >= splits$`Ha Noi`$date) {
     df <- hanoi_function(df)
   }
@@ -391,17 +393,25 @@ getid_ <- function(..., from, to, shortest = FALSE) {
   lst_disease <- mget(vect, inherits = TRUE)
 
   # define the value of the time range and test for all mistakes
-  if(missing(from) & shortest == FALSE){from = select_min(lst_disease, sel = 1)}
-  if(missing(to) & shortest == FALSE){to = select_max(lst_disease, 2)}
-  if(missing(from) & shortest == TRUE){from = select_max(lst_disease, 1)}
-  if(missing(to) & shortest == TRUE){to = select_min(lst_disease, 2)}
+  if (missing(from) & shortest == FALSE) {
+    from <-  select_min(lst_disease, 1)
+    }
+  if (missing(to) & shortest == FALSE) {
+    to <-  select_max(lst_disease, 2)
+    }
+  if (missing(from) & shortest == TRUE) {
+    from <-  select_max(lst_disease, 1)
+    }
+  if (missing(to) & shortest == TRUE) {
+    to <-  select_min(lst_disease, 2)
+    }
 
-  if(from > to |
-      from > select_max(lst_disease, 2)){
+  if (from > to |
+      from > select_max(lst_disease, 2)) {
     stop("The time range selected is out of bound or incorrect: ", from, "-",
       to, ". The widest time range for this selection is: ", select_min(
         lst_disease, 1), "-", select_max(lst_disease, 2), ". Maybe, try another"
-," 'shortest' option or enter a different value for the parameters 'from'",
+, " 'shortest' option or enter a different value for the parameters 'from'",
 " and/or 'to'.", call. = FALSE)
   }
 
@@ -425,29 +435,29 @@ getid_ <- function(..., from, to, shortest = FALSE) {
   # if one disease or two diseases are out of range
   if (mean(as.vector(unlist(lapply(test, "[[", 1))) > to) > 0) {
     diseases <- lapply(seq_along(name_error), function(x) {
-      diseases[,paste0("incidence","_",name_error[x])] <- NA
-      diseases[,paste0("mortality","_",name_error[x])] <- NA
+      diseases[, paste0("incidence", "_", name_error[x])] <- NA
+      diseases[, paste0("mortality", "_", name_error[x])] <- NA
       diseases
     })
     diseases <- Reduce(merge, diseases)
-    warning(paste0('One or more diseases is/are out of the time range selected:
-      ', paste(name_error, collapse = ", "), ', time range associated:',
-paste(test[name_error], collapse = ", "), '. NAs
-      were introducted.'))
+    warning(paste0("One or more diseases is/are out of the time range selected:
+      ", paste(name_error, collapse = ", "), ", time range associated:",
+paste(test[name_error], collapse = ", "), ". NAs
+      were introducted."))
   }
 
    # warnings message if error on the year time range
-  if( !missing (from) || !missing(to)){
-    if(as.numeric(substr(from, 1, 4)) < select_min(lst_disease, 1)) {
+  if ( !missing (from) || !missing(to)) {
+    if (as.numeric(substr(from, 1, 4)) < select_min(lst_disease, 1)) {
       warning(paste0('The argument "from" is out of the time range for this
         (these) disease(s): ', paste0(select_min(lst_disease, 1), "-",
-          select_max(lst_disease, 2) ), '. The closest time range was selected:
-        ', paste(range(diseases$year), collapse = "-"),'.'))
+          select_max(lst_disease, 2) ), ". The closest time range was selected:
+        ", paste(range(diseases$year), collapse = "-"), "."))
     } else if (as.numeric(substr(to, 1, 4)) > select_max(lst_disease, 2)) {
       warning(paste0('The argument "to" is out of the time range for this
         (these) disease(s): ', paste0(select_min(lst_disease, 1), "-",
-          select_max(lst_disease, 2) ), '. The closest time range was selected:
-        ',  paste(range(diseases$year), collapse = "-"),'.'))
+          select_max(lst_disease, 2) ), ". The closest time range was selected:
+        ",  paste(range(diseases$year), collapse = "-"), "."))
     }
   }
   return(diseases)
@@ -465,6 +475,3 @@ getid <- function(..., from, to, shortest = FALSE){
   }
   return(diseases)
 }
-
-
-

@@ -33,5 +33,3 @@
 #' and the French National Research Institute for Sustainable Development (IRD).
 #'
 "diseases"
-
-
