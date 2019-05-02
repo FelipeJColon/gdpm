@@ -263,25 +263,20 @@ merge_province <- function(splits_list, disease, from, to) {
 #' @param lst a list containing one or multiple data frame containing, each one
 #' of them, at least one numeric column named identically.
 #' @param sel a numeric (1 or 2), to select the first (1) or the last year (2).
+#' @param fct character either \code{min} or \code{max} to select the year.
 #' @param col column named containing the value (by default = year)
 #' @return A numeric
 #' @keywords internal
 #' @noRd
-select_min <- function(lst, sel, col = "year"){
+select_min_max <- function(lst, sel, fct = "min", col = "year") {
+  if (!fct %in% c("max", "min"))
+    stop('The argument "fct" should be equal to "min" or "max".')
   year <- lapply(lst, "[[", col)
   year <- lapply(year, range)
   year <- lapply(year, "[[", sel)
-  year <- min(unlist(year))
-}
-
-#' @rdname select_min
-#' #' @keywords internal
-#' @noRd
-select_max <- function(lst, sel, col = "year"){
-  year <- lapply(lst, "[[", col)
-  year <- lapply(year, range)
-  year <- lapply(year, "[[", sel)
-  year <- max(unlist(year))
+  if (fct == "min") year <- min(unlist(year))
+  if (fct == "max") year <- max(unlist(year))
+  year
 }
 
 ################################################################################
@@ -394,25 +389,26 @@ getid_ <- function(..., from, to, shortest = FALSE) {
 
   # define the value of the time range and test for all mistakes
   if (missing(from) & shortest == FALSE) {
-    from <-  select_min(lst_disease, 1)
+    from <-  select_min_max(lst_disease, 1)
     }
   if (missing(to) & shortest == FALSE) {
-    to <-  select_max(lst_disease, 2)
+    to <-  select_min_max(lst_disease, 2, "max")
     }
   if (missing(from) & shortest == TRUE) {
-    from <-  select_max(lst_disease, 1)
+    from <-  select_min_max(lst_disease, 1, "max")
     }
   if (missing(to) & shortest == TRUE) {
-    to <-  select_min(lst_disease, 2)
+    to <-  select_min_max(lst_disease, 2)
     }
 
   if (from > to |
-      from > select_max(lst_disease, 2)) {
+      from > select_min_max(lst_disease, 2, "max")) {
     stop("The time range selected is out of bound or incorrect: ", from, "-",
-      to, ". The widest time range for this selection is: ", select_min(
-        lst_disease, 1), "-", select_max(lst_disease, 2), ". Maybe, try another"
-, " 'shortest' option or enter a different value for the parameters 'from'",
-" and/or 'to'.", call. = FALSE)
+      to, ". The widest time range for this selection is: ", select_min_max(
+        lst_disease, 1), "-", select_min_max(lst_disease, 2, "max"),
+      ". Maybe, try another",
+      " 'shortest' option or enter a different value for the parameters 'from'",
+      " and/or 'to'.", call. = FALSE)
   }
 
   # test for one disease in a list which can be out of range
@@ -448,15 +444,18 @@ paste(test[name_error], collapse = ", "), ". NAs
 
    # warnings message if error on the year time range
   if ( !missing (from) || !missing(to)) {
-    if (as.numeric(substr(from, 1, 4)) < select_min(lst_disease, 1)) {
+    if (as.numeric(substr(from, 1, 4)) < select_min_max(lst_disease, 1)) {
       warning(paste0('The argument "from" is out of the time range for this
-        (these) disease(s): ', paste0(select_min(lst_disease, 1), "-",
-          select_max(lst_disease, 2) ), ". The closest time range was selected:
-        ", paste(range(diseases$year), collapse = "-"), "."))
-    } else if (as.numeric(substr(to, 1, 4)) > select_max(lst_disease, 2)) {
+        (these) disease(s): ', paste0(select_min_max(lst_disease, 1), "-",
+          select_min_max(lst_disease, 2, "max") ),
+          ". The closest time range was selected:
+          ", paste(range(diseases$year), collapse = "-"), "."))
+    } else if (as.numeric(substr(to, 1, 4)) >
+               select_min_max(lst_disease, 2, "max")) {
       warning(paste0('The argument "to" is out of the time range for this
-        (these) disease(s): ', paste0(select_min(lst_disease, 1), "-",
-          select_max(lst_disease, 2) ), ". The closest time range was selected:
+        (these) disease(s): ', paste0(select_min_max(lst_disease, 1), "-",
+          select_min_max(lst_disease, 2, "max") ),
+          ". The closest time range was selected:
         ",  paste(range(diseases$year), collapse = "-"), "."))
     }
   }
