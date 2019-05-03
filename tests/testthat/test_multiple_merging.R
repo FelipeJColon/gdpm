@@ -79,8 +79,6 @@ test_that("`getid` returns the correct province name", {
 
 })
 
-
-
 test_that("`getid` returns an error or a warning", {
 
   expect_warning(getid(chickenpox, ili, dengue, malaria, from = 1980,
@@ -97,5 +95,7 @@ test_that("`getid` returns an error or a warning", {
     shortest = TRUE))
 
   expect_error(getid_("vhf", "mumps", from = "1990", to = "1980"))
+
+  expect_error(gdpm:::select_min_max(list(getid(dengue)), sel = 1, fct = "bla"))
 
 })
