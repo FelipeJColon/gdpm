@@ -1,7 +1,7 @@
 library(magrittr) # for the " %>% " pipe
 library(dplyr) # for "bind_rows", "rename", "mutate", "select"
 library(tidyr) # for "gather", "separate", "spread"
-library(dictionary) # for "provinces_year"
+library(dictionary) # for "admin1_year"
 
 context("`getid` return the good time range and provinces names when provide
   multiple diseases at the same time")
@@ -48,34 +48,34 @@ test_that("`getid` returns the correct province name", {
   expect_equal(
     unique(getid(chickenpox, hepatitis, ili, dengue)$province) %>%
       c("Ha Son Binh") %>% sort,
-    dictionary::vn_province_year$`1979-1990`)
+    dictionary::vn_admin1_year$`1979-1990`)
 
   expect_equal(
     unique(getid_("chickenpox", "hepatitis", "ili", "dengue")$province) %>%
       c("Ha Son Binh") %>% sort,
-    dictionary::vn_province_year$`1979-1990`)
+    dictionary::vn_admin1_year$`1979-1990`)
 
   expect_equal(
     unique(getid(chickenpox, hepatitis, ili, dengue,
       shortest = TRUE)$province) %>%
         c("Ha Son Binh") %>% sort,
-      dictionary::vn_province_year$`1979-1990`)
+      dictionary::vn_admin1_year$`1979-1990`)
 
   expect_equal(
     unique(getid_("chickenpox", "hepatitis", "malaria", "dengue",
       shortest = TRUE)$province) %>%
       c("Ha Tay") %>% sort,
-    dictionary::vn_province_year$`1997-2004`)
+    dictionary::vn_admin1_year$`1997-2004`)
 
   expect_equal(
     unique(getid(chickenpox, ili, dengue, shigella,
       from = "1990", to = "2002")$province),
-    dictionary::vn_province_year$`1990-1991`)
+    dictionary::vn_admin1_year$`1990-1991`)
 
   expect_equal(
     unique(getid_("chickenpox", "hepatitis", "ili", "dengue",
       from = 1990, to = 2002)$province),
-    dictionary::vn_province_year$`1979-1990`)
+    dictionary::vn_admin1_year$`1979-1990`)
 
 })
 

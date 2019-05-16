@@ -87,7 +87,7 @@ test_that("`getid` returns the good number and names of provinces", {
   expect_identical(
     merging_province("chickenpox", "1980-01-01", "2015-12-31") %>%
       c("Ha Son Binh") %>% sort,
-    dictionary::vn_province_year$`1979-1990`)
+    dictionary::vn_admin1_year$`1979-1990`)
 
   expect_length(
     merging_province("chickenpox", "1990-01-01", "2015-12-31"), 43)
@@ -95,7 +95,7 @@ test_that("`getid` returns the good number and names of provinces", {
   expect_identical(
     merging_province("chickenpox", "1990-01-01", "2015-12-31") %>%
       c("Ha Son Binh") %>% sort,
-    dictionary::vn_province_year$`1990-1991`)
+    dictionary::vn_admin1_year$`1990-1991`)
 
   expect_length(
     merging_province("chickenpox", "1991-01-01", "2015-12-31"), 44)
@@ -103,7 +103,7 @@ test_that("`getid` returns the good number and names of provinces", {
   expect_identical(
     merging_province("chickenpox", "1991-01-01", "2015-12-31") %>%
       c("Ha Son Binh") %>% sort,
-    dictionary::vn_province_year$`1991-1992`)
+    dictionary::vn_admin1_year$`1991-1992`)
 
   expect_length(
     merging_province("chickenpox", "1992-01-01", "2015-12-31"), 52)
@@ -111,28 +111,28 @@ test_that("`getid` returns the good number and names of provinces", {
   expect_identical(
     merging_province("chickenpox", "1992-01-01", "2015-12-31") %>%
       c("Ha Tay") %>% sort,
-    dictionary::vn_province_year$`1992-1997`)
+    dictionary::vn_admin1_year$`1992-1997`)
 
   expect_length(
     merging_province("chickenpox", "1997-01-01", "2003-12-31"), 61)
 
   expect_identical(
     merging_province("chickenpox", "1997-01-01", "2003-12-31"),
-    dictionary::vn_province_year$`1997-2004`)
+    dictionary::vn_admin1_year$`1997-2004`)
 
   expect_length(
     merging_province("chickenpox", "2004-01-01", "2007-12-31"), 64)
 
   expect_identical(
     merging_province("chickenpox", "2004-01-01", "2007-12-31"),
-    dictionary::vn_province_year$`2004-2008`)
+    dictionary::vn_admin1_year$`2004-2008`)
 
   expect_length(
     merging_province("chickenpox", "2008-01-01", "2015-12-31"), 63)
 
   expect_identical(
     merging_province("chickenpox", "2008", "2015"),
-    dictionary::vn_province_year$`2008-2020`)
+    dictionary::vn_admin1_year$`2008-2020`)
 
   expect_length(
     merging_province("hepatitis", "1980", "2015"), 39)
@@ -143,7 +143,7 @@ test_that("`getid` returns the good number and names of provinces", {
   expect_identical(
     merging_province("hepatitis", "1990", "2015") %>%
       c("Ha Son Binh") %>% sort,
-    dictionary::vn_province_year$`1979-1990`)
+    dictionary::vn_admin1_year$`1979-1990`)
 
   expect_length(
     merging_province("hepatitis", "1991", "2015"), 44)
@@ -151,7 +151,7 @@ test_that("`getid` returns the good number and names of provinces", {
   expect_identical(
     merging_province("hepatitis", "1991", "2015")%>%
       c("Ha Son Binh") %>% sort,
-    dictionary::vn_province_year$`1991-1992`)
+    dictionary::vn_admin1_year$`1991-1992`)
 
   expect_length(
     merging_province("hepatitis", "1992", "2015"), 52)
