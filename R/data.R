@@ -25,6 +25,12 @@
 #' \cr \code{nntetanus} : neonatal tetanus
 #' \cr \code{shigella} : dysenteria by Shigella
 #' \cr \code{vhf} : viral hemorrhagic fever
+#' \cr\cr
+#' For the data of \code{rabies}, the package \code{gdpm} contains the
+#' vaccination data (named \code{vaccinated_rabies} in the \code{getid}
+#' function) and as for rabies, a case lead to the death, the incidence and
+#' mortality columns are the same and only the incidence column is outputted
+#' in the function \code{getid}.
 #'
 #'
 #' @source Data provide by the Vietnamese General Department of Preventive

@@ -78,6 +78,16 @@ head(chickenpox)
 tail(chickenpox)
 ```
 
+### Special case
+
+For the disease `rabies`, the package `gdpm` contains the vaccination data (named `vaccinated_rabies` in the `getid` function) and as for rabies, a case lead to the death, the incidence and mortality columns are the same and only the incidence column is outputted in the function `getid`.
+
+```{r}
+rabies <-  getid(rabies)
+head(rabies)
+```
+
+
 ## Summary data frame
 
 The package contains also a summary data frame called `diseases`:
