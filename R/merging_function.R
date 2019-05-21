@@ -13,7 +13,7 @@
 #' @noRd
 select_date <- function(df, from, to) {
   df %<>% mutate(date = as.Date(paste(year, as.numeric(month),
-    01, sep = "-"))) %>%
+                                      01, sep = "-"))) %>%
     filter(date >= from, date <= to) %>%
     select(-date)
 }
@@ -110,7 +110,7 @@ gather_sum <- function(df, x) {
     select(-matches("name")) %>%
     group_by(year, month) %>%
     summarise(value = ifelse(mean(is.na(value)) == 1,
-      sum(value), sum(value, na.rm = TRUE))) %>%
+                             sum(value), sum(value, na.rm = TRUE))) %>%
     rename_(.dots = setNames(list("value"), x))
 }
 
@@ -297,12 +297,12 @@ multiple_disease <- function(lst, splits_list, from, to){
   lapply(seq_along(lst), function(x){
     df <- suppressWarnings(merge_province(splits_list, lst[[x]], from, to))
     colnames(df) <- sub("incidence",
-      paste0("incidence_", names(lst)[x]), colnames(df))
+                        paste0("incidence_", names(lst)[x]), colnames(df))
     colnames(df) <- sub("mortality",
-      paste0("mortality_", names(lst)[x]), colnames(df))
+                        paste0("mortality_", names(lst)[x]), colnames(df))
     df %<>% as.data.frame
   }) %>% plyr::join_all(., by = c("province", "year", "month"),
-    type = "full") %>%
+                        type = "full") %>%
     arrange(province, year, month)
 }
 
@@ -328,6 +328,11 @@ multiple_disease <- function(lst, splits_list, from, to){
 #' take place in 1991. Another list of event has been created for these two
 #' diseases and if one or the two of them are selected (together with other
 #' diseases), this story will be applied to all the disease selected.
+#' \cr\cr For the disease \code{rabies}, the package \code{gdpm} contains the
+#' vaccination data (named \code{vaccinated_rabies} in the \code{getid}
+#' function) and as for rabies, a case lead to the death, the incidence and
+#' mortality columns are the same and only the incidence column is outputted
+#' in the function \code{getid}.
 #'
 #' @param ... Name of one or multople disease (e.g. \code{ili},
 #' \code{dengue} ...).
@@ -385,45 +390,46 @@ getid_ <- function(..., from, to, shortest = FALSE) {
   lst_disease <- mget(vect, inherits = TRUE)
 
   # define the value of the time range and test for all mistakes
-  if(missing(from) & shortest == FALSE){from = select_min(lst_disease, 1)}
-  if(missing(to) & shortest == FALSE){to = select_max(lst_disease, 2)}
-  if(missing(from) & shortest == TRUE){from = select_max(lst_disease, 1)}
-  if(missing(to) & shortest == TRUE){to = select_min(lst_disease, 2)}
+  if (missing(from) & shortest == FALSE) {from = select_min(lst_disease, 1)}
+  if (missing(to) & shortest == FALSE) {to = select_max(lst_disease, 2)}
+  if (missing(from) & shortest == TRUE) {from = select_max(lst_disease, 1)}
+  if (missing(to) & shortest == TRUE) {to = select_min(lst_disease, 2)}
 
-  if(from > to |
-      from > select_max(lst_disease, 2)){
+  if (from > to |
+      from > select_max(lst_disease, 2)) {
     stop("The time range selected is out of bound or incorrect: ", from, "-",
-      to, ". The widest time range for this selection is: ", select_min(
-        lst_disease, 1), "-", select_max(lst_disease, 2), ". Maybe, try another"
-," 'shortest' option or enter a different value for the parameters 'from'",
-" and/or 'to'.", call. = FALSE)
+         to, ". The widest time range for this selection is: ", select_min(
+           lst_disease, 1), "-", select_max(lst_disease, 2),
+         ". Maybe, try another 'shortest'"
+         ," option or enter a different value for the parameters 'from'",
+         " and/or 'to'.", call. = FALSE)
   }
 
   # test for one disease in a list which can be out of range
   test <- purrr::map(lst_disease, select, contains("year"))  %>%
     purrr::map(range)
-  if( mean(to < test  %>%
-      purrr::map(1) %>%
-      unlist() %>%
-      as.vector()) > 0){
+  if (mean(to < test  %>%
+           purrr::map(1) %>%
+           unlist() %>%
+           as.vector()) > 0) {
     name_error <- names(which(purrr::map(test, 1) > to))
     sel <- grep(paste(name_error, collapse = "|"),
-      names(lst_disease), invert = T, value = T)
+                names(lst_disease), invert = T, value = T)
     lst_disease <- lst_disease[sel]
   }
 
   # test which split history should be selected
-  if (grep("hepatitis|amoebiasis", vect) %>% length >= 1){
+  if (grep("hepatitis|amoebiasis", vect) %>% length >= 1) {
     diseases <- multiple_disease(lst_disease, ah_splits, from, to)
   } else {
     diseases <- multiple_disease(lst_disease, splits, from, to)
   }
 
   # if one disease or two diseases are out of range
-  if( mean(to < test  %>%
-      purrr::map(1) %>%
-      unlist() %>%
-      as.vector()) > 0){
+  if (mean(to < test  %>%
+           purrr::map(1) %>%
+           unlist() %>%
+           as.vector()) > 0) {
     diseases <- suppressMessages(lapply(seq_along(name_error), function(x){
       diseases[,paste0("incidence","_",name_error[x])] <- NA
       diseases[,paste0("mortality","_",name_error[x])] <- NA
@@ -431,23 +437,31 @@ getid_ <- function(..., from, to, shortest = FALSE) {
     }) %>% plyr::join_all(.))
     warning(paste0('One or more diseases is/are out of the time range selected:
       ', paste(name_error, collapse = ", "), ', time range associated:',
-paste(test[name_error], collapse = ", "), '. NAs
+                   paste(test[name_error], collapse = ", "), '. NAs
       were introducted.'))
   }
 
-   # warnings message if error on the year time range
-  if( !missing (from) || !missing(to)){
+  # warnings message if error on the year time range
+  if (!missing (from) || !missing(to)) {
     if(as.numeric(substr(from, 1, 4)) < select_min(lst_disease, 1)) {
       warning(paste0('The argument "from" is out of the time range for this
         (these) disease(s): ', paste0(select_min(lst_disease, 1), "-",
-          select_max(lst_disease, 2) ), '. The closest time range was selected:
+                                      select_max(lst_disease, 2) ),
+                                      '. The closest time range was selected:
         ', range(diseases$year) %>% paste(collapse = "-"),'.'))
     } else if (as.numeric(substr(to, 1, 4)) > select_max(lst_disease, 2)) {
       warning(paste0('The argument "to" is out of the time range for this
         (these) disease(s): ', paste0(select_min(lst_disease, 1), "-",
-          select_max(lst_disease, 2) ), '. The closest time range was selected:
+                                      select_max(lst_disease, 2) ),
+                                      '. The closest time range was selected:
         ', range(diseases$year) %>% paste(collapse = "-"),'.'))
     }
+  }
+  if (any(grepl("rabies", names(diseases)))) {
+    names(diseases)[which(names(diseases) == "incidence_rabies")] <-
+      "vaccinated_rabies"
+    names(diseases)[which(names(diseases) == "mortality_rabies")] <-
+      "incidence_rabies"
   }
   return(diseases)
 }
@@ -466,6 +480,4 @@ getid <- function(..., from, to, shortest = FALSE){
 
   return(diseases)
 }
-
-
 

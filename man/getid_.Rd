@@ -51,6 +51,11 @@ story of splits/combined province is different. The merges events of 1990
 take place in 1991. Another list of event has been created for these two
 diseases and if one or the two of them are selected (together with other
 diseases), this story will be applied to all the disease selected.
+\cr\cr For the disease \code{rabies}, the package \code{gdpm} contains the
+vaccination data (named \code{vaccinated_rabies} in the \code{getid}
+function) and as for rabies, a case lead to the death, the incidence and
+mortality columns are the same and only the incidence column is outputted
+in the function \code{getid}.
 }
 \examples{
 
