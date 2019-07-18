@@ -2,7 +2,7 @@
 library(magrittr) # for the " %>% " pipe
 library(dplyr) # for "bind_rows", "rename", "mutate", "select"
 library(tidyr) # for "gather", "separate", "spread"
-library(dictionary) # for the province dictionary
+library(dictionary) # for the admin1 dictionary
 
 # Prerequisites  ---------------------------------------------------------------
 
@@ -174,7 +174,7 @@ names_col <- matrix(c(
 names_col <- setNames(names_col[, 2], names_col[, 1])
 
 # Provinces tables for translation
-province <- dictionary::vn_province
+province <- dictionary::vn_admin1
 
 # Lists of splits events in the province history in Vietnam (necessary for the
 # merging function)
