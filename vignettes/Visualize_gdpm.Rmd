@@ -3,7 +3,7 @@ title: "Vizualizing the gdpm package"
 date: "`r Sys.Date()`"
 output:
   html_document:
-    theme: cerulean
+    theme: paper
     toc: yes
   pdf_document:
     toc: yes
@@ -100,7 +100,7 @@ To see more information about the function `legend2`:
 ```{r}
 a <- sthm(dengue)
 # we use the parameter of sthm to complete the legend2 parameters, by default col = heat.colors(12), x = 0.85
-legend2(.9, 1, legend =  a, col = heat.colors(12), postext = "right", h = 1/(length(a) - 1), w = 0.04, tl = 0.01, s = 0.005)
+legend2(.9, 1, legend =  a, col = heat.colors(12), postext = "right", h = 1 / (length(a) - 1), w = 0.04, tl = 0.01, s = 0.005)
 ```
 
 ### Colors
@@ -114,7 +114,7 @@ col <- rev(heat.colors(200))
 ```{r}
 a <- sthm(dengue, col = col)
 # we use the parameter of sthm to complete the legend2 parameters
-legend2(.9, 1, legend =  a, col = col, postext = "right", h = 1/(length(a) -1), w = 0.04, tl = 0.01, s = 0.005)
+legend2(.9, 1, legend =  a, col = col, postext = "right", h = 1 / (length(a) - 1), w = 0.04, tl = 0.01, s = 0.005)
 ```
 
 ### Transformation
@@ -123,12 +123,12 @@ The inputted value can be transformed (by using the square root matrix, ...), in
 
 ```{r}
 a <- sthm(dengue, f = sqrt, col = col)
-legend2(.9, 1, legend =  a, col = col, postext = "right", h = 1/(length(a) -1), w = 0.04, tl = 0.01, s = 0.005)
+legend2(.9, 1, legend =  a, col = col, postext = "right", h = 1 / (length(a) - 1), w = 0.04, tl = 0.01, s = 0.005)
 ```
 
 ```{r}
 a <- sthm(dengue, f = function(x) x^.3, col = col)
-legend2(.9, 1, legend =  a, col = col, postext = "right", h = 1/(length(a) -1), w = 0.04, tl = 0.01, s = 0.005)
+legend2(.9, 1, legend =  a, col = col, postext = "right", h = 1 / (length(a) - 1), w = 0.04, tl = 0.01, s = 0.005)
 ```
 
 ### Missing value
@@ -150,14 +150,14 @@ By default, the missing value is in grey. To print the missing value in the lege
 
 ```{r}
 a <- sthm(dengue, f = function(x) x^.3, col = col)
-legend2(.9, 1, legend =  a, col =  col, postext = "right", col_na = "grey", size_na = 0.05, h = 1/(length(a) -1), w = 0.04, tl = 0.01, s = 0.005)
+legend2(.9, 1, legend =  a, col =  col, postext = "right", col_na = "grey", size_na = 0.05, h = 1 / (length(a) - 1), w = 0.04, tl = 0.01, s = 0.005)
 ```
 
 But you can change it to `black` or another color by using the `col_na` parameter and also you can change the size of the NA square in the legend by using the `size_na` parameter:
 
 ```{r}
 a <- sthm(dengue, f = function(x) x^.3, col = col, col_na = "black")
-legend2(.9, 1, legend =  a, col =  col, postext = "right", col_na = "black", size_na = 0.03, h = 1/(length(a) -1), w = 0.04, tl = 0.01, s = 0.005)
+legend2(.9, 1, legend =  a, col =  col, postext = "right", col_na = "black", size_na = 0.03, h = 1 / (length(a) - 1), w = 0.04, tl = 0.01, s = 0.005)
 ```
 
 ### Order the provinces
@@ -188,7 +188,7 @@ Second, you can link the data frame containing the index of the ordered province
 
 ```{r}
 dengue <- merge(dengue, order)
-dengue <-  dengue[order(dengue$time, dengue$order), ]
+dengue <- dengue[order(dengue$time, dengue$order), ]
 head(dengue)
 ```
 
@@ -202,7 +202,7 @@ Finally, you can visualize the data ordered by latitudes by using the `sthm` fun
 ```{r}
 a <- sthm(dengue_or, f = function(x) x^.3, col = col, show_legend = TRUE)
 # a is a list containing both the legend and the province. To print the scale legend with legend2, it is important to specify 'a$legend'
-legend2(.9, 1, legend =  a$legend, col = col, postext = "right", h = 1/(length(a$legend) -1), w = 0.04, tl = 0.01, s = 0.005)
+legend2(.9, 1, legend =  a$legend, col = col, postext = "right", h = 1 / (length(a$legend) - 1), w = 0.04, tl = 0.01, s = 0.005)
 str(a)
 ```
 
@@ -210,7 +210,7 @@ A map of the province can be printed on the left of the heatmap with the paramet
 
 ```{r}
 a <- sthm(dengue_or, f = function(x) x^.3, col = col, map = provinces, xm = 0.25, show_legend = TRUE)
-legend2(.9, 1, legend =  a$legend, col = col, postext = "right", h = 1/(length(a$legend) -1), w = 0.04, tl = 0.01, s = 0.005)
+legend2(.9, 1, legend =  a$legend, col = col, postext = "right", h = 1 / (length(a$legend) - 1), w = 0.04, tl = 0.01, s = 0.005)
 str(a)
 ```
 
@@ -265,8 +265,8 @@ For the epidemiologic data, the first step is to select only the month and the y
 # Preparation data spatial and epidemiologic
 # dengue data
 dengue <- getid(dengue, from = 1993, to = 1993)
-dengue_0993  <- subset(dengue, month == "September",
-                       select = c(province, grep("incidence", names(dengue))))
+dengue_0993 <- subset(dengue, month == "September",
+                      select = c(province, grep("incidence", names(dengue))))
 ```
 
 ### Select class intervals and colors

@@ -2,7 +2,7 @@
 title: "Movie visualization of the gdpm package"
 output:
   html_document:
-    theme: cerulean
+    theme: paper
     toc: yes
   pdf_document:
     toc: yes
@@ -113,7 +113,7 @@ After joining the `pop` and the `dengue` data frames by province and by year, we
 # incidence rate
 dengue <- merge(dengue, pop, by = c("province", "year"))
 dengue <- transform(dengue, incidence_rate =  
-                   (incidence_dengue / population)*10000)
+                   (incidence_dengue / population) * 10000)
 head(dengue)
 ```
 
