@@ -9,7 +9,7 @@ output:
 <!-- bibliography: references.bib -->
 csl: the-american-naturalist.csl
 vignette: >
-  %\VignetteIndexEntry{Visualising the gdpm package}
+  %\VignetteIndexEntry{Movie visualization of the gdpm package}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
