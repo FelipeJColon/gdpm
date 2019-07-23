@@ -14,7 +14,7 @@ test_that("`getid` returns the right number of column for all diseases", {
   # of disease should be equal to the number of columns minus 3 (columns
   # province, year and month) divided by 2 (each diseases has 2 columns:
   # incidence and mortality)
-  expect_equal((col_num - 3)/2, 29)
+  test1 <- (col_num - 3) / 2
+  expect_equal(test1, 29)
 
 })
-
