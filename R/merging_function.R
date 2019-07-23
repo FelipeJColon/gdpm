@@ -419,7 +419,7 @@ getid_ <- function(..., from, to, shortest = FALSE) {
            as.vector()) > 0) {
     name_error <- names(which(purrr::map(test, 1) > to))
     sel <- grep(paste(name_error, collapse = "|"),
-                names(lst_disease), invert = T, value = T)
+                names(lst_disease), invert = TRUE, value = TRUE)
     lst_disease <- lst_disease[sel]
   }
 
