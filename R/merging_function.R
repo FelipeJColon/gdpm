@@ -36,7 +36,7 @@ select_date <- function(df, from, to) {
 #' @noRd
 select_events <- function(splits_lst, from, to) {
   sel0 <- lapply(splits_lst, "[[", "date")
-  sel0 <- sort(unlist(sel0), decreasing = F)
+  sel0 <- sort(unlist(sel0), decreasing = FALSE)
   sel0 <- names(sel0)
   splits_lst <- splits_lst[sel0]
   sel <- lapply(splits_lst, "[[", "date")
@@ -460,7 +460,7 @@ paste(test[name_error], collapse = ", "), ". NAs
 #' @export
 getid <- function(..., from, to, shortest = FALSE){
   vect <- as.character(substitute(list(...)))
-  vect <- grep("list", vect, invert = T, value = T)
+  vect <- grep("list", vect, invert = TRUE, value = TRUE)
 
   if (shortest == TRUE){
     diseases <- getid_(vect, from = from, to = to, shortest = TRUE)
