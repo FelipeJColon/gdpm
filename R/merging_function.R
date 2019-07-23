@@ -388,18 +388,12 @@ getid_ <- function(..., from, to, shortest = FALSE) {
   lst_disease <- mget(vect, inherits = TRUE)
 
   # define the value of the time range and test for all mistakes
-  if (missing(from) & shortest == FALSE) {
-    from <-  select_min_max(lst_disease, 1)
-    }
-  if (missing(to) & shortest == FALSE) {
+  if (missing(from) & shortest == FALSE) from <-  select_min_max(lst_disease, 1)
+  if (missing(to) & shortest == FALSE)
     to <-  select_min_max(lst_disease, 2, "max")
-    }
-  if (missing(from) & shortest == TRUE) {
+  if (missing(from) & shortest == TRUE)
     from <-  select_min_max(lst_disease, 1, "max")
-    }
-  if (missing(to) & shortest == TRUE) {
-    to <-  select_min_max(lst_disease, 2)
-    }
+  if (missing(to) & shortest == TRUE) to <-  select_min_max(lst_disease, 2)
 
   if (from > to |
       from > select_min_max(lst_disease, 2, "max")) {
@@ -417,7 +411,7 @@ getid_ <- function(..., from, to, shortest = FALSE) {
   if (mean(as.vector(unlist(lapply(test, "[[", 1))) > to) > 0) {
     name_error <- names(which(lapply(test, "[[", 1) > to))
     sel <- grep(paste(name_error, collapse = "|"),
-      names(lst_disease), invert = T, value = T)
+      names(lst_disease), invert = TRUE, value = TRUE)
     lst_disease <- lst_disease[sel]
   }
 
@@ -467,6 +461,7 @@ paste(test[name_error], collapse = ", "), ". NAs
 getid <- function(..., from, to, shortest = FALSE){
   vect <- as.character(substitute(list(...)))
   vect <- grep("list", vect, invert = T, value = T)
+
   if (shortest == TRUE){
     diseases <- getid_(vect, from = from, to = to, shortest = TRUE)
   } else {
