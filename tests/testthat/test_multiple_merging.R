@@ -93,10 +93,9 @@ test_that("`getid` returns an error or a warning", {
 
   expect_error(getid(chickenpox, ili, dengue, malaria, from = 2028))
 
-  expect_error(getid_("chickenpox","dengue","ili","vhf","malaria",
+  expect_error(getid_("chickenpox", "dengue", "ili", "vhf", "malaria",
     shortest = TRUE))
 
-  expect_error(getid_("vhf","mumps", from = "1990", to = "1980"))
+  expect_error(getid_("vhf", "mumps", from = "1990", to = "1980"))
 
 })
-

@@ -17,7 +17,7 @@ test_that("`getid` returns the correct incidence data", {
 
   expect_equal(
     merging_incidence("chickenpox", "2000-01-01", "2000-12-01", "Cao Bang"),
-    c(0, 21, 0, 0, 0 ,7 , 0, 0, 1, 0, 0, 0))
+    c(0, 21, 0, 0, 0, 7, 0, 0, 1, 0, 0, 0))
 
   expect_equal(
     merging_incidence("chickenpox", "1991-01-01", "1992-12-01", "Ha Nam Ninh"),
@@ -65,8 +65,9 @@ test_that("`getid` returns the correct incidence data", {
       267, 773, 668, 1304, 1152, 545, 505, 307, 102, 725, 111, 99, 105))
 
   expect_equal(
-    merging_incidence("hepatitis", "1990-01-01", "1991-12-01", "Binh Tri Thien"),
-    c(74, 30, 14, 19, 21, 18, 9, 30, 91, 25, 81, 19 ,12, 6, 27, 77, 77, 7, 57,
+    merging_incidence("hepatitis", "1990-01-01", "1991-12-01",
+                      "Binh Tri Thien"),
+    c(74, 30, 14, 19, 21, 18, 9, 30, 91, 25, 81, 19, 12, 6, 27, 77, 77, 7, 57,
       35, 38, 49, 99, 43))
 })
 
@@ -149,7 +150,7 @@ test_that("`getid` returns the good number and names of provinces", {
     merging_province("hepatitis", "1991", "2015"), 44)
 
   expect_identical(
-    merging_province("hepatitis", "1991", "2015")%>%
+    merging_province("hepatitis", "1991", "2015") %>%
       c("Ha Son Binh") %>% sort,
     dictionary::vn_admin1_year$`1991-1992`)
 
