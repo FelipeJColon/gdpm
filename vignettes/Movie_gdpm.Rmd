@@ -1,13 +1,6 @@
 ---
 title: "Movie visualization of the gdpm package"
-output:
-  html_document:
-    theme: paper
-    toc: yes
-  pdf_document:
-    toc: yes
-<!-- bibliography: references.bib -->
-csl: the-american-naturalist.csl
+output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Movie visualization of the gdpm package}
   %\VignetteEngine{knitr::rmarkdown}
@@ -222,7 +215,7 @@ For more details, you can look at the webpage of the `animation` package: https:
 months <- month.name # vector of month name
 
 saveGIF({
-  # loop printing a map for each months
+  # loop printing a map for each month
     monthly_loop <- for(i in seq(months)){
       subset(dengue, c(year == 2009 & month == months[i]),
              c(province, grep("rate", names(dengue)))) %>% 
@@ -238,12 +231,12 @@ saveGIF({
 
 <img src = "animation_monthly.gif">
 
-With the same principle, we can create another loop which prints a choropleth map for each month for multiple year: 
+With the same principle, we can create another loop which prints a choropleth map for each month for multiple year (for the example and to reduce time of computation, we will only show the years 2000-2002): 
 
-```{r, message=FALSE, eval = FALSE}
+```{r, message = FALSE, eval = FALSE}
 saveGIF({
   # loop for each year
-  yearly_loop <- for(j in seq(range(dengue$year)[1], range(dengue$year)[2])){
+  yearly_loop <- for(j in seq(2000, 2002)){
     # monthly loop
     monthly_loop <- for(i in seq(months)){
     # creation of the map  

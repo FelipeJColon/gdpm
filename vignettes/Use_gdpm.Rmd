@@ -4,12 +4,7 @@ vignette: >
   %\VignetteIndexEntry{Using the gdpm package}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
-output:
-  html_document:
-    theme: paper
-    toc: yes
-  pdf_document:
-    toc: yes
+output: rmarkdown::html_vignette
 date: "`r Sys.Date()`"
 ---
 
