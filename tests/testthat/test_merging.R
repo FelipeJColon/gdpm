@@ -151,7 +151,7 @@ test_that("`getid` returns the good number and names of provinces", {
 
 test_that("correct names of columns", {
   expect_identical(names(getid(rabies)),
-                   c("province", "year", "month", "vaccinated_rabies",
+                   c("province", "month", "year", "vaccinated_rabies",
                      "incidence_rabies"))
 
 })
