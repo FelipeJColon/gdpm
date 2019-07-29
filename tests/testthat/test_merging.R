@@ -147,3 +147,11 @@ test_that("`getid` returns the good number and names of provinces", {
   expect_length(
     merging_province("hepatitis", "1992", "2015"), 52)
 })
+
+
+test_that("correct names of columns", {
+  expect_identical(names(getid(rabies)),
+                   c("province", "year", "month", "vaccinated_rabies",
+                     "incidence_rabies"))
+
+})

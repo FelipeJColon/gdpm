@@ -332,6 +332,11 @@ multiple_disease <- function(lst, splits_list, from, to){
 #' take place in 1991. Another list of event has been created for these two
 #' diseases and if one or the two of them are selected (together with other
 #' diseases), this story will be applied to all the disease selected.
+#' \cr\cr For the disease \code{rabies}, the package \code{gdpm} contains the
+#' vaccination data (named \code{vaccinated_rabies} in the \code{getid}
+#' function) and as for rabies, a case lead to the death, the incidence and
+#' mortality columns are the same and only the incidence column is outputted
+#' in the function \code{getid}.
 #'
 #' @param ... Name of one or multople disease (e.g. \code{ili},
 #' \code{dengue} ...).
@@ -411,7 +416,7 @@ getid_ <- function(..., from, to, shortest = FALSE) {
   if (mean(as.vector(unlist(lapply(test, "[[", 1))) > to) > 0) {
     name_error <- names(which(lapply(test, "[[", 1) > to))
     sel <- grep(paste(name_error, collapse = "|"),
-      names(lst_disease), invert = TRUE, value = TRUE)
+                names(lst_disease), invert = TRUE, value = TRUE)
     lst_disease <- lst_disease[sel]
   }
 
@@ -452,6 +457,12 @@ paste(test[name_error], collapse = ", "), ". NAs
           ". The closest time range was selected:
         ",  paste(range(diseases$year), collapse = "-"), "."))
     }
+  }
+  if (any(grepl("rabies", names(diseases)))) {
+    names(diseases)[which(names(diseases) == "incidence_rabies")] <-
+      "vaccinated_rabies"
+    names(diseases)[which(names(diseases) == "mortality_rabies")] <-
+      "incidence_rabies"
   }
   return(diseases)
 }
