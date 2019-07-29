@@ -1,7 +1,4 @@
-library(magrittr) # for the " %>% " pipe
-library(dplyr) # for "bind_rows", "rename", "mutate", "select"
-library(tidyr) # for "gather", "separate", "spread"
-library(dictionary) # for "admin1_year"
+library(dictionary) # for "vn_admin1_year"
 
 context("`getid` return the good time range and provinces names when provide
   multiple diseases at the same time")
@@ -46,25 +43,23 @@ test_that("`getid` returns the correct time range", {
 test_that("`getid` returns the correct province name", {
 
   expect_equal(
-    unique(getid(chickenpox, hepatitis, ili, dengue)$province) %>%
-      c("Ha Son Binh") %>% sort,
+    sort(c("Ha Son Binh",
+           unique(getid(chickenpox, hepatitis, ili, dengue)$province))),
+    dictionary::vn_admin1_year$`1979-1990`)
+
+  expect_equal(sort(c(
+    "Ha Son Binh",
+    unique(getid_("chickenpox", "hepatitis", "ili", "dengue")$province))),
     dictionary::vn_admin1_year$`1979-1990`)
 
   expect_equal(
-    unique(getid_("chickenpox", "hepatitis", "ili", "dengue")$province) %>%
-      c("Ha Son Binh") %>% sort,
-    dictionary::vn_admin1_year$`1979-1990`)
-
-  expect_equal(
-    unique(getid(chickenpox, hepatitis, ili, dengue,
-      shortest = TRUE)$province) %>%
-        c("Ha Son Binh") %>% sort,
+    sort(c("Ha Son Binh", unique(getid(chickenpox, hepatitis, ili, dengue,
+                                       shortest = TRUE)$province))),
       dictionary::vn_admin1_year$`1979-1990`)
 
   expect_equal(
-    unique(getid_("chickenpox", "hepatitis", "malaria", "dengue",
-      shortest = TRUE)$province) %>%
-      c("Ha Tay") %>% sort,
+    sort(c("Ha Tay", unique(getid_("chickenpox", "hepatitis", "malaria",
+                                        "dengue", shortest = TRUE)$province))),
     dictionary::vn_admin1_year$`1997-2004`)
 
   expect_equal(
@@ -78,8 +73,6 @@ test_that("`getid` returns the correct province name", {
     dictionary::vn_admin1_year$`1979-1990`)
 
 })
-
-
 
 test_that("`getid` returns an error or a warning", {
 
@@ -97,5 +90,7 @@ test_that("`getid` returns an error or a warning", {
     shortest = TRUE))
 
   expect_error(getid_("vhf", "mumps", from = "1990", to = "1980"))
+
+  expect_error(gdpm:::select_min_max(list(getid(dengue)), sel = 1, fct = "bla"))
 
 })

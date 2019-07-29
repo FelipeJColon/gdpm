@@ -12,10 +12,10 @@
 #' @keywords internal
 #' @noRd
 select_date <- function(df, from, to) {
-  df %<>% mutate(date = as.Date(paste(year, as.numeric(month),
-    01, sep = "-"))) %>%
-    filter(date >= from, date <= to) %>%
-    select(-date)
+  df <- transform(df, date = as.Date(paste(df$year, as.numeric(df$month),
+                                        01, sep = "-")))
+  df <- subset(df, c(date >= from & date <= to))
+  df <- df[, -which(names(df) %in% "date")]
 }
 
 ################################################################################
@@ -35,12 +35,13 @@ select_date <- function(df, from, to) {
 #' @keywords internal
 #' @noRd
 select_events <- function(splits_lst, from, to) {
-  sel0 <- purrr::map(splits_lst, 3) %>% unlist %>%
-    sort(decreasing = FALSE) %>% names()
+  sel0 <- lapply(splits_lst, "[[", "date")
+  sel0 <- sort(unlist(sel0), decreasing = FALSE)
+  sel0 <- names(sel0)
   splits_lst <- splits_lst[sel0]
-  sel <- purrr::map(splits_lst, 3) > as.Date(from) &
-    purrr::map(splits_lst, 3) <= as.Date(to)
-  splits_lst[sel]
+  sel <- lapply(splits_lst, "[[", "date")
+  sel <- lapply(sel, function(x) x > as.Date(from) & x <= as.Date(to))
+  splits_lst[unlist(sel)]
 }
 
 ################################################################################
@@ -57,15 +58,17 @@ select_events <- function(splits_lst, from, to) {
 #' @return A list of vector, each vector corresponds to one event and contains
 #' the province names concerned by this event.
 #' @keywords internal
+#' @importFrom stats setNames
 #' @noRd
 province_splits <- function(lst_split) {
   provinces <- lapply(names(lst_split), function(x) {
-    combined <- purrr::map(lst_split[x], 1) %>% unlist() %>% as.vector()
-    elements <- purrr::map(lst_split[x], 2) %>% unlist() %>% as.vector()
+    combined <- unlist(lapply(lst_split[x], "[[", "combined"))
+    combined <- as.vector(combined)
+    elements <- unlist(lapply(lst_split[x], "[[", "elements"))
+    elements <- as.vector(elements)
     c(combined, elements)
-  }) %>%
-    setNames(names(lst_split))
-  provinces
+  })
+  provinces <- setNames(provinces, names(lst_split))
 }
 
 ################################################################################
@@ -85,9 +88,9 @@ province_splits <- function(lst_split) {
 #' @keywords internal
 #' @noRd
 prepare_data <- function(df) {
-  split(df, as.factor(unique(df$province))) %>%
-    purrr::map(select, -contains("province")) %>%
-    purrr::reduce(full_join, by = c("year", "month"))
+  lst_df <- split(df, as.factor(df$province))
+  lst_df <- lapply(lst_df, function(x) x[, -which(names(x) %in% "province")])
+  df <- Reduce(rbind, lst_df)
 }
 
 ################################################################################
@@ -106,13 +109,15 @@ prepare_data <- function(df) {
 #' @keywords internal
 #' @noRd
 gather_sum <- function(df, x) {
-  df %<>%  select(contains(x), one_of(c("month", "year"))) %>%
-    gather(name, value, contains(x)) %>%
-    select(-matches("name")) %>%
-    group_by(year, month) %>%
-    summarise(value = ifelse(mean(is.na(value)) == 1,
-      sum(value), sum(value, na.rm = TRUE))) %>%
-    rename_(.dots = setNames(list("value"), x))
+  tmp <- df[, c(x, "month", "year")]
+  colnames(tmp)[which(names(tmp) == x)] <- "value"
+  tmp <- aggregate(value ~ ., data = tmp,
+                   FUN = function(y) {
+                     ifelse(mean(is.na(y)) == 1, sum(y), sum(y, na.rm = TRUE))
+                     },
+                   na.action = na.pass)
+  colnames(tmp)[which(names(tmp) == "value")] <- x
+  tmp
 }
 
 ################################################################################
@@ -125,14 +130,17 @@ gather_sum <- function(df, x) {
 #' @param df An epidemiological data frame (e.g. \code{ili} or \code{dengue}).
 #' Should contain at least the variables \code{year}, \code{month} and the
 #' variables \code{incidence} or \code{mortality}.
-#' @return A data frame with the same variables as \code{df}
+#' @return A data frame with the same
+#'
+#' variables as \code{df}
+#' @importFrom stats na.pass aggregate
 #' @keywords internal
 #' @noRd
 sum_incidence_mortality <- function(df) {
-  lapply(c("incidence", "mortality"), function(x) {
+  dft <- lapply(c("incidence", "mortality"), function(x) {
     gather_sum(df, x)
-  }) %>%
-    purrr::invoke(full_join, ., by = c("year", "month"))
+  })
+  df <- merge(dft[[1]], dft[[2]], by = c("year", "month"))
 }
 
 ################################################################################
@@ -150,11 +158,10 @@ sum_incidence_mortality <- function(df) {
 #' @noRd
 hanoi_function <- function(df) {
   tab <- split(df, df$province %in% c("Ha Noi", "Ha Son Binh"))
-  tab$`TRUE` %<>%
-    prepare_data() %>%
-    sum_incidence_mortality() %>%
-    mutate(province = "Ha Noi")
-  bind_rows(tab$`TRUE`, tab$`FALSE`)
+  tab$`TRUE` <- prepare_data(tab$`TRUE`)
+  tab$`TRUE` <- sum_incidence_mortality(tab$`TRUE`)
+  tab$`TRUE` <- transform(tab$`TRUE`, province = "Ha Noi")
+  rbind(tab$`TRUE`, tab$`FALSE`)
 }
 
 ################################################################################
@@ -183,23 +190,22 @@ hanoi_function <- function(df) {
 #' @keywords internal
 #' @noRd
 merge_time_serie <- function(splits_lst, df, from, to) {
-  df %<>% select_date(from, to)
+  df <- select_date(df, from, to)
   lst_events <- select_events(splits_lst, from, to)
   if (length(lst_events) > 0) {
     for (i in rev(seq_along(lst_events))) {
       province_lst <- province_splits(lst_events[i])
       tmp <- split(df, df$province %in% province_lst[[1]])
-      tmp$`TRUE` %<>%
-        prepare_data() %>%
-        sum_incidence_mortality() %>%
-        mutate(province = names(province_lst[1]))
-      df <- bind_rows(tmp$`TRUE`, tmp$`FALSE`)
+      tmp$`TRUE` <- prepare_data(tmp$`TRUE`)
+      tmp$`TRUE` <- sum_incidence_mortality(tmp$`TRUE`)
+      tmp$`TRUE` <- transform(tmp$`TRUE`, province = names(province_lst[1]))
+      df <- rbind(tmp$`TRUE`, tmp$`FALSE`)
     }
   } else {
     df
-  }
+    }
   if (from <= splits$`Ha Son Binh`$date & to >= splits$`Ha Noi`$date) {
-    df %<>% hanoi_function()
+    df <- hanoi_function(df)
   }
   return(df)
 }
@@ -236,16 +242,15 @@ merge_time_serie <- function(splits_lst, df, from, to) {
 #' @noRd
 merge_province <- function(splits_list, disease, from, to) {
   # get from and to in the right format
-  from %<>% paste0("-01-01") %>% as.Date
-  to %<>% paste0("-12-31") %>% as.Date
+  from <- as.Date(paste0(from, "-01-01"))
+  to <- as.Date(paste0(to, "-12-31"))
 
-  df <- suppressWarnings(merge_time_serie(splits_list, disease, from, to)) %>%
-    ungroup() %>%
-    mutate(year = as.integer(year)) %>%
-    arrange(province, year, month) %>%
-    as.data.frame() %>%
-    select(province, year, month, incidence, mortality)
-
+  df <- merge_time_serie(splits_list, disease, from, to)
+  df <-  transform(df, year = as.integer(df$year))
+  df <- as.data.frame(df, stringsAsFactors = FALSE)
+  df <-  df[, c("province", "month", "year", "incidence", "mortality")]
+  df$province <- as.character(df$province)
+  df[order(df$province, df$year, df$month), ]
 }
 
 
@@ -258,24 +263,19 @@ merge_province <- function(splits_list, disease, from, to) {
 #' @param lst a list containing one or multiple data frame containing, each one
 #' of them, at least one numeric column named identically.
 #' @param sel a numeric (1 or 2), to select the first (1) or the last year (2).
+#' @param fct character either \code{min} or \code{max} to select the year.
 #' @param col column named containing the value (by default = year)
 #' @return A numeric
 #' @keywords internal
 #' @noRd
-select_min <- function(lst, sel, col = "year"){
-  year <- purrr::map(lst, select, contains(col)) %>%
-    purrr::map(range)  %>%
-    purrr::map(sel)  %>% unlist()  %>% min()
-  year
-}
-
-#' @rdname select_min
-#' #' @keywords internal
-#' @noRd
-select_max <- function(lst, sel, col = "year"){
-  year <- purrr::map(lst, select, contains(col)) %>%
-    purrr::map(range)  %>%
-    purrr::map(sel)  %>% unlist() %>% max()
+select_min_max <- function(lst, sel, fct = "min", col = "year") {
+  if (!fct %in% c("max", "min"))
+    stop('The argument "fct" should be equal to "min" or "max".')
+  year <- lapply(lst, "[[", col)
+  year <- lapply(year, range)
+  year <- lapply(year, "[[", sel)
+  if (fct == "min") year <- min(unlist(year))
+  if (fct == "max") year <- max(unlist(year))
   year
 }
 
@@ -298,17 +298,16 @@ select_max <- function(lst, sel, col = "year"){
 #' @keywords internal
 #' @noRd
 multiple_disease <- function(lst, splits_list, from, to){
-  lapply(seq_along(lst), function(x){
+  dftot <- lapply(seq_along(lst), function(x){
     df <- suppressWarnings(merge_province(splits_list, lst[[x]], from, to))
-    colnames(df) <- sub("incidence",
-      paste0("incidence_", names(lst)[x]), colnames(df))
-    colnames(df) <- sub("mortality",
-      paste0("mortality_", names(lst)[x]), colnames(df))
-    df %<>% as.data.frame
-  }) %>%
-    plyr::join_all(., by = c("province", "year", "month"),
-    type = "full") %>%
-    arrange(province, year, month)
+    colnames(df) <- sub("incidence", paste0("incidence_", names(lst)[x]),
+                        colnames(df))
+    colnames(df) <- sub("mortality", paste0("mortality_", names(lst)[x]),
+                        colnames(df))
+    df <- as.data.frame(df, stringsAsFactors = FALSE)
+  })
+  dftot <- Reduce(merge, dftot)
+  dftot[order(dftot$province, dftot$year, dftot$month), ]
 }
 
 ################################################################################
@@ -383,76 +382,75 @@ multiple_disease <- function(lst, splits_list, from, to){
 #' @export
 getid_ <- function(..., from, to, shortest = FALSE) {
   # create a character vector of all the diseases names
-  vect <-  list(...) %>%
-    unlist %>% as.vector() %>%
-    as.character()
-
+  vect <- unlist(list(...))
+  vect <- as.vector(vect)
+  vect <- as.character(vect)
   lst_disease <- mget(vect, inherits = TRUE)
 
   # define the value of the time range and test for all mistakes
-  if (missing(from) & shortest == FALSE) from <-  select_min(lst_disease, 1)
-  if (missing(to) & shortest == FALSE) to <-  select_max(lst_disease, 2)
-  if (missing(from) & shortest == TRUE) from <-  select_max(lst_disease, 1)
-  if (missing(to) & shortest == TRUE) to <-  select_min(lst_disease, 2)
+  if (missing(from) & shortest == FALSE) from <-  select_min_max(lst_disease, 1)
+  if (missing(to) & shortest == FALSE)
+    to <-  select_min_max(lst_disease, 2, "max")
+  if (missing(from) & shortest == TRUE)
+    from <-  select_min_max(lst_disease, 1, "max")
+  if (missing(to) & shortest == TRUE) to <-  select_min_max(lst_disease, 2)
 
   if (from > to |
-      from > select_max(lst_disease, 2)){
+      from > select_min_max(lst_disease, 2, "max")) {
     stop("The time range selected is out of bound or incorrect: ", from, "-",
-      to, ". The widest time range for this selection is: ", select_min(
-        lst_disease, 1), "-", select_max(lst_disease, 2),
+      to, ". The widest time range for this selection is: ", select_min_max(
+        lst_disease, 1), "-", select_min_max(lst_disease, 2, "max"),
       ". Maybe, try another",
       " 'shortest' option or enter a different value for the parameters 'from'",
       " and/or 'to'.", call. = FALSE)
   }
 
   # test for one disease in a list which can be out of range
-  test <- purrr::map(lst_disease, select, contains("year"))  %>%
-    purrr::map(range)
-  if (mean(to < test  %>%
-      purrr::map(1) %>%
-      unlist() %>%
-      as.vector()) > 0){
-    name_error <- names(which(purrr::map(test, 1) > to))
+  test <- lapply(lst_disease, "[[", "year")
+  test <- lapply(test, range)
+  if (mean(as.vector(unlist(lapply(test, "[[", 1))) > to) > 0) {
+    name_error <- names(which(lapply(test, "[[", 1) > to))
     sel <- grep(paste(name_error, collapse = "|"),
       names(lst_disease), invert = TRUE, value = TRUE)
     lst_disease <- lst_disease[sel]
   }
 
   # test which split history should be selected
-  if (grep("hepatitis|amoebiasis", vect) %>% length >= 1){
+  if (length(grep("hepatitis|amoebiasis", vect)) >= 1){
     diseases <- multiple_disease(lst_disease, ah_splits, from, to)
   } else {
     diseases <- multiple_disease(lst_disease, splits, from, to)
   }
 
   # if one disease or two diseases are out of range
-  if (mean(to < test  %>%
-      purrr::map(1) %>%
-      unlist() %>%
-      as.vector()) > 0){
-    diseases <- suppressMessages(lapply(seq_along(name_error), function(x){
+  if (mean(as.vector(unlist(lapply(test, "[[", 1))) > to) > 0) {
+    diseases <- lapply(seq_along(name_error), function(x) {
       diseases[, paste0("incidence", "_", name_error[x])] <- NA
       diseases[, paste0("mortality", "_", name_error[x])] <- NA
       diseases
-    }) %>%
-      plyr::join_all(.))
+    })
+    diseases <- Reduce(merge, diseases)
     warning(paste0("One or more diseases is/are out of the time range selected:
       ", paste(name_error, collapse = ", "), ", time range associated:",
-      paste(test[name_error], collapse = ", "), ". NAs were introducted."))
+paste(test[name_error], collapse = ", "), ". NAs
+      were introducted."))
   }
 
    # warnings message if error on the year time range
-  if (!missing (from) || !missing(to)){
-    if (as.numeric(substr(from, 1, 4)) < select_min(lst_disease, 1)) {
-      warning(paste0("The argument 'from' is out of the time range for this
-        (these) disease(s): ", paste0(select_min(lst_disease, 1), "-",
-          select_max(lst_disease, 2) ), ". The closest time range was selected:
-        ", range(diseases$year) %>% paste(collapse = "-"), "."))
-    } else if (as.numeric(substr(to, 1, 4)) > select_max(lst_disease, 2)) {
-      warning(paste0("The argument 'to' is out of the time range for this
-        (these) disease(s): ", paste0(select_min(lst_disease, 1), "-",
-          select_max(lst_disease, 2) ), ". The closest time range was selected:
-        ", range(diseases$year) %>% paste(collapse = "-"), "."))
+  if ( !missing (from) || !missing(to)) {
+    if (as.numeric(substr(from, 1, 4)) < select_min_max(lst_disease, 1)) {
+      warning(paste0('The argument "from" is out of the time range for this
+        (these) disease(s): ', paste0(select_min_max(lst_disease, 1), "-",
+          select_min_max(lst_disease, 2, "max") ),
+          ". The closest time range was selected:
+          ", paste(range(diseases$year), collapse = "-"), "."))
+    } else if (as.numeric(substr(to, 1, 4)) >
+               select_min_max(lst_disease, 2, "max")) {
+      warning(paste0('The argument "to" is out of the time range for this
+        (these) disease(s): ', paste0(select_min_max(lst_disease, 1), "-",
+          select_min_max(lst_disease, 2, "max") ),
+          ". The closest time range was selected:
+        ",  paste(range(diseases$year), collapse = "-"), "."))
     }
   }
   return(diseases)
@@ -461,14 +459,13 @@ getid_ <- function(..., from, to, shortest = FALSE) {
 #' @rdname getid_
 #' @export
 getid <- function(..., from, to, shortest = FALSE){
-  vect <- as.character(substitute(list(...))) %>%
-    grep("list", ., invert = TRUE, value = TRUE)
+  vect <- as.character(substitute(list(...)))
+  vect <- grep("list", vect, invert = TRUE, value = TRUE)
 
   if (shortest == TRUE){
     diseases <- getid_(vect, from = from, to = to, shortest = TRUE)
   } else {
     diseases <- getid_(vect, from = from, to = to)
   }
-
   return(diseases)
 }
