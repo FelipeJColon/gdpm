@@ -1,13 +1,10 @@
-library(magrittr) # for the " %>% " pipe
-
 context("`getid` return a data frame for each disease available")
 
 test_that("`getid` returns the right number of column for all diseases", {
 
-  col_num <- gdpm::diseases$disease %>%
-    paste(sep = ", ") %>%
-    getid_() %>%
-    ncol
+  col_num <- paste(gdpm::diseases$disease, sep = ", ")
+  col_num <- getid_(col_num)
+  col_num <- ncol(col_num)
 
   # the final table contains the incidence and the mortality for all the
   # diseases and also the province, year and month corresponding. So the number

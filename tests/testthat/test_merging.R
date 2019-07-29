@@ -1,18 +1,13 @@
-library(magrittr) # for the " %>% " pipe
-library(dplyr) # for "bind_rows", "rename", "mutate", "select"
-library(tidyr) # for "gather", "separate", "spread"
+library(dictionary) # for the "vn_admin1_year"
 
 context("`getid` merges provinces accordingly to the time range")
 
 test_that("`getid` returns the correct incidence data", {
   merging_incidence <- function(df, ye1, ye2, prov, x = "incidence") {
-    getid_(df, from = ye1, to = ye2) %>%
-      filter(province == prov) %>%
-      arrange(year, month) %>%
-      ungroup %>%
-      select(contains(x)) %>%
-      unlist %>%
-      as.vector
+    df <- getid_(df, from = ye1, to = ye2)
+    df <- df[which(df$province == prov), ]
+    df <- df[order(df$year, df$month), ]
+    df <- df[, grep(x, colnames(df), value = TRUE), drop = TRUE]
   }
 
   expect_equal(
@@ -74,44 +69,41 @@ test_that("`getid` returns the correct incidence data", {
 
 test_that("`getid` returns the good number and names of provinces", {
   merging_province <- function(df, ye1, ye2) {
-    getid_(df, from = ye1,  to = ye2) %>%
-      ungroup %>%
-      select(province) %>%
-      unlist %>%
-      unique %>%
-      sort
+    df <- getid_(df, from = ye1,  to = ye2)
+    vect <- df[, "province", drop = TRUE]
+    sort(unique(vect))
   }
 
   expect_length(
     merging_province("chickenpox", "1980-01-01", "2015-12-31"), 39)
 
   expect_identical(
-    merging_province("chickenpox", "1980-01-01", "2015-12-31") %>%
-      c("Ha Son Binh") %>% sort,
+    sort(c("Ha Son Binh",
+           merging_province("chickenpox", "1980-01-01", "2015-12-31"))),
     dictionary::vn_admin1_year$`1979-1990`)
 
   expect_length(
     merging_province("chickenpox", "1990-01-01", "2015-12-31"), 43)
 
   expect_identical(
-    merging_province("chickenpox", "1990-01-01", "2015-12-31") %>%
-      c("Ha Son Binh") %>% sort,
+    sort(c("Ha Son Binh",
+           merging_province("chickenpox", "1990-01-01", "2015-12-31"))),
     dictionary::vn_admin1_year$`1990-1991`)
 
   expect_length(
     merging_province("chickenpox", "1991-01-01", "2015-12-31"), 44)
 
   expect_identical(
-    merging_province("chickenpox", "1991-01-01", "2015-12-31") %>%
-      c("Ha Son Binh") %>% sort,
+    sort(c("Ha Son Binh",
+           merging_province("chickenpox", "1991-01-01", "2015-12-31"))),
     dictionary::vn_admin1_year$`1991-1992`)
 
   expect_length(
     merging_province("chickenpox", "1992-01-01", "2015-12-31"), 52)
 
   expect_identical(
-    merging_province("chickenpox", "1992-01-01", "2015-12-31") %>%
-      c("Ha Tay") %>% sort,
+    sort(c("Ha Tay",
+           merging_province("chickenpox", "1992-01-01", "2015-12-31"))),
     dictionary::vn_admin1_year$`1992-1997`)
 
   expect_length(
@@ -142,16 +134,14 @@ test_that("`getid` returns the good number and names of provinces", {
     merging_province("hepatitis", "1990", "2015"), 39)
 
   expect_identical(
-    merging_province("hepatitis", "1990", "2015") %>%
-      c("Ha Son Binh") %>% sort,
+    sort(c("Ha Son Binh", merging_province("hepatitis", "1990", "2015"))),
     dictionary::vn_admin1_year$`1979-1990`)
 
   expect_length(
     merging_province("hepatitis", "1991", "2015"), 44)
 
   expect_identical(
-    merging_province("hepatitis", "1991", "2015") %>%
-      c("Ha Son Binh") %>% sort,
+    sort(c("Ha Son Binh", merging_province("hepatitis", "1991", "2015"))),
     dictionary::vn_admin1_year$`1991-1992`)
 
   expect_length(

@@ -24,18 +24,13 @@ Suggests:
     gso,
     knitr,
     rmarkdown,
+    magrittr,
     testthat,
     RColorBrewer,
     poseid,
     gadmVN,
+    sf,
     sp,
     stringi
 VignetteBuilder: knitr
-Imports:
-    dplyr,
-    magrittr,
-    tidyr,
-    purrr,
-    plyr,
-    sf
 RoxygenNote: 6.1.1

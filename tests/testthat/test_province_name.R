@@ -1,18 +1,12 @@
-library(magrittr) # for the " %>% " pipe
-library(dplyr) # for "bind_rows", "rename", "mutate", "select"
-library(tidyr) # for "gather", "separate", "spread"
+library(dictionary) # for the "vn_admin1_year"
+
 context("data provinces name")
 
 test_that("correct names of provinces", {
   province_name_ye <- function(df, ye) {
-    df %>%
-      get %>%
-      filter(year == ye) %>%
-      select(province) %>%
-      ungroup %>%
-      unlist %>%
-      unique %>%
-      sort
+    df <- get(df)
+    vect <- df[which(df$year == ye), "province", drop = TRUE]
+    sort(unique(vect))
   }
 
   expect_equal(
