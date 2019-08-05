@@ -33,8 +33,8 @@ Suggests:
     sp,
     stringi
 Remotes: 
-    epix-project/gso,
     epix-project/poseid,
+    epix-project/gso,
     epix-project/gadmVN
 VignetteBuilder: knitr
 RoxygenNote: 6.1.1
