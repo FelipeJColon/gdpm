@@ -32,5 +32,9 @@ Suggests:
     sf,
     sp,
     stringi
+Remotes: 
+    epix-project/gso,
+    epix-project/poseid,
+    epix-project/gadmVN
 VignetteBuilder: knitr
 RoxygenNote: 6.1.1
