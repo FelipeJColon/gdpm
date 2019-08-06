@@ -32,7 +32,8 @@ Suggests:
     sf,
     sp,
     stringi,
-    dictionary
+    dictionary,
+    covr
 Remotes: 
     epix-project/poseid,
     epix-project/gso,
