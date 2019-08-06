@@ -7,6 +7,8 @@
 
 [![AppVeyor build
 status](https://ci.appveyor.com/api/projects/status/github/epix-project/gdpm?branch=master&svg=true)](https://ci.appveyor.com/project/epix-project/gdpm)
+[![Travis build
+status](https://travis-ci.org/epix-project/gdpm.svg?branch=master)](https://travis-ci.org/epix-project/gdpm)
 <!-- badges: end -->
 
 The goal of gdpm is to provide the data from the General Department of
