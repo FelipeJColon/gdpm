@@ -31,10 +31,12 @@ Suggests:
     gadmVN,
     sf,
     sp,
-    stringi
+    stringi,
+    dictionary
 Remotes: 
     epix-project/poseid,
     epix-project/gso,
-    epix-project/gadmVN
+    epix-project/gadmVN,
+    epix-project/dictionary
 VignetteBuilder: knitr
 RoxygenNote: 6.1.1
