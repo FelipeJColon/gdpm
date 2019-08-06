@@ -9,5 +9,10 @@ before_install:
   - sudo apt-get install --yes libudunits2-dev libproj-dev libgeos-dev libgdal-dev
   - sudo ldconfig
 
+addons:
+  apt:
+    packages:
+    - libmagick++-dev
+
 after_success:
   - Rscript -e 'covr::codecov()'
