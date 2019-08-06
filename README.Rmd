@@ -1,0 +1,67 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+# gdpm
+
+<!-- badges: start -->
+[![AppVeyor build status](https://ci.appveyor.com/api/projects/status/github/epix-project/gdpm?branch=master&svg=true)](https://ci.appveyor.com/project/epix-project/gdpm)
+[![Travis build status](https://travis-ci.org/epix-project/gdpm.svg?branch=master)](https://travis-ci.org/epix-project/gdpm)
+[![Codecov test coverage](https://codecov.io/gh/epix-project/gdpm/branch/master/graph/badge.svg)](https://codecov.io/gh/epix-project/gdpm?branch=master)
+<!-- badges: end -->
+
+The goal of gdpm is to provide the data from the General Department of Preventive 
+Medicine (GDPM) of Vietnam. 
+
+## Installation
+
+You can install the development version from [GitHub](https://github.com/) with:
+
+``` r
+# install.packages("devtools")
+devtools::install_github("epix-project/gdpm")
+```
+## Example
+
+```{r}
+library(gdpm)
+```
+
+The package contains epidemiological data in 29 epidemiological data frames, each data frame corresponding to one syndromic disease. For example, `chickenpox`:
+
+```{r}
+chickenpox <-  getid(chickenpox)
+head(chickenpox)
+```
+
+The data are expressed by the `incidence` or number of cases and `mortality` or the number of death per `province`, `month` and `year`.
+See below, the section on the `getid` function, for an illustration of the specificity of this function.
+
+The structure of the data frame is:
+
+```{r}
+str(chickenpox)
+```
+
+Note that time is coded by the 2 variables `year` and `month`. The latter is a factor in which the coding of the levels follows their chronological order:
+
+```{r}
+levels(chickenpox$month)
+```
+
+Head and tail of the data frame `chickenpox`:
+
+```{r}
+head(chickenpox)
+tail(chickenpox)
+```
