@@ -14,7 +14,7 @@ coverage](https://codecov.io/gh/epix-project/gdpm/branch/master/graph/badge.svg)
 <!-- badges: end -->
 
 The goal of gdpm is to provide the data from the General Department of
-Preventive Medicine (GDPM) of Vietnam.
+Preventive Medicine ([GDPM](http://vncdc.gov.vn/en)) of Vietnam.
 
 ## Installation
 
