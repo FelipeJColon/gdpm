@@ -96,3 +96,32 @@ tail(chickenpox)
 #> 45420 Vinh Phu  November 2017                   49                    0
 #> 44720 Vinh Phu  December 2017                   49                    0
 ```
+
+## Exporting to EPIPOI
+
+Below is a function that queries the GDPM data from a disease `x`
+(`"mumps"`, `"measles"`, etc…) and exports the variable `var` (either
+`"incidence"` or `"mortality"`) to an excel in a format compatible with
+[EPIPOI](http://www.epipoi.info):
+
+``` r
+export2epipoi <- function(x, var = "incidence") {
+  require(gdpm)
+  require(dplyr)
+  require(tidyr)
+  require(openxlsx)
+  x %>%
+    getid_() %>%
+    select(year, month, province, starts_with(var)) %>%
+    mutate(month = as.integer(month)) %>%
+    arrange(year, month) %>%
+    spread(province, 4) %>%
+    write.xlsx(paste0(x, "_epipoi.xlsx"))
+}
+```
+
+Its usage would be:
+
+``` r
+export2epipoi("mumps")
+```
